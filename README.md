@@ -4,7 +4,7 @@ The Solo Game, the wilderness campaign Jon built on the school bus around 1998â€
 
 One player runs a party of four through a world that is generated as they explore it. They wander, fight, find places worth reaching, and come home to heal, repair, and set out again. A **run** is one hero's career, from setting out to death or retirement. A **dynasty** is one world and the line of heroes who walk it. When a dynasty ends, the next begins on a new map.
 
-The design is meant to work on paper, with dice, pencils, and the Mastery rulebooks. A VTT can help, but it isn't required.
+The goal is a standalone computer game, a single-player roguelike, separate from the Foundry VTT system. The design files were first drafted as pencil-and-paper procedures, which was a misreading; they still specify the game's rules, and the places where paper convenience shaped a rule are being revisited.
 
 ## What's here
 

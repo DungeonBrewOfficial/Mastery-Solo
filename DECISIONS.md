@@ -8,7 +8,7 @@ Rulings Jon has made for this design, newest last within each section. Each line
 - One player runs a party; this is a solo TTRPG, not a game about one character. Mastery combat runs as written, and no creature is rebalanced for solo play. (2026-10-23)
 - Baseline balance assumes a party of four. (2026-10-23)
 - The game is a roguelike: explore until the party dies or the player is done, then go again. (2026-10-23)
-- It should work on paper, outside a VTT. (2026-10-23)
+- It's a computer game: a standalone single-player roguelike, not something that lives inside Foundry. (2026-10-23, corrected 2026-10-24; Claude had misread "outside of the VTT" as pencil and paper, and the design files were drafted for paper.)
 
 **Experience**
 - Combat XP comes from the single highest-value enemy in the encounter, and each character receives it in full. Other enemies add nothing. (2026-10-23)
