@@ -123,11 +123,10 @@ A run ends when the last of its heroes dies, or when the player retires them [Jo
 
 ---
 
-## What's Missing
+## The Other Pages
 
-These pages are referred to above and not yet written:
-
-- **Encounters:** started in `02-encounters.md` (woodland only so far).
-- **Sites:** drafted in `05-sites.md`.
-- **Settlements:** drafted in `06-settlements.md`.
-- **Map generation:** drafted in `04-the-map.md`.
+- **Encounters:** `02-encounters.md`. Woodland tables only so far; plains, hills, swamp, desert, and mountains still need theirs.
+- **Treasure:** `03-treasure.md`.
+- **Map generation:** `04-the-map.md`.
+- **Sites:** `05-sites.md`.
+- **Settlements:** `06-settlements.md`.
