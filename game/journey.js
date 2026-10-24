@@ -14,7 +14,9 @@ import { tierOf, dieOfTier } from "./mastery.js";
 import { rowFor, weatherFrom, BAND_LABELS } from "./vendor/foundry/module/helpers/weather-rules.mjs";
 import { effectiveRest, recoveryFor, exhaustedAfter, classUpgrades, REST_LABELS } from "./vendor/foundry/module/helpers/rest-rules.mjs";
 import { ensureAdvancement, checkLevels } from "./advance.js";
-import { ensureStores, morningSupplies, eveningSupplies, refill, exhaustFloor, outfit, treatInjuries, repairGear } from "./supplies.js";
+import { ensureStores, morningSupplies, eveningSupplies, refill, exhaustFloor, outfit, treatInjuries, treatTraumas, repairGear } from "./supplies.js";
+import { restDay, hardToKillDay, ensureTrauma } from "./health.js";
+import { rumorAtInn, rumorHere } from "./town.js";
 
 export const DAY_HOURS = 8;
 export const SEASONS = ["spring", "summer", "autumn", "winter"];
@@ -97,7 +99,7 @@ function morning(state, rng) {
   if (w.windy) bits.push(`wind ${w.wind} mph`);
   if (w.wet) bits.push(w.precip || "wet");
   note(state, `Day ${state.day}, ${seasonOf(state.day)}. Weather (${w.roll}): ${bits.join(", ")}.`, "day");
-  morningSupplies(state, rng, (t, k) => note(state, t, k), weatherDC(w.band));
+  morningSupplies(state, rng, (t, k) => note(state, t, k), state.indoors ? null : weatherDC(w.band));
 }
 
 /* ------------------------------------------------------------------ */
@@ -145,6 +147,12 @@ export function travelLeg(state, choice = null) {
     }
     move(state, rng, hours);
     state.hoursUsed += hours;
+    // An Open Wound loses 1 health every hour until the bleeding is stopped (Trauma Table).
+    for (const m of state.party.members.filter(x => !x.dead && x.hp > 0 && (x.traumas || []).some(t => t.name === "Open Wound" && !t.treated))) {
+      const was = m.hp; m.hp = Math.max(0, m.hp - hours);
+      note(state, `${m.name}'s open wound bleeds: ${was} → ${m.hp} health.`, "event");
+      if (!m.hp) { m.collapsed = true; note(state, `${m.name} collapses from the bleeding.`, "event"); }
+    }
     const h = state.party.hours;
     h.total += hours;
     if (state.party.pace === "fast") h.fast += hours;
@@ -181,6 +189,7 @@ function move(state, rng, hours) {
     mp -= cost;
     p.x = next.x; p.y = next.y;
     if (nearWater(state, p.x, p.y)) p.waterToday = true;
+    rumorHere(state, rng, (t, k) => note(state, t, k));
     moved++;
     path.shift();
     if (state.target && p.x === state.target.x && p.y === state.target.y) { state.target = null; break; }
@@ -199,6 +208,26 @@ function move(state, rng, hours) {
     // TODO(sites): exploring sites is milestone 4.
     note(state, `You stand at the ${place.type}${place.creature ? ` of ${place.creature}` : ""}. Exploring sites comes in milestone 4.`, "todo");
   }
+}
+
+/**
+ * Stay a day in a settlement (General Rules, Resting): a Civilized Rest
+ * needs a day in a town or city; Bed Rest a day in bed at an inn or a
+ * dwelling. The day costs lodging and two meals, and counts as a day's rest.
+ */
+export function stay(state, kind) {
+  const sq = squareAt(state.world, state.party.x, state.party.y);
+  if (state.pending || state.encounter || state.sign || state.over || !sq?.settlement || state.hoursUsed) return state;
+  if (kind === "civilized" && !["town", "city", "metropolis"].includes(sq.settlement.size)) { note(state, "A Civilized Rest needs a town or a city."); return state; }
+  withDice(state, (rng) => {
+    // Indoors all day: no weather trial.
+    if (!state.morningDone) { state.indoors = true; morning(state, rng); state.indoors = false; }
+    note(state, kind === "bed" ? "You spend the day in bed." : "You spend the day in town, resting and seeing the sights.", "camp");
+    state.stayKind = kind;
+    camp(state, rng);
+    state.stayKind = null;
+  });
+  return state;
 }
 
 /** A river under foot or a lake beside you: water to drink and to fill the skins. */
@@ -253,15 +282,20 @@ function camp(state, rng) {
   const sq = squareAt(state.world, state.party.x, state.party.y);
   const p = state.party;
   const awake = p.members.filter(m => !m.dead);
-  // An inn: Common lodging and supper for everyone (Equipment, Lodging and Services). At home a household takes you in.
-  const bill = sq?.settlement && !sq.settlement.home ? awake.length * (3 + 0.5) : 0;
+  // An inn: Common lodging and supper for everyone (Equipment, Lodging and Services). At home, or in a
+  // hamlet, which has no inn, a household takes you in: a Good Night's Rest [Jon, 2026-10-24].
+  const household = sq?.settlement && (sq.settlement.home || sq.settlement.size === "hamlet");
+  const stay = state.stayKind;
+  const bill = sq?.settlement && !household ? awake.length * (3 + 0.5 + (stay ? 0.5 : 0)) : 0;
   if (sq?.settlement && p.coin >= bill) {
-    if (bill) { p.coin -= bill; note(state, `You take Common rooms and supper at the inn: ${bill} sp for ${awake.length}.`, "camp"); }
-    else note(state, "You spend the night at home.", "camp");
+    if (bill) { p.coin -= bill; note(state, `You take Common rooms and ${stay ? "meals" : "supper"} at the ${sq.settlement.size === "roadhouse" ? "roadhouse" : "inn"}: ${bill} sp for ${awake.length}.`, "camp"); }
+    else note(state, sq.settlement.home ? "You spend the night at home." : "A household in the hamlet takes you in for the night.", "camp");
     eveningSupplies(state, rng, say, { inn: "common" });
+    if (!household && p.listen) rumorAtInn(state, rng, say);
     treatInjuries(state, rng, say);
-    repairGear(state, rng, say);
-    rest(state, rng, "goodNight");
+    treatTraumas(state, rng, say);
+    if (!stay) repairGear(state, rng, say); // no strenuous work during a Civilized or Bed Rest
+    rest(state, rng, stay || "goodNight");
   } else {
     if (sq?.settlement) note(state, `You can't pay for the inn (${bill} sp), so you sleep rough outside the ${sq.settlement.size}.`, "camp");
     const atWater = !!p.waterToday || nearWater(state, p.x, p.y) || !!sq?.settlement;
@@ -269,6 +303,7 @@ function camp(state, rng) {
     eveningSupplies(state, rng, say, { atWater });
     // The evening's camping roles (General Rules, Camping Roles): the Healer and the Smith at work.
     treatInjuries(state, rng, say);
+    treatTraumas(state, rng, say);
     repairGear(state, rng, say);
     const n = rng.d(6);
     note(state, `You make camp. Night die ${n}${n === 6 ? ": something finds the camp." : ": the night passes."}`, n === 6 ? "event" : "camp");
@@ -281,6 +316,12 @@ function camp(state, rng) {
       state.night = false;
       state.sign = null; // a Sign at night is only noises in the dark
     }
+  }
+  // A day with no travel is a day's rest for the Trauma Table; Hard to Kill counts its toll.
+  for (const m of p.members.filter(x => !x.dead)) {
+    for (const t of m.traumas || []) ensureTrauma(t);
+    if (!state.hoursUsed) restDay(m, say);
+    hardToKillDay(m, state.day, say);
   }
   if (!p.members.some(m => !m.dead)) {
     note(state, "No one is left.", "event");

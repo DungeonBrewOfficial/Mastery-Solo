@@ -2,7 +2,7 @@
  * The page: wires the map canvas and the side panel to the game state, and
  * saves after every action.
  */
-import { maxMagan, newGame, travelLeg, campNow, setTarget, setPace, seasonOf, DAY_HOURS, squaresPerHour, note, afterEvent, runWithDice } from "./journey.js";
+import { stay, maxMagan, newGame, travelLeg, campNow, setTarget, setPace, seasonOf, DAY_HOURS, squaresPerHour, note, afterEvent, runWithDice } from "./journey.js";
 import { choices, choose, signChoices, chooseSign, partyLevel, bandFor, ROMAN } from "./events.js";
 import { CREATURES } from "./data/creatures.js";
 import { squareAt, countryAt, findPath, moveCost, TERRAINS, SETTLEMENTS } from "./world.js";
@@ -11,7 +11,8 @@ import { turnOptions, pcTurn, pcStopTurning, turning, imbueOptions, pcImbue, cas
 import { BAND_LABELS } from "./vendor/foundry/module/helpers/weather-rules.mjs";
 import { openStorage, pack, unpack } from "./storage.js";
 import { count, meals, KEEPS, waterNeed, SKIN_GALLONS } from "./supplies.js";
-import { SHOP, openMarket, buy, priceOf, settlementHere, hasHealer, healerTreats } from "./town.js";
+import { SHOP, openMarket, buy, priceOf, settlementHere, hasHealer, healerTreats, saleList, sell, townCoin, hasSmith, hireSmith, healerTreatsTrauma } from "./town.js";
+import { needsHealer, recoveryOf } from "./health.js";
 import { GEAR } from "./data/gear.js";
 import { ATTRIBUTES, MASTERY_NAMES, masteryTargets, masteryLabel, masteryIndex, cannotInvest, invest, raiseAttribute, hasUnspent, nextLevelXp, titleOf } from "./advance.js";
 import { pointsHint } from "./vendor/foundry/module/helpers/advancement-rules.mjs";
@@ -420,6 +421,18 @@ function battleClick(sq) {
   if (!u && view.marks?.moves.has(`${sq.x},${sq.y}`)) battleAct((rng) => pcMove(state, rng, say, sq.x, sq.y));
 }
 
+/** A Trauma and where its healing stands. */
+function traumaNote(t) {
+  const r = recoveryOf(t.recovery);
+  if (!t.tier) return t.name;
+  if (r.permanent) return `${t.name} (lasting)`;
+  const bits = [];
+  if (r.treat && !t.treated) bits.push(`needs a Healer to ${r.treat.toLowerCase()}`);
+  if (r.successes) bits.push(`tended ${t.done || 0}/${r.successes}`);
+  if (r.days) bits.push(`${t.restDays || 0}/${r.days} days' rest`);
+  return `${t.name} (${bits.join(", ")})`;
+}
+
 function renderParty() {
   const p = state.party;
   const lvl = partyLevel(state);
@@ -429,7 +442,7 @@ function renderParty() {
   for (const m of p.members) {
     const li = document.createElement("li");
     const state_ = m.dead ? "dead" : m.hp <= 0 ? "unconscious" : "";
-    const scars = [m.injuries ? `${m.injuries} injur${m.injuries === 1 ? "y" : "ies"}` : "", m.exhausted ? `Exhausted ${m.exhausted}` : "", m.infected ? `Infected ${m.infected}` : "", ...(m.traumas || []).map(t => t.name)].filter(Boolean);
+    const scars = [m.injuries ? `${m.injuries} injur${m.injuries === 1 ? "y" : "ies"}` : "", m.exhausted ? `Exhausted ${m.exhausted}` : "", m.infected ? `Infected ${m.infected}` : "", ...(m.traumas || []).map(traumaNote)].filter(Boolean);
     const pet = m.companion;
     const petText = pet ? ` <span class="muted small">${pet.name} ${pet.dead ? "dead" : `${pet.hp}/${pet.health}`}</span>` : "";
     li.innerHTML = `<strong>${m.name}</strong> <span class="muted">${m.cls} ${m.level}</span> <span>${state_ ? `<span class="warn">${state_}</span>` : `${m.hp}/${m.health} hp`}</span>${m.casting ? ` <span class="muted">${m.mp ?? 0}/${maxMagan(m)} mg</span>` : ""} <span class="muted">${m.xp} XP</span>${petText}${scars.length ? `<span class="muted small">${scars.join(", ")}</span>` : ""}`;
@@ -521,6 +534,50 @@ function renderTown(busy) {
     }
     det.append(ul);
     box.append(det);
+  }
+  // Selling: a buyer of the piece's class on the market dice, and the town's coin.
+  const sales = saleList(state);
+  if (sales.length) {
+    const det = document.createElement("details");
+    det.innerHTML = `<summary>Sell · the ${label} can pay ${fmtSp(townCoin(state))} this week</summary>`;
+    const ul = document.createElement("ul");
+    ul.className = "shop";
+    for (const x of sales) {
+      const li = document.createElement("li");
+      li.innerHTML = `<span>${x.label} <span class="muted">${fmtSp(x.value)}</span></span>`;
+      const b = button(m.buyers?.[x.id] === false ? "No buyer today" : "Sell", () => act(() => runWithDice(state, (rng) => sell(state, rng, say, x.id))));
+      b.className = "small-btn"; b.disabled = m.buyers?.[x.id] === false;
+      li.append(b);
+      ul.append(li);
+    }
+    det.append(ul);
+    box.append(det);
+  }
+  const svc = document.createElement("div");
+  svc.className = "buttons";
+  if (hasSmith(s.size)) { const b = button("Hire the smith for a day (8 sp)", () => act(() => runWithDice(state, (rng) => hireSmith(state, rng, say)))); b.title = "A Skilled smith works your repair kits: (d6 + d4) × 4 each."; b.disabled = state.party.coin < 8; svc.append(b); }
+  if (!state.hoursUsed) {
+    if (["town", "city", "metropolis"].includes(s.size)) { const b = button("Stay a day (Civilized Rest)", () => act(() => stay(state, "civilized"))); b.title = "A day in town: two Endurance dice of health, two casting dice of magan, Exhausted down 2. No repairs."; svc.append(b); }
+    const b = button("A day in bed (Bed Rest)", () => act(() => stay(state, "bed")));
+    b.title = "A day in bed: two dice plus your level, and Exhausted gone. No market, no repairs.";
+    svc.append(b);
+  }
+  if (!s.home && s.size !== "hamlet") {
+    const lab = document.createElement("label");
+    lab.className = "small";
+    const cb = document.createElement("input");
+    cb.type = "checkbox"; cb.checked = !!state.party.listen;
+    cb.onchange = () => act(() => { state.party.listen = cb.checked; });
+    lab.append(cb, " Listen for rumors at the inn tonight");
+    svc.append(lab);
+  }
+  box.append(svc);
+  if (hasHealer(s.size)) {
+    const row = document.createElement("div");
+    row.className = "buttons";
+    const traumas = state.party.members.filter(x => !x.dead).flatMap(x => (x.traumas || []).map((t, i) => ({ x, t, i }))).filter(({ t }) => needsHealer(t));
+    for (const { x, t, i } of traumas) { const b = button(`Treat ${x.name}: ${t.name} (${8 + priceOf("Trauma Kit")} sp)`, () => act(() => runWithDice(state, (rng) => healerTreatsTrauma(state, rng, say, x.id, i)))); b.disabled = state.party.coin < 8 + priceOf("Trauma Kit"); row.append(b); }
+    box.append(row);
   }
   if (hasHealer(s.size)) {
     const hurt = state.party.members.filter(x => !x.dead && x.injuries > 0);

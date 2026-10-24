@@ -6,6 +6,7 @@
  * rules. Works on the plain state; never imports the journey or combat.
  */
 import { GEAR } from "./data/gear.js";
+import { treatTrauma, needsHealer, ensureTrauma, heal } from "./health.js";
 import { trial, passes, tierOf, dieOfTier } from "./mastery.js";
 import { RATIONS, MEALS, mealRecovery } from "./vendor/foundry/module/helpers/food-rules.mjs";
 import { coldDress, heatDress, WATER_GALLONS, failOutcome, hungerDue, lockedFloor } from "./vendor/foundry/module/helpers/weather-rules.mjs";
@@ -347,6 +348,27 @@ export function treatInjuries(state, rng, note) {
       m.injuries -= 1;
       note(`${h.name} treats an Injury of ${m.name}'s (an Injury Kit): ${m.injuries ? `${m.injuries} left` : "none left"}.`, "reward");
     }
+  }
+}
+
+/**
+ * Treat Trauma at camp: the Healer spends a Trauma Kit on each Trauma that
+ * waits on one (set, reset, tend, stop the bleeding). Only Open Wounds are
+ * seen to straight after a fight. One treatment a day each.
+ */
+export function treatTraumas(state, rng, note, { only = null } = {}) {
+  const h = healerOf(state, state.party.roles.healer);
+  if (!h || (!only && h.id !== state.party.roles.healer)) return;
+  const pocket = count(state, "Surgeon's Pocket Set") > 0, chest = count(state, "Surgeon's Chest") > 0;
+  for (const m of state.party.members.filter(x => !x.dead)) {
+    for (const t of (m.traumas || []).map(ensureTrauma)) {
+      if (!needsHealer(t) || (only && t.name !== only) || t.tendedDay === state.day) continue;
+      if (!take(state, "Trauma Kit")) { note(`No Trauma Kit for ${m.name} (${t.name}).`); return; }
+      t.tendedDay = state.day;
+      const r = treatTrauma(rng, h, t, { pocket, chest });
+      note(`${h.name} treats ${m.name} (${t.name}; a Trauma Kit, ${r.roll.text} against ${r.dc}): ${r.ok ? "done" : r.badSet ? "the bone is set, badly" : "it doesn't take; the kit is spent"}.`, r.ok ? "reward" : "event");
+    }
+    heal(m, note);
   }
 }
 

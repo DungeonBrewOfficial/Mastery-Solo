@@ -91,6 +91,11 @@ Rulings Jon has made for this design, newest last within each section. Each line
 - Settlements [Jon, 2026-10-24]: an evening at an inn can turn up a rumor of a site through a Presence trial; a city's library can be a source of occult writings; in a hamlet, a household taking the party in is a Good Night's Rest. - Recruits [Jon, 2026-10-24]: a level 1 recruit is free and brings their class's starting wealth; a higher-level recruit costs their XP in silver pennies (a level 3 Paladin, 300 sp). Towns offer recruits up to a couple of levels below the party, cities closer.
 - The recruit's class [Jon, 2026-10-24]: a d6, 1–5 human and 6 demihuman (the settlement or region can shift it), then a d12 over the eleven human classes with Fighter on two faces, or a d7 over the seven demihumans (Cursed, Dwarf, Gray Elf, Sylvan Elf, Gnome, Halfling, Orc).
 - A hired smith follows the Blacksmith Discipline's repair formula, (Trade die + Intelligence tier die) × 4 per kit; a Skilled smith averages 24 [Jon, 2026-10-24].
+- Milestone 3, stage 3 (the town), calls made while building (raised with Jon in chat):
+  - Any day the party doesn't travel counts as a day's rest for the Trauma Table, in camp or in town.
+  - A settlement's healer treats a Trauma as a Skilled healer with a surgeon's chest (Dominance in a city's infirmary), for 8 sp plus the Trauma Kit (36 sp); a failure spends the kit.
+  - Spare goods sell at half their price, as secondhand arms and armor do; pelts at their value.
+  - An Open Wound bleeds 1 health per hour on the road; at 0 the character collapses and must be tended.
 - Milestone 3, stage 1, calls made while building (raised with Jon in chat):
   - The pregens set out with an Adventurer's Pack apiece, paid from the party's coin.
   - Food, water, kits, and tools are the party's, not each character's; encumbrance waits.

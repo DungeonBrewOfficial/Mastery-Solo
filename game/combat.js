@@ -31,7 +31,7 @@ import { buildHealthPlan, armoredDurability } from "./vendor/foundry/module/help
 import { headsLost, groupTokenSize, bandFor as groupBand, mobDC } from "./vendor/foundry/module/helpers/minion-rules.mjs";
 import { abilitiesOf, unbuilt } from "./data/abilities.js";
 import { SPELLS, wardCovers } from "./data/spells.js";
-import { healAfterFight, healingMeans, take, count } from "./supplies.js";
+import { healAfterFight, healingMeans, take, count, treatTraumas } from "./supplies.js";
 import { RULES } from "./data/rules-text.js";
 import { TRAUMA_TABLE } from "./vendor/foundry/module/data/trauma-table.mjs";
 import { resolveDamage } from "./vendor/foundry/extract/resolve-damage.mjs";
@@ -2319,7 +2319,7 @@ function dropToZero(state, rng, note, u, dmg) {
 function traumaFor(rng, m) {
   const n = rng.d(100);
   const row = TRAUMA_TABLE.find(r => n >= r.lo && n <= r.hi) || { name: "Close Call!", text: "", none: true };
-  if (!row.none) (m.traumas ||= []).push({ name: row.name, tier: row.tier, text: row.text });
+  if (!row.none) (m.traumas ||= []).push({ name: row.name, tier: row.tier, text: row.text, recovery: row.recovery, restDays: 0, done: 0, treated: false });
   return { n, row };
 }
 
@@ -2863,6 +2863,7 @@ function finish(state, rng, note, outcome) {
 /** After a fight, the party's healer Heals each character wounded in it once (supplies.js). */
 function tend(state, rng, note) {
   healAfterFight(state, rng, note, state.battle?.wounded || []);
+  treatTraumas(state, rng, note, { only: "Open Wound" });
 }
 
 /* ------------------------------------------------------------------ */

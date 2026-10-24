@@ -108,6 +108,16 @@ export function draw(canvas, state, view) {
     ctx.fillText(ch, cx, cy + 1);
   }
 
+  // rumors: a dashed ring where the party heard something waits
+  for (const r of world.rumors || []) {
+    if (r.found) continue;
+    const [cx, cy] = toScreen(r.tx * 6 + 3, r.ty * 6 + 3);
+    ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5; ctx.strokeStyle = "#8a6d1f";
+    ctx.beginPath(); ctx.arc(cx, cy, s * 2.2, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = "#8a6d1f"; ctx.font = `bold ${Math.max(10, Math.round(s * 0.9))}px Georgia`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("?", cx, cy);
+  }
+
   // route and target
   if (view.path?.length) {
     ctx.strokeStyle = COLORS.target; ctx.lineWidth = Math.max(1, s * 0.08); ctx.setLineDash([s * 0.2, s * 0.25]);
