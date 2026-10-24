@@ -1,6 +1,6 @@
 # Treasure
 
-*Draft 1, 2026-10-24. Tags as in the README. Every [N] stands until corrected.*
+*Draft 2, 2026-10-24. Tags as in the README. Every [N] stands until corrected.*
 
 This file covers where money comes from, how much, and how a party turns it into silver. The goal it's built to: **a character can afford full plate (46 gn, 3,680 sp) by about level 10**, while paying for repair kits, healing supplies, and lodging along the way [Jon, 2026-10-24]. Values are in silver pennies (sp), as in Mastery's Treasure chapter.
 
@@ -8,13 +8,12 @@ This file covers where money comes from, how much, and how a party turns it into
 
 ## Questions for Jon
 
-Each is marked **[?]** where it comes up.
+Each is marked **[?]** where it comes up. Settled questions move to `DECISIONS.md`.
 
-1. **Salvaged armor could break the economy.** Your armored folk wear real armor: a Captain's byrnie lists at 800 sp, a Veteran's brigandine at 1,280, a Warlord's scale mail at 1,120. One Band III free company carries a full plate's worth of armor. I've drafted secondhand armor and weapons to sell at **half value, times their condition** (current Durability over maximum), and they're heavy to haul. Is that enough, or should looted gear sell for less, or carry consequences (stolen arms are recognized)?
-2. **The hoard multiplier.** A hoard is worth **40 sp per point of its guardian's XP value**. The number 40 comes from the wealth check at the end, which rests on guesses about how often a party finds a site and what an expedition costs. It's the main knob.
-3. **Gem grades by band.** I've turned your "each grade covers about 7 levels, with overlap" into a d100 grade table for each band. The rare rolls keep a small chance of a better grade in every band, so a jackpot is always possible. Check the spread.
-4. **Selling.** Does treasure sell at its full value? I've drafted it at full value, with the settlement's size limiting who can afford a big piece, using your Availability table in reverse.
-5. **Purses** are drafted at the creature's Division in d6 silver. Small enough?
+1. **Scrap value.** Broken armor sells only as scrap. I've drafted scrap at 5% of the listed price for metal armor, and nothing for leather, hide, and cloth.
+2. **Repairing loot pays well.** A repair kit (24 sp) restores about 16 Durability, and on scale mail every point of Durability is worth about 8 sp at sale. So repairing salvage before selling it is very profitable, and what limits it is weight, a workshop, and who has the coin. Is that the right limit, or should repaired secondhand armor sell for less than half?
+3. **Settlement coin.** The coin-on-hand figures and the weekly refill are a first ballpark, worked from your wage table. See Selling.
+4. **The hoard multiplier** waits on play.
 
 ---
 
@@ -33,7 +32,7 @@ Overland fights pay for the trip. Sites pay for the plate.
 
 ## Hoards
 
-**A hoard is worth 40 sp per point of its guardian's XP value** [N, ?2]. The guardian is the head of the strongest encounter that holds the site. Tying hoards to the XP table means wealth keeps pace with level without a separate curve, and the same steep climb that makes high-Division XP worth chasing makes their hoards worth chasing too.
+**A hoard is worth 40 sp per point of its guardian's XP value** [N, ?4]. The guardian is the head of the strongest encounter that holds the site. Tying hoards to the XP table means wealth keeps pace with level without a separate curve, and the same steep climb that makes high-Division XP worth chasing makes their hoards worth chasing too.
 
 | Guardian Division | XP | Hoard value | Deep country (×2) |
 |:---:|:---:|:---:|:---:|
@@ -67,7 +66,7 @@ The coin is heavy in bulk: 3,200 sp of silver takes the space of a Light object 
 
 ### Gem grade by band
 
-Mastery's own grade roll (Ornamental 01–50, Common 51–80, Semi-Precious 81–95, Precious 96–00) is a world average. In solo play, each band rolls on its own row instead, so that each grade covers about seven levels with some overlap [Jon, 2026-10-24; N, ?3]:
+Mastery's own grade roll (Ornamental 01–50, Common 51–80, Semi-Precious 81–95, Precious 96–00) is a world average. In solo play, each band rolls on its own row instead, so that each grade covers about seven levels with some overlap [Jon, 2026-10-24]:
 
 | Party level | Ornamental (d20) | Common (d20) | Semi-Precious (d12) | Precious (d12) |
 |:---|:---:|:---:|:---:|:---:|
@@ -92,7 +91,7 @@ Most gems are pocket change and a few are fortunes. The coin floor keeps the cur
 
 ## Purses
 
-Purses are small [Jon, 2026-10-24]. Folk carry about their Division in d6 silver [N, ?5]:
+Purses are small [Jon, 2026-10-24]. Folk carry about their Division in d6 silver [Jon, 2026-10-24]:
 
 | Who | Purse |
 |:---|:---|
@@ -115,17 +114,29 @@ Some woodland pelts at Average quality: wolf 10 sp, black bear 70, brown bear 12
 
 ## Salvage
 
-Defeated folk leave their arms and armor. Looted armor keeps its current Durability and can be repaired up to its maximum [M, Monster Manual, Armored Health].
+Most armored folk start a fight in worn armor: a creature's armor is listed at its current Durability, below the armor's maximum [M, Monster Manual, Armored Health]. By the end of the fight, it's often broken [Jon, 2026-10-24]. Looted armor keeps its current Durability and can be repaired up to its maximum [M].
 
-**Selling it** [N, ?1]: secondhand arms and armor sell for **half their listed value, times their condition** (current Durability over maximum). A Warlord's scale mail listed at 1,120 sp, found at 40% condition, sells for about 220 sp. Repaired first, it sells for 560.
+**What it's worth** [N, ?1]:
 
-Armor is heavy: worn, a brigandine counts 3 toward encumbrance, and carried, 5 [M, Equipment, Medium Armor]. Three suits from a free company is a wagon's work.
+- Secondhand arms and armor sell for **half their listed value, times their condition** (current Durability over maximum). A Warlord's scale mail, listed at 1,120 sp and taken at 40%, sells for about 220 sp.
+- **Broken** armor (0 Durability) sells only as scrap: 5% of its listed value for metal armor, and nothing for leather, hide, or cloth. The same scale mail, broken, is 56 sp of iron.
+- **Repairing** it first raises the price. Repair takes repair kits and a Blacksmith [M, Skill Mastery, Trade], and work that needs an anvil waits until the party stops [M, General Rules, Working on the road]. It pays well [?2].
+
+**What it weighs.** Carried armor counts 1 toward encumbrance for every 10 pounds [M, Equipment, Encumbrance]. A brigandine (43 lb) is 5, full plate (70 lb) is 7, against a carrying limit equal to your Strength. One suit is a burden. Three are a wagon.
+
+**Who buys it.** Only a settlement with a smith wants broken armor at all: a village or larger. A hamlet doesn't. And every sale draws on the settlement's coin (see Selling).
+
+The choice is the one you described: leave it, lug it home and sell it for a fraction, or spend the kits and the time to repair it and sell it for more [Jon, 2026-10-24].
 
 ---
 
 ## Selling
 
-Treasure sells at its value [N, ?4]. A small settlement may not have anyone who can pay for a large piece. Use the Availability table in reverse: give the piece a Social Class by its value, and roll the settlement's dice against that class's DC to find a buyer [M, Equipment, Availability]:
+Treasure sells at its value, if someone can pay for it [Jon, 2026-10-24]. Two things limit a sale: whether anyone in the settlement can afford the piece, and how much coin the settlement has. The same holds for salvage.
+
+### Finding a buyer
+
+Use the Availability table in reverse: give the piece a Social Class by its value, and roll the settlement's dice against that class's DC [M, Equipment, Availability]:
 
 | Value | Buyer's class | DC |
 |:---|:---|:---:|
@@ -136,7 +147,25 @@ Treasure sells at its value [N, ?4]. A small settlement may not have anyone who 
 | Up to 60,000 sp | Noble | 18 |
 | More | Royal | 21 |
 
-A hamlet (2d4) can't buy a 700 sp brooch at all. A town (2d8) finds a buyer about four times in ten. Carrying a fortune to the city is a journey in itself.
+A hamlet (2d4) can't buy a 700 sp brooch at all. A town (2d8) finds a buyer about four times in ten.
+
+### Settlement coin
+
+Every settlement has a limit on how much it can pay out in total [N, ?3]. Selling draws it down, and it refills by a quarter of its full amount each week.
+
+| Settlement | Market dice | People | Coin on hand |
+|:---|:---:|:---|:---:|
+| Traveling merchant | 2d2 | — | 2d6 × 10 sp |
+| Roadhouse | 2d3 | about 10 | 50 sp |
+| Hamlet | 2d4 | 20–80 | 200 sp |
+| Village | 2d6 | 100–900 | 2,000 sp |
+| Town | 2d8 | 1,000–8,000 | 12,000 sp |
+| City | 2d10 | 8,000–25,000 | 100,000 sp |
+| Metropolis | 2d12 | 25,000 and up | 400,000 sp |
+
+**Where the numbers come from.** Serfs, laborers, and peasants barter and have little coin; what a market can pay comes from its Experts, Knights, and Burghers [M, Equipment, Social Classes]. By your population shares and wages, those three classes earn about 16 sp a month for every person in a settlement. If a quarter of a month's income is what they can spend on something they didn't plan for, that's about **4 sp per resident**. Cities add the magnates and nobility, which roughly doubles it to about 8. The populations are common estimates for medieval settlements; Mastery doesn't give them.
+
+When the coin runs out, the party can wait for it to refill, take goods in trade instead (each rolled for availability like any purchase), or carry the treasure to a bigger market.
 
 ---
 
