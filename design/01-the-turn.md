@@ -69,13 +69,13 @@ Roll a d6 on the square where you stopped [S: "one die to determine what happene
 
 ### 5. Encounter
 
-The encounter procedure gets its own file. In outline:
+The full procedure is in `02-encounters.md`. In outline:
 
 1. **What.** Roll on the terrain's encounter table for the party's band. Each entry is a head and its entourage, such as a Bandit Leader with a Cluster of Thugs [N].
 2. **Contact.** Settle who notices whom, and at what distance, before anything else happens. The Watchman and Scout roll Perception against the creature's Stealth DC of Division + 1, and creatures roll their trial dice against the party [M, Monster Manual, Creature Skills and Ambushes]. Unaware creatures make Startle trials [M, Combat, Startle and Ambush]. A true ambush needs a creature with Ambusher, or a party that set no watch [M + N].
 3. **Disposition.** Every creature wants something [M, Monster Manual, Motivation]. A disposition die says what this one wants right now: to hunt, to hold its ground, to watch, to bargain, or to be left alone [N].
-4. **Choice.** Avoid, parley, fight, or flee. Fighting uses Mastery combat as written [M]. Fleeing uses the escape procedure [?, not yet written].
-5. **Reward.** Each character receives the XP of the highest-value enemy, in full [Jon, 2026-10-23]. Spoils are what the creatures carried: pelts from beasts [M, Treasure, Furs], purses and gear from folk. Hoards are found only in sites [Jon, 2026-10-23].
+4. **Choice.** Avoid, parley, fight, or flee. Fighting uses Mastery combat as written [M]. Fleeing uses the escape procedure in `02-encounters.md` [N].
+5. **Reward.** At the end of the fight, each character receives the XP of the highest-value enemy, in full [Jon, 2026-10-23, 2026-10-24]. Spoils are what the creatures carried: pelts from beasts [M, Treasure, Furs], purses and gear from folk. Hoards are found only in sites [Jon, 2026-10-23].
 
 ### 6. Continue or camp
 
@@ -103,7 +103,7 @@ Out in the wild, everything runs down. Health returns 1 or 1d3 a night. Armor lo
 - **Sell.** Pelts, gear, and treasure.
 - **Recruit.** Replace the dead from the settlement's recruits, or build a new character [Jon, 2026-10-23; procedure to come].
 
-**Experience comes home with you.** Mastery awards exploration XP "when you are done traveling between locations," not along the way [M, General Rules, Exploration Experience]. Read strictly, the XP for every place a party found on an expedition is banked only when they reach safety. A party that dies on the way back loses it. That puts a push-your-luck decision into the rules as written: one more ruin, or home while you still can. [?] Whether combat XP banks the same way or lands at the end of each fight is Jon's ruling.
+**Experience comes home with you.** Mastery awards exploration XP "when you are done traveling between locations," not along the way [M, General Rules, Exploration Experience]. Read strictly, the XP for every place a party found on an expedition is banked only when they reach safety. A party that dies on the way back loses it. That puts a push-your-luck decision into the rules as written: one more ruin, or home while you still can. Combat XP is different: it lands at the end of each fight [Jon, 2026-10-24].
 
 ---
 
@@ -117,7 +117,7 @@ A run ends when the last of its heroes dies, or when the player retires them [Jo
 
 These pages are referred to above and not yet written:
 
-- **Encounters:** terrain tables by band, contact, the disposition die, and escape.
+- **Encounters:** started in `02-encounters.md` (woodland only so far).
 - **Sites:** a small paper generator for lairs, ruins, and dungeons, with treasure by Division.
 - **Settlements:** what each size of settlement offers, and recruiting.
 - **Map generation:** terrain at the frontier, and the discovery tables.

@@ -14,6 +14,7 @@ Rulings Jon has made for this design, newest last within each section. Each line
 - Combat XP comes from the single highest-value enemy in the encounter, and each character receives it in full. Other enemies add nothing. (2026-10-23)
 - Values by Division: D1 2, D2 4, D3 6, D4 10, D5 20, D6 30, D7 40, D8 60, D9 80, D10 100, D11 150, D12 200, D13 250. (2026-10-23)
 - A minion group is worth its Division only, whatever its band. (2026-10-23)
+- Combat XP lands at the end of each fight. Exploration XP is banked until the party reaches safety, per Mastery's rule that it is awarded when you are done traveling between locations. (2026-10-24)
 - Exploration XP follows Mastery's Exploration Experience table, in full to each character. (Mastery, General Rules)
 
 **Roster and runs**
@@ -43,6 +44,5 @@ Jon is still building monsters. His current guess at the party levels each creat
 
 ## Open
 
-- When is combat XP awarded: at the end of each fight, or banked with exploration XP until the party reaches safety? (See `design/01-the-turn.md`, Coming Home.)
-- Escape. Mastery has no procedure for breaking off a fight and getting away, and many creatures outrun a party on foot (a wolf has Speed 10 to a human's 5). The promise of "room to escape" needs a written procedure.
+- The encounter questions listed at the top of `design/02-encounters.md`: party level for a mixed roster, which creatures count as apex, entourage sizes, breaking points, the chase, the Eidolon, hunting XP, purses, and bestiary gaps.
 - Metals. The five-metal ladder (Iron, Steel, Silver, Gold, Mithril) needs a purpose. Candidates so far: Durability grades on armor and shields, or the substrate for permanent enchantment (which waits on Mastery's magic items).
