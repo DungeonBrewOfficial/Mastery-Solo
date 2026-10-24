@@ -35,6 +35,7 @@ Rulings Jon has made for this design, newest last within each section. Each line
 - The drafted entourage sizes are good enough to start with. (2026-10-24)
 - Leaders and Masters hold their groups together. When they fall, the rest may break; other groups have a chance of breaking once half are defeated. (2026-10-24)
 - Morale uses Wisdom and the Demoralized ladder: losses advance it, and creatures flee at Tier 3 (Panicked). Soldiers keep their low Wisdom; soldiers flee battles. (2026-10-24)
+- The morale trial is DC 5, and a failure by 3 or more advances Demoralized 2 tiers. Accepted for now, pending play. (2026-10-24)
 - The Eidolon of the Hunt works as written: running from it is the mistake. (2026-10-24)
 - Hunting with the Wilderness skill is abstracted and pays no XP. Only a real encounter, a fight, pays combat XP. (2026-10-24)
 - The measure of danger is greed: break points where the party decides to go on or turn back, and punishment for going off the beaten path. (2026-10-24)
@@ -60,7 +61,7 @@ Jon is still building monsters. His current guess at the party levels each creat
 
 ## Open
 
-- The morale trial's DC (5) and its two-tier step on a failure by 3 or more, and whether Epic and Legendary creatures retreat to their lairs at half health. See `design/02-encounters.md`, Breaking point.
+- Whether Epic and Legendary creatures retreat to their lairs at half health, or use the morale ladder like everything else. See `design/02-encounters.md`, Breaking point.
 - The chase, until it's tested.
 - How far from roads and settlements Deep country starts. See `design/01-the-turn.md`.
 - Metals. The five-metal ladder (Iron, Steel, Silver, Gold, Mithril) needs a purpose. Candidates so far: Durability grades on armor and shields, or the substrate for permanent enchantment (which waits on Mastery's magic items).

@@ -10,10 +10,9 @@ This file covers what happens when the event die (see `01-the-turn.md`) comes up
 
 Flagged here so they're easy to find. Each is marked **[?]** where it comes up below. Settled questions move to `DECISIONS.md`.
 
-1. **Morale is now the Demoralized ladder (redrafted 2026-10-24).** Two numbers are mine: the DC of 5, and advancing 2 tiers on a failure by 3 or more. Both are under Breaking point.
-2. **Epic and Legendary creatures retreat to their lairs** at half health. You called this game-y. The case for it is under Breaking point; the alternative is that they fight on or flee for good.
-3. **The chase** stands as drafted until it's tested.
-4. **Deep country.** Your "punishment is going where you shouldn't" is now a rule in `01-the-turn.md`: the farther from roads and settlements, the harder the encounters and the better the finds. The distance that makes country Deep is a guess.
+1. **Epic and Legendary creatures retreat to their lairs** at half health. You called this game-y. The case for it is under Breaking point; the alternative is that they fight on or flee for good.
+2. **The chase** stands as drafted until it's tested.
+3. **Deep country.** Your "punishment is going where you shouldn't" is now a rule in `01-the-turn.md`: the farther from roads and settlements, the harder the encounters and the better the finds. The distance that makes country Deep is a guess.
 
 ---
 
@@ -96,7 +95,7 @@ The red box had morale [S, via the reconstruction record, §4]. Mastery has the 
 
 **Heads hold the group** [Jon, 2026-10-24]. While a Leader or Master stands, its group makes no morale trials. (Mastery's Leaders can also rally: the Leader Buff's Inspired counters Demoralized tier for tier [M, Monster Manual, Leaders; Conditions], which undoes fear the party causes with War Cry and the like.)
 
-**Morale trials** [N]. Each creature makes a Wisdom trial with its trial dice [M, Monster Manual, Trials] against DC 5 [?1]:
+**Morale trials** [N]. Each creature makes a Wisdom trial with its trial dice [M, Monster Manual, Trials] against DC 5 [Jon, for now, 2026-10-24]:
 
 - when its Leader or Master falls, and
 - each time another creature on its side falls, once no Leader or Master is standing.
@@ -119,7 +118,7 @@ On a failure, advance Demoralized by 1 tier. On a failure by 3 or more, advance 
 
 Six Warriors and a Captain meet four characters. The Captain falls in the second round. Each Warrior makes a morale trial with Dominance, since six outnumber four: d4 + d3 against 5, a coin flip. About half come out Shaken. Each Warrior that falls after that sets off another round of trials. Once three Warriors are down, the last three are outnumbered and roll with Impotence, which they can barely pass (d2 + d3 makes 5 one time in six). The survivors climb to Panicked and run within a death or two. If the party has lost two characters by then, it's three Warriors against two, and they keep their Dominance and probably fight on.
 
-**Epic and Legendary creatures go home** [N, ?2]. At half health, an apex creature breaks off and retreats to its lair, and heals there over days. The lair becomes a site the party can find by following its signs. You called this game-y, and it can be. Here's the case for it anyway. Your Dryad already works this way: beaten in a fight, she reforms at her tree, and ending her for good means going to the tree [M, Creatures - Fae]. A wounded bear going back to its den is ordinary animal behavior. And it turns the apex fight into exactly the decision you want the game to be about: you've hurt the dragon, and now you can go home and brag, or follow it into the dark while it's weak, which is the greedy choice and the dangerous one. The alternative is simpler: apex creatures fight to the death or flee for good, like anything else.
+**Epic and Legendary creatures go home** [N, ?1]. At half health, an apex creature breaks off and retreats to its lair, and heals there over days. The lair becomes a site the party can find by following its signs. You called this game-y, and it can be. Here's the case for it anyway. Your Dryad already works this way: beaten in a fight, she reforms at her tree, and ending her for good means going to the tree [M, Creatures - Fae]. A wounded bear going back to its den is ordinary animal behavior. And it turns the apex fight into exactly the decision you want the game to be about: you've hurt the dragon, and now you can go home and brag, or follow it into the dark while it's weak, which is the greedy choice and the dangerous one. The alternative is simpler: apex creatures fight to the death or flee for good, like anything else.
 
 ---
 
@@ -131,7 +130,7 @@ Mastery has a reprisal attack for leaving reach, but no procedure for getting aw
 
 **Pay the price.** A creature that wants something stops when it gets it. A hungry predator takes food instead of you: a fresh carcass, or a day's rations for each creature hunting. Raiders take the purse. A territorial creature takes the square. A price can be paid at any point, including mid-fight, and it ends the encounter. The creature's head still pays no XP, because you didn't defeat it.
 
-**The chase** [N, ?3]. When you run from a pursuer that wants to catch you:
+**The chase** [N, ?2]. When you run from a pursuer that wants to catch you:
 
 1. The party's leader makes a group trial each exchange, with one Helper [M, Group Trials]. Choose the skill to fit how you run: Wilderness (Orienteering) to lose it in the terrain, Stealth to hide, or Athletics to outpace it. The DC is the pursuer's Division + 1 [M, Creature Skills].
 2. If the pursuer's Speed is higher than the slowest character's, the trial has Impotence. If it's lower, Dominance.
