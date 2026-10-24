@@ -131,6 +131,7 @@ Rulings Jon has made for this design, newest last within each section. Each line
   - Questioning a beaten guardian follows Interrogation as the rules write it: the creature rolls Charisma against the questioner's Presence Mastery DC (mastery level + Charisma tier), and a failure gives the clue. The design file had it the other way round (a Presence trial against Division + 1); the rules win. Once per site, after the heart is won. Anything with Intelligence 3 or more that isn't a beast can talk.
   - A fragment gets one reading in the field, when found; after that only a Sage can read it. A Sage is in any town or city and charges 8 sp a fragment, a skilled hireling's day; a Sage always reads it.
   - A lead whose tiles haven't been seen stops at the first unseen one, and carries on when the party gets there and finds it isn't Deep.
+  - Searching for a hidden place is against the band's Even DC + 2 (Deep), and for a lost place the Hard DC + 2 [Jon, 2026-10-24]. At the Hard DC no Band I party could find anything: the pregens' best search roll is 6 against 8.
   - The searcher is the Scout; the Helper is anyone else with Alertness at Untrained or better (+2). A searching leg can't push past nightfall.
   - What a clue finds is placed on the square the party searched to.
   - An outlaws' hideout is held by the Bandit Leader's band at Band I, and from Band II by bandits or the Ranger Captain's outlaws, even or odd on a d6.

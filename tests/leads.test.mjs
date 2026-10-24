@@ -47,6 +47,7 @@ test("searching finds what a lead points to, and nothing without one", () => {
   assert.ok(found.hidden);
   assert.ok(l.found);
   assert.equal(s.party.bankedXp, 50, "Hidden Location");
+  assert.match(logOf(s), /against 6\b/, "Even DC 4, +2 Deep");
   runWithDice(s, (rng) => makeSite(s, rng, found, say(s)));
   assert.ok(found.site.hoard.hidden, "its hoard is a Hidden Hoard");
 });
@@ -112,7 +113,7 @@ test("searching for a lost place is harder, and finds a Lost Location", () => {
   const p = runWithDice(s, (rng) => search(s, rng, say(s)));
   assert.equal(p.type, "lost");
   assert.equal(s.party.bankedXp, 75);
-  assert.match(logOf(s), /against 10/, "Hard DC 6, +2 Deep, +2 lost");
+  assert.match(logOf(s), /against 8/, "Hard DC 6, +2 Deep");
 });
 
 test("a beaten guardian that can talk can be questioned; a beast can't", () => {

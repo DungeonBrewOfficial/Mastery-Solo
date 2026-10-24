@@ -6,7 +6,7 @@
  */
 import { roll } from "./rng.js";
 import { trial, passes, tierOf, dieOfTier } from "./mastery.js";
-import { alive, partyLevel, bandFor, HARD_DC, placeOn } from "./events.js";
+import { alive, partyLevel, bandFor, EVEN_DC, HARD_DC, placeOn } from "./events.js";
 import { getTile, tileOf, TILE } from "./world.js";
 
 export const DIRS = [["north", 0, -1], ["northeast", 1, -1], ["east", 1, 0], ["southeast", 1, 1], ["south", 0, 1], ["southwest", -1, 1], ["west", -1, 0], ["northwest", -1, -1]];
@@ -100,8 +100,8 @@ export function leadsHere(state, note = null) {
 
 /**
  * A leg spent searching (the caller rolls the hours and the event die): the
- * Scout's Alertness (Secret Doors) trial against the Hard DC, +2 in Deep
- * country and +2 more for a lost place, with a Helper's +2. → the place found, or null.
+ * Scout's Alertness (Secret Doors) trial against the Even DC for a hidden
+ * place or the Hard DC for a lost one, +2 in Deep country, with a Helper's +2. → the place found, or null.
  */
 export function search(state, rng, note) {
   const leads = leadsHere(state);
@@ -110,7 +110,9 @@ export function search(state, rng, note) {
   const scout = alive(state).find(m => m.id === state.party.roles.scout) || best(state, "perception", "alertness");
   const helper = alive(state).find(m => m !== scout && skillOf(m, "alertness") >= 2);
   const deep = getTile(state.world, ...tileOfParty(state))?.deep;
-  const dc = HARD_DC[bandFor(partyLevel(state))] + (deep ? 2 : 0) + (lead.kind === "lost" ? 2 : 0);
+  // Hidden places: the band's Even DC; lost places: its Hard DC; +2 for Deep country either way [Jon, 2026-10-24].
+  const band = bandFor(partyLevel(state));
+  const dc = (lead.kind === "lost" ? HARD_DC[band] : EVEN_DC[band]) + (deep ? 2 : 0);
   const t = trial(rng, [dieOfTier(tier(scout, "perception")), dieOfTier(skillOf(scout, "alertness"))], { bonus: helper ? 2 : 0 });
   if (!passes(t, dc)) { note(`${scout.name} searches for ${HIDDEN_TEXT[lead.kind]}${helper ? `, ${helper.name} helping` : ""}: Alertness ${t.text} against ${dc}. Not here, not yet.`); return null; }
   lead.found = true;
