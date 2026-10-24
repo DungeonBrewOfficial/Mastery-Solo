@@ -15,6 +15,10 @@ const src = join(root, "packs-src", "mastery-classes");
 const { CLASS_XP } = await import(join(root, "module", "data", "chargen-data.mjs"));
 const plain = (html) => String(html || "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
 
+// Class features (hallmarks), by id, for the names on a sheet.
+const hallmarks = {};
+for (const f of readdirSync(src)) if (f.startsWith("hallmark-")) { const d = JSON.parse(readFileSync(join(src, f), "utf8")); hallmarks[d._id] = d.name; }
+
 const out = {};
 for (const f of readdirSync(src).sort()) {
   if (!f.startsWith("class-")) continue;
@@ -34,6 +38,7 @@ for (const f of readdirSync(src).sort()) {
     titles: s.titleTable || [],
     healthPer3Levels: s.healthPer3Levels || 0,
     castingAttribute: s.castingAttribute || null,
+    hallmarks: [...new Set((s.hallmarkUuids || []).map(u => hallmarks[u.split(".").pop()]).filter(Boolean))],
     equipment: s.equipmentRestrictions || null
   };
 }

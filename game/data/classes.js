@@ -146,6 +146,18 @@ export const CLASSES = {
   ],
   "healthPer3Levels": 3,
   "castingAttribute": "charisma",
+  "hallmarks": [
+   "Mortal",
+   "Theurgic Authority",
+   "Theurgic Magic",
+   "Chantment",
+   "Unholy Shield",
+   "Dark Fortitude",
+   "Annihilate",
+   "Dread Strike",
+   "Reckless",
+   "Blood Frenzy"
+  ],
   "equipment": {
    "armor": "Any",
    "shield": "Any",
@@ -294,6 +306,18 @@ export const CLASSES = {
   ],
   "healthPer3Levels": 3,
   "castingAttribute": "intelligence",
+  "hallmarks": [
+   "Mortal",
+   "Student",
+   "Occult Magic",
+   "Chantment",
+   "Arcane Fortitude",
+   "Spell Parry",
+   "Arcane Siphon",
+   "Adaptive Ward",
+   "Displacement",
+   "Rift"
+  ],
   "equipment": {
    "armor": "Any",
    "shield": "Any",
@@ -445,6 +469,33 @@ export const CLASSES = {
   ],
   "healthPer3Levels": 2,
   "castingAttribute": "charisma",
+  "hallmarks": [
+   "Mortal",
+   "Theurgic Authority",
+   "Theurgic Magic",
+   "Dominion",
+   "Preservation",
+   "Sacred Ground",
+   "Purification",
+   "Hallowed",
+   "Holy Rebuke",
+   "Sacral Shield",
+   "Theurgic Vengeance",
+   "Retribution",
+   "Self-Reliance",
+   "Flight Response",
+   "Balanced Scales",
+   "Turnabout",
+   "Stillness",
+   "Equilibrium",
+   "Malediction",
+   "Profane Ground",
+   "Pestilence",
+   "Unhallowed",
+   "Dark Ward",
+   "Blasphemous Veil",
+   "Profane Vengeance"
+  ],
   "equipment": {
    "armor": "Light",
    "shield": "Any",
@@ -595,6 +646,17 @@ export const CLASSES = {
   ],
   "healthPer3Levels": 1,
   "castingAttribute": "perception",
+  "hallmarks": [
+   "Cursed",
+   "Horrific",
+   "Insane",
+   "Possessed",
+   "Undead",
+   "Hard to Kill",
+   "Borrowed Vigor",
+   "Priscan Magic",
+   "Agathion"
+  ],
   "equipment": {
    "armor": "None",
    "shield": "None",
@@ -746,6 +808,12 @@ export const CLASSES = {
   ],
   "healthPer3Levels": 2,
   "castingAttribute": "wisdom",
+  "hallmarks": [
+   "Mortal",
+   "Telluric Magic",
+   "Wildling",
+   "Puca"
+  ],
   "equipment": {
    "armor": "None",
    "shield": "None",
@@ -890,6 +958,15 @@ export const CLASSES = {
   ],
   "healthPer3Levels": 4,
   "castingAttribute": null,
+  "hallmarks": [
+   "Primordial",
+   "Armor Lore",
+   "Blacksmithing",
+   "Destiny Creation",
+   "Apatheia",
+   "Scotopic Sight",
+   "Unshakable"
+  ],
   "equipment": {
    "armor": "Any",
    "shield": "Any",
@@ -1036,6 +1113,13 @@ export const CLASSES = {
   ],
   "healthPer3Levels": 3,
   "castingAttribute": null,
+  "hallmarks": [
+   "Mortal",
+   "Tactician",
+   "Quick Draw",
+   "Veteran's Instinct",
+   "Weapon Versatility"
+  ],
   "equipment": {
    "armor": "Any",
    "shield": "Any",
@@ -1187,6 +1271,22 @@ export const CLASSES = {
   ],
   "healthPer3Levels": 2,
   "castingAttribute": "wisdom",
+  "hallmarks": [
+   "Mortal",
+   "Filiic Lore",
+   "Telluric Magic",
+   "Fili Song",
+   "Morale Song",
+   "Song of Inspiration",
+   "Song of Vigor",
+   "Song of Alacrity",
+   "Song of Warding",
+   "Lullaby of the Lost",
+   "Song of Shame",
+   "Song of Beguiling",
+   "Saga of the Enemy",
+   "The Dirge"
+  ],
   "equipment": {
    "armor": "Medium",
    "shield": "Any",
@@ -1338,6 +1438,14 @@ export const CLASSES = {
   ],
   "healthPer3Levels": 2,
   "castingAttribute": "perception",
+  "hallmarks": [
+   "Fae",
+   "Small",
+   "Scotopic Sight",
+   "Gnosis",
+   "Priscan Magic",
+   "Studied Enemy"
+  ],
   "equipment": {
    "armor": "Medium",
    "shield": "Any",
@@ -1489,6 +1597,14 @@ export const CLASSES = {
   ],
   "healthPer3Levels": 2,
   "castingAttribute": "perception",
+  "hallmarks": [
+   "Fae",
+   "Unshaken",
+   "Crepuscular Sight",
+   "Uncanny Agility",
+   "Gray Elf Nature",
+   "Priscan Magic"
+  ],
   "equipment": {
    "armor": "Medium",
    "shield": "Any",
@@ -1635,6 +1751,13 @@ export const CLASSES = {
   ],
   "healthPer3Levels": 2,
   "castingAttribute": null,
+  "hallmarks": [
+   "Mortal",
+   "Small",
+   "Unobtrusive",
+   "Resilient",
+   "Full Recovery"
+  ],
   "equipment": {
    "armor": "Medium",
    "shield": "Any",
@@ -1781,6 +1904,13 @@ export const CLASSES = {
   ],
   "healthPer3Levels": 3,
   "castingAttribute": null,
+  "hallmarks": [
+   "Mortal",
+   "Knightly Code",
+   "Honor",
+   "Valor",
+   "Glory"
+  ],
   "equipment": {
    "armor": "Any",
    "shield": "Any",
@@ -1932,6 +2062,20 @@ export const CLASSES = {
   ],
   "healthPer3Levels": 1,
   "castingAttribute": "intelligence",
+  "hallmarks": [
+   "Mortal",
+   "Occult Magic",
+   "Cantrips",
+   "Kindle",
+   "Resound",
+   "Fling",
+   "Phantom Sound",
+   "Unlatch",
+   "Aegis",
+   "Shift",
+   "Student",
+   "Arcane Familiar"
+  ],
   "equipment": {
    "armor": "None",
    "shield": "None",
@@ -2077,6 +2221,13 @@ export const CLASSES = {
   ],
   "healthPer3Levels": 4,
   "castingAttribute": null,
+  "hallmarks": [
+   "Fae",
+   "Scotopic Sight",
+   "Aberrant Appeal",
+   "Hearty",
+   "Frenzy"
+  ],
   "equipment": {
    "armor": "Light",
    "shield": "Any",
@@ -2228,6 +2379,18 @@ export const CLASSES = {
   ],
   "healthPer3Levels": 3,
   "castingAttribute": "charisma",
+  "hallmarks": [
+   "Mortal",
+   "Theurgic Authority",
+   "Theurgic Magic",
+   "Chantment",
+   "Oath of Protection",
+   "Holy Fortitude",
+   "Lay to Rest",
+   "Condemn",
+   "Steadfast",
+   "Martyr's Resolve"
+  ],
   "equipment": {
    "armor": "Any",
    "shield": "Any",
@@ -2374,6 +2537,13 @@ export const CLASSES = {
   ],
   "healthPer3Levels": 3,
   "castingAttribute": null,
+  "hallmarks": [
+   "Mortal",
+   "Pathfinder",
+   "Ranging",
+   "Vigilance",
+   "First Strike"
+  ],
   "equipment": {
    "armor": "Medium",
    "shield": "Any",
@@ -2525,6 +2695,14 @@ export const CLASSES = {
   ],
   "healthPer3Levels": 2,
   "castingAttribute": "perception",
+  "hallmarks": [
+   "Fae",
+   "Unshaken",
+   "Crepuscular Sight",
+   "Uncanny Agility",
+   "Sylvan Nature",
+   "Priscan Magic"
+  ],
   "equipment": {
    "armor": "Medium",
    "shield": "Any",
@@ -2671,6 +2849,11 @@ export const CLASSES = {
   ],
   "healthPer3Levels": 2,
   "castingAttribute": null,
+  "hallmarks": [
+   "Mortal",
+   "Backstab",
+   "Roguery"
+  ],
   "equipment": {
    "armor": "Light",
    "shield": "Any",

@@ -4,6 +4,8 @@
  * Class DC (Equipment, Availability), rolled once per visit.
  */
 import { GEAR } from "./data/gear.js";
+import { WEAPONS, ARMOR, SHIELDS } from "./data/arms.js";
+import { CLASSES } from "./data/classes.js";
 import { add, ensureStores } from "./supplies.js";
 import { squareAt, tileOf, getTile } from "./world.js";
 import { discover, partyLevel, bandFor, EVEN_DC } from "./events.js";
@@ -28,7 +30,28 @@ export const SHOP = [
     "Cloak, Wool": "Serf", "Hood, Wool": "Serf", "Gloves, Wool": "Serf", "Boots, Hide": "Serf", "Cloak, Pile": "Peasant", "Hat, Fur": "Peasant",
     "Hat, Straw": "Serf", "Head-cloth, Linen": "Serf", "Robe, Common": "Serf" } }
 ];
+/**
+ * Arms and armor: weapons by price (up to 12 sp Serf, 80 Peasant, 600
+ * Knight, more Burgher), armor by weight (light Peasant, medium Knight,
+ * heavy Burgher), shields Peasant [N, a first guess like the rest].
+ */
+const weaponClass = (sp) => sp <= 12 ? "Serf" : sp <= 80 ? "Peasant" : sp <= 600 ? "Knight" : "Burgher";
+SHOP.push(
+  { group: "Weapons", arms: "weapon", items: Object.fromEntries(Object.values(WEAPONS).sort((a, b) => a.sp - b.sp).map(w => [w.name, weaponClass(w.sp)])) },
+  { group: "Armor", arms: "armor", items: Object.fromEntries(Object.values(ARMOR).sort((a, b) => a.sp - b.sp).map(a => [a.name, { light: "Peasant", medium: "Knight", heavy: "Burgher" }[a.weightClass]])) },
+  { group: "Shields", arms: "shield", items: Object.fromEntries(Object.values(SHIELDS).map(x => [x.name, "Peasant"])) }
+);
 const CLASS_OF = Object.fromEntries(SHOP.flatMap(g => Object.entries(g.items)));
+export const armsKind = (name) => WEAPONS[name] ? "weapon" : ARMOR[name] ? "armor" : SHIELDS[name] ? "shield" : null;
+const ARMOR_RANK = { None: 0, Light: 1, Medium: 2, Heavy: 3, Any: 3 };
+/** Can this character use it? Class armor and shield restrictions (each class's Equipment Restrictions). */
+export function mayUse(m, name) {
+  const e = CLASSES[m.cls]?.equipment;
+  if (!e) return true;
+  if (ARMOR[name]) return { light: 1, medium: 2, heavy: 3 }[ARMOR[name].weightClass] <= (ARMOR_RANK[e.armor] ?? 3);
+  if (SHIELDS[name]) return e.shield !== "None";
+  return true;
+}
 
 /** The settlement the party stands in, if any. */
 export function settlementHere(state) {
@@ -49,12 +72,16 @@ export function openMarket(state, rng, note) {
     stock[name] = r >= CLASS_DC[cls];
   }
   state.market = { key: s.key, day: state.day, size: s.size, die: d, stock };
-  const missing = Object.keys(stock).filter(n => !stock[n]);
-  note(`The ${s.home ? "home village" : s.size}'s market (2d${d}): ${missing.length ? `no ${missing.map(n => n.toLowerCase()).join(", ")} to be had today` : "everything on your list is for sale"}.`, "place");
+  const missing = Object.keys(stock).filter(n => !stock[n] && !armsKind(n));
+  const arms = Object.keys(stock).filter(n => !stock[n] && armsKind(n)).length;
+  const bits = [missing.length ? `no ${missing.map(n => n.toLowerCase()).join(", ")}` : "", arms ? `${arms} kinds of arms and armor missing` : ""].filter(Boolean);
+  note(`The ${s.home ? "home village" : s.size}'s market (2d${d}): ${bits.length ? `${bits.join("; ")} today` : "everything on your list is for sale"}.`, "place");
   return state.market;
 }
 
-export const priceOf = (name) => GEAR[name]?.sp ?? 0;
+/** Armor by its name on a sheet, which may be shorter ("Gambeson") or differently capitalized ("Jack of plate"). */
+const armorNamed = (name) => ARMOR[name] || Object.values(ARMOR).find(a => a.name.toLowerCase() === String(name).toLowerCase() || a.name.toLowerCase().startsWith(String(name).toLowerCase()));
+export const priceOf = (name) => GEAR[name]?.sp ?? WEAPONS[name]?.sp ?? armorNamed(name)?.sp ?? SHIELDS[name]?.sp ?? 0;
 export const classOf = (name) => CLASS_OF[name];
 
 /** Buy n of something here; clothing goes on the wearer. */
@@ -63,9 +90,15 @@ export function buy(state, note, name, n = 1, wearer = null) {
   if (!m || !settlementHere(state) || m.key !== settlementHere(state).key || !m.stock[name]) return false;
   const cost = Math.round(priceOf(name) * n * 4) / 4;
   if (state.party.coin < cost) { note(`Not enough coin for ${n} ${name.toLowerCase()} (${cost} sp).`); return false; }
+  const arms = armsKind(name);
+  const w = arms && state.party.members.find(x => x.id === wearer && !x.dead);
+  if (arms && (!w || !mayUse(w, name))) { note(`${w ? `${w.name}'s class can't use a ${name.toLowerCase()}` : "Choose who it's for"}.`); return false; }
   state.party.coin = Math.round((state.party.coin - cost) * 4) / 4;
-  add(state, name, n, { wearer });
-  const who = wearer && GEAR[name]?.weather ? ` for ${state.party.members.find(x => x.id === wearer)?.name}` : "";
+  if (arms === "weapon") w.weapons.push(structuredClone(WEAPONS[name]));
+  else if (arms === "armor") { if (w.armor) (state.party.spare ||= []).push({ ...w.armor, kind: "armor" }); const a = ARMOR[name]; w.armor = { name, weightClass: a.weightClass, durability: a.durability, max: a.durability, resistance: { ...a.resistance } }; }
+  else if (arms === "shield") { if (w.shield) (state.party.spare ||= []).push({ ...w.shield, kind: "shield" }); const x = SHIELDS[name]; w.shield = { name, defense: x.defense, durability: x.durability, max: x.durability }; }
+  else add(state, name, n, { wearer });
+  const who = wearer && (GEAR[name]?.weather || arms) ? ` for ${state.party.members.find(x => x.id === wearer)?.name}` : "";
   note(`Bought ${n > 1 ? `${n} × ` : ""}${name}${who}: ${cost} sp.`, "reward");
   return true;
 }
@@ -104,6 +137,13 @@ export function townCoin(state) {
 /** What the party can sell here: pelts at their value, spare goods at half (secondhand). */
 export function saleList(state) {
   const out = state.party.pelts.map((p, i) => ({ id: `pelt:${i}`, label: `${p.quality} ${p.name.toLowerCase()} pelt`, value: p.value }));
+  // Secondhand arms and armor: half their value times their condition; broken, 5% as scrap, and only where there's a smith (design/03-treasure.md, Salvage).
+  const s = settlementHere(state);
+  (state.party.spare || []).forEach((a, i) => {
+    const list = priceOf(a.name);
+    const value = a.durability > 0 ? Math.round(list / 2 * (a.durability / a.max) * 4) / 4 : (s && hasSmith(s.size) ? Math.round(list * 0.05 * 4) / 4 : 0);
+    if (value > 0) out.push({ id: `spare:${i}`, label: `${a.name} (${a.durability}/${a.max})`, value });
+  });
   for (const [name, n] of Object.entries(state.party.stores)) {
     if (!(n > 0) || !GEAR[name]?.sp) continue;
     out.push({ id: `item:${name}`, label: `${name}${n > 1 ? ` (1 of ${n})` : ""}`, value: Math.round(GEAR[name].sp / 2 * 4) / 4 });
@@ -124,9 +164,10 @@ export function sell(state, rng, note, id) {
   state.party.coin = Math.round((state.party.coin + piece.value) * 4) / 4;
   const [kind, key] = id.split(":");
   if (kind === "pelt") state.party.pelts.splice(Number(key), 1);
+  else if (kind === "spare") state.party.spare.splice(Number(key), 1);
   else { state.party.stores[key] -= 1; if (!state.party.stores[key]) delete state.party.stores[key]; }
   delete m.buyers[id];
-  if (kind === "pelt") for (const k of Object.keys(m.buyers)) if (k.startsWith("pelt:")) delete m.buyers[k];
+  for (const k of Object.keys(m.buyers)) if (k.startsWith(`${kind}:`) && kind !== "item") delete m.buyers[k];
   note(`Sold the ${piece.label} for ${piece.value} sp.`, "reward");
   return true;
 }

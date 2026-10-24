@@ -11,8 +11,9 @@ import { turnOptions, pcTurn, pcStopTurning, turning, imbueOptions, pcImbue, cas
 import { BAND_LABELS } from "./vendor/foundry/module/helpers/weather-rules.mjs";
 import { openStorage, pack, unpack } from "./storage.js";
 import { count, meals, KEEPS, waterNeed, SKIN_GALLONS } from "./supplies.js";
-import { SHOP, openMarket, buy, priceOf, settlementHere, hasHealer, healerTreats, saleList, sell, townCoin, hasSmith, hireSmith, healerTreatsTrauma } from "./town.js";
+import { mayUse, armsKind, SHOP, openMarket, buy, priceOf, settlementHere, hasHealer, healerTreats, saleList, sell, townCoin, hasSmith, hireSmith, healerTreatsTrauma } from "./town.js";
 import { needsHealer, recoveryOf } from "./health.js";
+import { recruitsHere, hire, build, nextGeneration, recruitCost, PARTY_SIZE, HUMANS, DEMIHUMANS } from "./recruits.js";
 import { GEAR } from "./data/gear.js";
 import { ATTRIBUTES, MASTERY_NAMES, masteryTargets, masteryLabel, masteryIndex, cannotInvest, invest, raiseAttribute, hasUnspent, nextLevelXp, titleOf } from "./advance.js";
 import { pointsHint } from "./vendor/foundry/module/helpers/advancement-rules.mjs";
@@ -83,10 +84,26 @@ function renderEvent() {
   const say = (t, k) => note(state, t, k);
   if (state.over) {
     box.hidden = false;
-    box.innerHTML = `<h2>The party has fallen</h2><p>${state.over.why}</p><p class="muted">The dynasty's next generation comes with milestone 3. For now, start again.</p>`;
+    const d = state.dynasty;
+    box.innerHTML = `<h2>The party has fallen</h2><p>${state.over.why}</p>
+      <p class="small muted">The dynasty goes on. The map and what the old heroes found stay; a new party of four sets out from the home village. Choose each class, or roll it (d6: 1–5 human, 6 demihuman).</p>
+      ${d?.fallen?.length ? `<p class="small muted">Fallen before: ${d.fallen.map(f => `generation ${f.generation}, day ${f.day}: ${f.heroes.map(h => h.name).join(", ")}`).join("; ")}.</p>` : ""}`;
+    const form = document.createElement("div");
+    form.className = "declare";
+    const picks = [];
+    for (let i = 0; i < PARTY_SIZE; i++) {
+      const sel = document.createElement("select");
+      sel.add(new Option("Roll the class", "roll"));
+      for (const c of [...new Set([...HUMANS, ...DEMIHUMANS])].sort()) sel.add(new Option(c, c));
+      picks.push(sel);
+      form.append(sel);
+    }
+    box.append(form);
     const row = document.createElement("div");
     row.className = "buttons";
-    row.appendChild(button("Start a new dynasty", () => $("new").click()));
+    const go = button("The next generation sets out", () => act(() => runWithDice(state, (rng) => nextGeneration(state, rng, say, picks.map(p => p.value)))));
+    go.className = "primary";
+    row.append(go, button("Start a new dynasty", () => $("new").click()));
     box.appendChild(row);
   } else if (state.battle) {
     box.hidden = false;
@@ -481,8 +498,9 @@ const fmtSp = (n) => Number.isInteger(n) ? `${n} sp` : `${n.toFixed(2).replace(/
 function renderSupplies() {
   const p = state.party;
   if (!p.food) return;
-  const days = Math.floor(meals(state) / Math.max(1, p.members.filter(m => !m.dead).length * 2) * 10) / 10;
-  $("supplies-head").textContent = `Supplies · ${meals(state)} meals (${days} days) · ${p.water} of ${p.skins * SKIN_GALLONS} gal water`;
+  const eaters = p.members.filter(m => !m.dead).length;
+  const days = Math.floor(meals(state) / Math.max(1, eaters * 2) * 10) / 10;
+  $("supplies-head").textContent = `Supplies · ${meals(state)} meals${eaters ? ` (${days} days)` : ""} · ${p.water} of ${p.skins * SKIN_GALLONS} gal water`;
   const food = Object.entries(p.food.reduce((o, f) => { (o[f.name] ||= []).push(f); return o; }, {}))
     .map(([n, fs]) => `${fs.reduce((a, f) => a + f.n, 0)} ${n.toLowerCase()} (spoil${fs.length > 1 ? " from" : "s"} day ${Math.min(...fs.map(f => f.spoils))})`);
   const kit = Object.entries(p.stores).filter(([, n]) => n > 0).map(([n, k]) => `${k} ${n}`);
@@ -505,11 +523,11 @@ function renderTown(busy) {
   box.innerHTML = `<h2>The ${label}</h2><p class="small muted">Market dice 2d${m.die}, rolled once a day: what isn't here today may be tomorrow. ${fmtSp(state.party.coin)} in the purse.</p>`;
   const who = document.createElement("label");
   who.className = "small";
-  who.textContent = "Clothing for ";
+  who.textContent = "Clothing, arms, and armor for ";
   const ws = document.createElement("select");
   for (const x of state.party.members.filter(x => !x.dead)) ws.add(new Option(x.name, x.id));
   ws.value = renderTown.wearer || ws.options[0]?.value;
-  ws.onchange = () => { renderTown.wearer = ws.value; };
+  ws.onchange = () => { renderTown.wearer = ws.value; render(); };
   who.append(ws);
   box.append(who);
   for (const g of SHOP) {
@@ -526,7 +544,9 @@ function renderTown(busy) {
       else for (const n of /^Rations|Wound Kit/.test(name) ? [1, 10] : [1]) {
         const b = button(n > 1 ? `×${n}` : "Buy", () => act(() => buy(state, say, name, n, renderTown.wearer || ws.value)));
         b.className = "small-btn";
-        b.disabled = state.party.coin < priceOf(name) * n;
+        const wearer = state.party.members.find(x => x.id === (renderTown.wearer || ws.value));
+        b.disabled = state.party.coin < priceOf(name) * n || (armsKind(name) && wearer && !mayUse(wearer, name));
+        if (armsKind(name) && wearer && !mayUse(wearer, name)) b.title = `${wearer.name}'s class can't use it`;
         bs.append(" ", b);
       }
       li.append(bs);
@@ -572,6 +592,37 @@ function renderTown(busy) {
     svc.append(lab);
   }
   box.append(svc);
+  // Recruits: whoever's here this visit, or build someone of a class you choose.
+  const alive = state.party.members.filter(x => !x.dead).length;
+  const list = runWithDice(state, (rng) => recruitsHere(state, rng));
+  persist();
+  const rdet = document.createElement("details");
+  rdet.open = alive < PARTY_SIZE;
+  rdet.innerHTML = `<summary>Recruits · ${list.length || "no one"} looking for work${alive >= PARTY_SIZE ? " (the party is full)" : ""}</summary>`;
+  const rul = document.createElement("ul");
+  rul.className = "shop";
+  for (const r of list) {
+    const li = document.createElement("li");
+    const a = r.attributes;
+    li.innerHTML = `<span><strong>${r.name}</strong> ${r.cls} ${r.level} <span class="muted small">${r.health} hp${r.magan ? `, ${r.magan} mg` : ""} · STR ${a.strength} AGI ${a.agility} PHY ${a.physique} END ${a.endurance} INT ${a.intelligence} WIS ${a.wisdom} CHA ${a.charisma} PER ${a.perception} · ${r.weapons.map(w => w.name).join(", ")}${r.armor ? `, ${r.armor.name}` : ""}${r.shield ? `, ${r.shield.name}` : ""}${r.companion ? ` · ${r.companion.name}` : ""}</span></span>`;
+    const cost = recruitCost(r);
+    const b = button(cost ? `Hire (${cost} sp)` : "Hire", () => act(() => hire(state, say, r.id)));
+    b.className = "small-btn"; b.disabled = alive >= PARTY_SIZE || state.party.coin < cost;
+    li.append(b);
+    rul.append(li);
+  }
+  rdet.append(rul);
+  if (alive < PARTY_SIZE) {
+    const brow = document.createElement("div");
+    brow.className = "buttons";
+    const cs = document.createElement("select");
+    for (const c of [...new Set([...HUMANS, ...DEMIHUMANS])].sort()) cs.add(new Option(c, c));
+    const bb = button("Build a level 1 character", () => act(() => runWithDice(state, (rng) => build(state, rng, say, cs.value))));
+    bb.title = "Rolled up by the class's dice; you're assumed to have found someone.";
+    brow.append(cs, bb);
+    rdet.append(brow);
+  }
+  box.append(rdet);
   if (hasHealer(s.size)) {
     const row = document.createElement("div");
     row.className = "buttons";

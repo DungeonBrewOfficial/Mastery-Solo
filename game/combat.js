@@ -203,7 +203,7 @@ function pcDefense(state, u, type, ranged) {
   if (ranged && !shield) return { can: false, why: "only a shield stops a missile" };
   if (w?.projectile && !shield) return { can: false, why: "a sling can't parry" };
   const attr = w && !w.ranged ? w.attribute : (m.attributes.strength >= m.attributes.physique ? "strength" : "physique");
-  const res = m.armor && m.armor.durability > 0 ? (m.armor.resistance[type] || 0) : 0;
+  const res = m.armor && m.armor.durability > 0 ? armorResist(m, type) : 0;
   return { can: true, dice: [attrTD(m, attr)], bonus: res + (shield ? m.shield.defense : 0) + (w?.defense || 0), unarmed: !w && !shield };
 }
 
@@ -242,6 +242,18 @@ export const COND_LABELS = {
   inspired: { 1: "Rallied", 2: "Emboldened", 3: "Fearless" },
   invigorated: { 1: "Energized", 2: "Empowered", 3: "Tireless" }
 };
+/**
+ * Armor's resistance to a type, with the wearer's Agility: light armor adds
+ * the Agility tier to each mundane resistance, medium armor half of it
+ * (Equipment, Armor and Shields).
+ */
+export function armorResist(m, type) {
+  const a = m.armor;
+  const base = a?.resistance?.[type] || 0;
+  if (!a || !MUNDANE.includes(type)) return base;
+  const t = tierOf(m.attributes.agility);
+  return base + (a.weightClass === "light" ? t : a.weightClass === "medium" ? Math.floor(t / 2) : 0);
+}
 /** Possessed (Cursed): fire resistance of half the character's level. */
 const innateRes = (m, type) => type === "fire" && (m.abilities || []).includes("Possessed") ? Math.floor((m.level || 1) / 2) : 0;
 const MUNDANE = ["cutting", "cleaving", "crushing", "piercing", "puncturing"];
@@ -738,7 +750,7 @@ function secondaryDamage(state, rng, note, t, amount, type, label, { direct = fa
   if (t.pc) {
     const m = memberOf(state, t);
     if (m.dead) return;
-    const res = noResist || !type ? 0 : (t.companion ? (MUNDANE.includes(type) ? m.resistance : 0) + (m.resistAll || 0) : !m.armor || m.armor.durability <= 0 ? 0 : (m.armor.resistance[type] || 0)) + innateRes(m, type);
+    const res = noResist || !type ? 0 : (t.companion ? (MUNDANE.includes(type) ? m.resistance : 0) + (m.resistAll || 0) : !m.armor || m.armor.durability <= 0 ? 0 : armorResist(m, type)) + innateRes(m, type);
     const ward = type && wardFor(t, type);
     const r = direct ? { healthDamage: Math.max(0, amount - res), durabilityDamage: 0 }
       : resolveDamage({ attackTotal: amount, damageType: type, armorResistance: res, durabilityCurrent: m.armor?.durability || 0, healthCurrent: m.hp, activeDefense: false, wardPool: ward?.pool || 0 });
@@ -2193,7 +2205,7 @@ function applyHit(state, rng, note, a, t, atk, def, type, ranged) {
     const shield = usesShield(m, weaponOf(m, t)) && m.shieldAbsorbs !== false ? m.shield.durability : 0;
     const armor = m.armor?.durability || 0;
     // A companion's own hide: its mundane resistance stands whether or not it defends.
-    const res = (t.companion ? (MUNDANE.includes(type) ? m.resistance : 0) + (m.resistAll || 0) : armor > 0 ? (m.armor.resistance[type] || 0) : 0) + innateRes(m, type);
+    const res = (t.companion ? (MUNDANE.includes(type) ? m.resistance : 0) + (m.resistAll || 0) : armor > 0 ? armorResist(m, type) : 0) + innateRes(m, type);
     const ward = wardFor(t, type);
     const r = resolveDamage({ attackTotal: atk.total, damageType: type, armorResistance: res,
       durabilityCurrent: shield + armor, healthCurrent: m.hp, activeDefense: !!def, defenseTotal: def?.total || 0, wardPool: ward?.pool || 0 });

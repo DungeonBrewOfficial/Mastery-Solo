@@ -201,6 +201,7 @@ function move(state, rng, hours) {
   if (sq?.settlement) {
     note(state, `You reach a ${sq.settlement.home ? "home village" : sq.settlement.size}.`, "place");
     refill(state, (t, k) => note(state, t, k), sq.settlement.home ? "home village" : sq.settlement.size);
+    state.visitId = (state.visitId || 0) + 1; // a new visit: new recruits, a fresh look at the market
     reachSafety(state, rng);
   }
   const place = state.world.places?.[`${p.x},${p.y}`];

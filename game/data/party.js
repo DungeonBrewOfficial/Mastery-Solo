@@ -62,7 +62,8 @@ export const PREGENS = [
     id: "hamon", name: "Hamon", cls: "Thief", title: "the Crank", level: 1, xp: 0,
     attributes: { strength: 5, agility: 8, physique: 15, endurance: 10, intelligence: 11, wisdom: 4, charisma: 9, perception: 7 },
     health: 5, magan: 0,
-    armor: { name: "Gambeson", durability: 46, max: 46, resistance: { cutting: 5, crushing: 8, cleaving: 5, piercing: 8, puncturing: 4 } },
+    // Light armor adds the wearer's Agility tier to each resistance in a fight (Equipment, Armor and Shields).
+    armor: { name: "Gambeson", weightClass: "light", durability: 46, max: 46, resistance: { cutting: 3, crushing: 6, cleaving: 3, piercing: 6, puncturing: 2 } },
     weapons: [
       { name: "Kunai", ...LIGHT_1H, type: "daggers", damage: "piercing" },
       { name: "War darts", category: "Light Thrown", track: 1, speed: "fast", attribute: "physique", type: "daggers", damage: "piercing", ranged: true, range: [5, 10, 15], thrown: true, count: 5 },
@@ -77,7 +78,7 @@ export const PREGENS = [
     id: "gerberga", name: "Gerberga", cls: "Paladin", title: "the Postulant", level: 1, xp: 0,
     attributes: { strength: 10, agility: 7, physique: 6, endurance: 11, intelligence: 10, wisdom: 7, charisma: 12, perception: 10 },
     health: 5, magan: 6,
-    armor: { name: "Jack of plate", durability: 46, max: 46, resistance: { cutting: 9, crushing: 6, cleaving: 6, piercing: 5, puncturing: 4 } },
+    armor: { name: "Jack of plate", weightClass: "light", durability: 46, max: 46, resistance: { cutting: 7, crushing: 4, cleaving: 4, piercing: 3, puncturing: 2 } },
     shield: { name: "Heater", defense: 4, durability: 18, max: 18 },
     weapons: [{ name: "Swordbreaker", category: "Heavy One-Handed", track: 2, speed: "moderate", attribute: "strength", type: "daggers", damage: "cutting", defense: 1 }],
     weaponSkill: { daggers: 2 }, styles: { shield: 2, single: 2 },

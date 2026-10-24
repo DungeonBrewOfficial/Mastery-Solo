@@ -91,6 +91,14 @@ Rulings Jon has made for this design, newest last within each section. Each line
 - Settlements [Jon, 2026-10-24]: an evening at an inn can turn up a rumor of a site through a Presence trial; a city's library can be a source of occult writings; in a hamlet, a household taking the party in is a Good Night's Rest. - Recruits [Jon, 2026-10-24]: a level 1 recruit is free and brings their class's starting wealth; a higher-level recruit costs their XP in silver pennies (a level 3 Paladin, 300 sp). Towns offer recruits up to a couple of levels below the party, cities closer.
 - The recruit's class [Jon, 2026-10-24]: a d6, 1–5 human and 6 demihuman (the settlement or region can shift it), then a d12 over the eleven human classes with Fighter on two faces, or a d7 over the seven demihumans (Cursed, Dwarf, Gray Elf, Sylvan Elf, Gnome, Halfling, Orc).
 - A hired smith follows the Blacksmith Discipline's repair formula, (Trade die + Intelligence tier die) × 4 per kit; a Skilled smith averages 24 [Jon, 2026-10-24].
+- Milestone 3, stage 4 (recruiting and the next generation), calls made while building (raised with Jon in chat):
+  - A rolled-up character puts the 3 starting points into the attribute the class rolls its biggest dice for, and takes no swap or reroll.
+  - Gear is bought for them from their starting wealth: a weapon by the stronger of Strength and Physique, a heater shield for martial classes that may carry one, the sturdiest armor their class may wear and their purse affords, a bow for Rangers and Sylvan Elves, and an Adventurer's Pack. What's left joins the party's purse.
+  - Their level-1 mastery points go to what they carry, then to the styles, the entropic forms their class allows, and the skills the class leans toward; a higher-level recruit's points go the same way.
+  - Spells known: up to two of the six the game has, in forms they've reached.
+  - The party holds four [Jon, 2026-10-23]; recruits wait until there's room.
+  - Arms and armor at the market: weapons up to 12 sp Serf, 80 Peasant, 600 Knight, more Burgher; light armor Peasant, medium Knight, heavy Burgher; shields Peasant.
+  - The next generation starts with what its members bring; the fallen party's supplies are lost with it.
 - Milestone 3, stage 3 (the town), calls made while building (raised with Jon in chat):
   - Any day the party doesn't travel counts as a day's rest for the Trauma Table, in camp or in town.
   - A settlement's healer treats a Trauma as a Skilled healer with a surgeon's chest (Dominance in a city's infirmary), for 8 sp plus the Trauma Kit (36 sp); a failure spends the kit.

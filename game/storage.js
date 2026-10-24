@@ -38,6 +38,12 @@ export function unpack(json) {
   // Saves from before supplies set out with what a new party has.
   if (s.party && !s.party.food) outfit(s);
   for (const m of s.party?.members || []) ensureAdvancement(m);
+  // Saves from before armor knew its weight class carried the Agility tier baked in.
+  for (const m of s.party?.members || []) if (m.armor && !m.armor.weightClass) {
+    m.armor.weightClass = "light";
+    const t = 1 + Math.min(Math.floor(m.attributes.agility / 5), 12);
+    for (const k of Object.keys(m.armor.resistance)) m.armor.resistance[k] = Math.max(0, m.armor.resistance[k] - t);
+  }
   if (s.party) { ensureStores(s); s.party.roles = { forager: null, cook: null, healer: null, smith: null, ...s.party.roles }; }
   return s;
 }
