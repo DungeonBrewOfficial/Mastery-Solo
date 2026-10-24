@@ -267,14 +267,20 @@ function rest(state, rng, kind) {
     if (k !== "none") m.spent = {};
     // Infected: rest counts as one stage lower per tier (Conditions).
     if (m.infected) k = m.infected >= 3 ? "none" : ORDER[Math.max(0, ORDER.indexOf(k) - m.infected)];
+    // Exhausted (General Rules, Resting): a Wilderness Rest eases it a tier but not below 1, a Good Night's a full tier; No Rest adds one.
+    if (m.exhausted || k === "none") {
+      const before = m.exhausted || 0;
+      m.exhausted = k === "none" ? Math.min(3, before + 1) : k === "wilderness" ? Math.max(Math.min(before, 1), before - 1) : k === "good" ? Math.max(0, before - 1) : before;
+      if (m.exhausted !== before) bits.push(`${m.name} Exhausted ${before} → ${m.exhausted}`);
+    }
     if (m.hp >= m.health || k === "none" || (k === "dungeon" && m.hp < 1)) continue;
     const gain = k === "dungeon" ? 1 : k === "wilderness" ? rng.d(3) : total(rng, `1d${dieOfTier(tierOf(m.attributes.endurance))[1]}`);
     const before = m.hp;
     m.hp = Math.min(m.health, m.hp + gain);
     if (m.hp > 0) m.down = false;
-    bits.push(`${m.name} ${before} → ${m.hp}`);
+    bits.push(`${m.name} ${before} → ${m.hp} health`);
   }
-  if (bits.length) note(state, `${RESTS[kind]}: ${bits.join(", ")} health.`, "camp");
+  if (bits.length) note(state, `${RESTS[kind]}: ${bits.join(", ")}.`, "camp");
 }
 
 /* ------------------------------------------------------------------ */

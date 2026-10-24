@@ -6,14 +6,15 @@
 import { runWithDice, note } from "../game/journey.js";
 import { attackModes, setMode, challengeTargets, beginRound, retreat, runPlan, currentPC, canAttack, pcAttack, pcMove, pcEndTurn, respond, triageTargets, pcTriage, gap, standing, moveCost } from "../game/combat.js";
 
-export function playBattle(s, { maxSteps = 5000, picks = {}, run = false, clever = false } = {}) {
+export function playBattle(s, { maxSteps = 20000, picks = {}, run = false, clever = false } = {}) {
   const say = (t, k) => note(s, t, k);
   for (let i = 0; i < maxSteps && s.battle; i++) {
     const b = s.battle;
     runWithDice(s, (rng) => {
       if (b.prompt) return respond(s, rng, say, b.prompt.helper && clever ? "hearten" : true);
       if (b.stage === "declare") {
-        if (run && b.round >= run && !b.aftermath) return retreat(s, rng, say, runPlan(s).downed.map(u => u.id));
+        // A fight that won't end (a Dryad melding and regrowing) is one to walk away from.
+        if (((run && b.round >= run) || b.round > 30) && !b.aftermath) return retreat(s, rng, say, runPlan(s).downed.map(u => u.id));
         if (clever) for (const u of b.units.filter(x => x.pc)) { const f = challengeTargets(s, u)[0]; if (f) picks[u.id] = { ...picks[u.id], challenge: f.id }; }
         return beginRound(s, rng, say, picks);
       }

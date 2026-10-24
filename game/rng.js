@@ -24,19 +24,25 @@ export function makeRng(seed = Date.now()) {
 }
 
 /**
- * Roll a dice expression: "2d6", "1d3+1", "10d6-30", "d20", or a plain number.
- * Returns { total, rolls, expr }.
+ * Roll a dice expression: "2d6", "1d3+1", "1d12+1d8", "2d6+1d8+2", "10d6-30",
+ * "d20", or a plain number. Returns { total, rolls, expr }.
  */
 export function roll(rng, expr) {
-  const m = /^\s*(\d*)d(\d+)\s*([+-]\s*\d+)?\s*$/i.exec(String(expr));
-  if (!m) {
+  const text = String(expr).replace(/\s+/g, "");
+  const terms = text.match(/[+-]?[^+-]+/g) || [];
+  if (!terms.length || !terms.every(t => /^[+-]?(\d*d\d+|\d+)$/i.test(t))) {
     const n = Number(expr);
     return { total: Number.isFinite(n) ? n : 0, rolls: [], expr: String(expr) };
   }
-  const count = Number(m[1] || 1), sides = Number(m[2]);
-  const mod = m[3] ? Number(m[3].replace(/\s+/g, "")) : 0;
-  const rolls = Array.from({ length: count }, () => rng.d(sides));
-  return { total: rolls.reduce((a, b) => a + b, 0) + mod, rolls, expr: String(expr) };
+  let total = 0;
+  const rolls = [];
+  for (const t of terms) {
+    const sign = t[0] === "-" ? -1 : 1;
+    const m = /^[+-]?(\d*)d(\d+)$/i.exec(t);
+    if (!m) { total += sign * Number(t.replace(/^[+-]/, "")); continue; }
+    for (let i = 0; i < Number(m[1] || 1); i++) { const r = rng.d(Number(m[2])); rolls.push(r); total += sign * r; }
+  }
+  return { total, rolls, expr: String(expr) };
 }
 
 /** Shorthand for a plain total. */

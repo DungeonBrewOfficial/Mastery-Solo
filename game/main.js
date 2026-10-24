@@ -344,7 +344,7 @@ function renderParty() {
   for (const m of p.members) {
     const li = document.createElement("li");
     const state_ = m.dead ? "dead" : m.hp <= 0 ? "unconscious" : "";
-    const scars = [m.injuries ? `${m.injuries} injur${m.injuries === 1 ? "y" : "ies"}` : "", ...(m.traumas || []).map(t => t.name)].filter(Boolean);
+    const scars = [m.injuries ? `${m.injuries} injur${m.injuries === 1 ? "y" : "ies"}` : "", m.exhausted ? `Exhausted ${m.exhausted}` : "", m.infected ? `Infected ${m.infected}` : "", ...(m.traumas || []).map(t => t.name)].filter(Boolean);
     li.innerHTML = `<strong>${m.name}</strong> <span class="muted">${m.cls} ${m.level}</span> <span>${state_ ? `<span class="warn">${state_}</span>` : `${m.hp}/${m.health} hp`}</span> <span class="muted">${m.xp} XP</span>${scars.length ? `<span class="muted small">${scars.join(", ")}</span>` : ""}`;
     if (m.dead) li.className = "dead";
     else {

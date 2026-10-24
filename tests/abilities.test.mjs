@@ -263,3 +263,96 @@ test("Hearten is asked about only while Corra stands with AP to spend, and on tr
   assert.ok(kinds.has("heartenTrial"), "asked on a trial");
   assert.ok(kinds.has("defend"), "offered on a defense");
 });
+
+/** Let the enemy act through one round while the party only answers No. */
+function enemyRound(s) {
+  runWithDice(s, (rng) => beginRound(s, rng, say(s)));
+  const r = s.battle.round;
+  for (let i = 0; i < 200 && s.battle && s.battle.round === r; i++) {
+    if (s.battle.prompt) runWithDice(s, (rng) => respond(s, rng, say(s), false));
+    else if (currentPC(s)) runWithDice(s, (rng) => pcEndTurn(s, rng, say(s)));
+    else break;
+  }
+}
+
+test("Band II: Timber sweeps a line and can throw characters back", () => {
+  let swept = false, thrown = false;
+  for (let seed = 1; seed <= 20 && !(swept && thrown); seed++) {
+    const s = battle(seed, [{ name: "Treow", count: 1 }], { temper: "Guardian" });
+    const tr = s.battle.units.find(u => !u.pc);
+    tr.x = 8; tr.y = 4;
+    Object.assign(unit(s, "gerberga"), { x: 8 - 1, y: 4 }); Object.assign(unit(s, "hamon"), { x: 8 - 2, y: 4 });
+    Object.assign(unit(s, "gisla"), { x: 1, y: 10 }); Object.assign(unit(s, "corra"), { x: 1, y: 11 });
+    const from = s.log.length;
+    enemyRound(s);
+    if (/\(Timber\)/.test(logOf(s, from))) swept = true;
+    if (/thrown back/.test(logOf(s, from))) thrown = true;
+  }
+  assert.ok(swept && thrown);
+});
+
+test("Band II: archers shoot with Pinning Shot while no one is beside them", () => {
+  let pinned = false;
+  for (let seed = 1; seed <= 15 && !pinned; seed++) {
+    const s = battle(seed, [{ name: "Woodsman", count: 2 }], { temper: "Raider", distance: "Far" });
+    const from = s.log.length;
+    enemyRound(s);
+    if (/\(Pinning Shot\)/.test(logOf(s, from))) pinned = true;
+  }
+  assert.ok(pinned);
+});
+
+test("Band II: a knight Intercepts an attack on the ally beside it", () => {
+  const s = battle(3, [{ name: "Sergeant", count: 1 }, { name: "Knight-Servile", count: 1 }], { temper: "Patrol" });
+  const [sgt, kn] = s.battle.units.filter(u => !u.pc);
+  const hamon = turnOf(s, "hamon", () => {
+    sgt.x = 8; sgt.y = 5; kn.x = 8; kn.y = 6; // beside the sergeant and within Hamon's reach
+    Object.assign(unit(s, "hamon"), { x: 7, y: 5 });
+  });
+  assert.ok(hamon);
+  kn.ap = 3; sgt.ap = 2;
+  const from = s.log.length;
+  runWithDice(s, (rng) => pcAttack(s, rng, say(s), sgt.id));
+  settle(s);
+  assert.match(logOf(s, from), /Knight-Servile steps in front of Sergeant \(Intercept\)/);
+});
+
+test("Band II: an orc's death stirs the War Chief's Grief Fury", () => {
+  const s = battle(4, [{ name: "Orc War Chief", count: 1 }, { name: "Orc Raider", count: 1 }], { temper: "Raider" });
+  const [chief, raider] = s.battle.units.filter(u => !u.pc);
+  chief.x = 9; chief.y = 5; raider.x = 10; raider.y = 6;
+  raider.hp = 1;
+  raider.attrition.push({ label: "Bleeding", type: null, amount: 5 }); // it bleeds out at the end of its turn
+  const from = s.log.length;
+  runWithDice(s, (rng) => beginRound(s, rng, say(s)));
+  for (let i = 0; i < 100 && s.battle && onFieldU(raider); i++) {
+    if (s.battle.prompt) runWithDice(s, (rng) => respond(s, rng, say(s), false));
+    else if (currentPC(s)) runWithDice(s, (rng) => pcEndTurn(s, rng, say(s)));
+    else break;
+  }
+  assert.match(logOf(s, from), /Grief Fury/);
+});
+const onFieldU = (u) => !u.dead && !u.fled;
+
+test("Band II: the Inferno drinks in fire instead of burning", () => {
+  const s = battle(5, [{ name: "Inferno", count: 1 }], { temper: "Guardian" });
+  const inf = s.battle.units.find(u => !u.pc);
+  inf.hp = 5;
+  // Living Flame from a fire elemental would do; here, fire Attrition does the same work.
+  inf.attrition.push({ label: "Burning", type: "fire", amount: 4 });
+  runWithDice(s, (rng) => beginRound(s, rng, say(s)));
+  const from = s.log.length;
+  for (let i = 0; i < 100 && s.battle && inf.attrition.length; i++) {
+    if (s.battle.prompt) runWithDice(s, (rng) => respond(s, rng, say(s), false));
+    else if (currentPC(s)) runWithDice(s, (rng) => pcEndTurn(s, rng, say(s)));
+    else break;
+  }
+  assert.ok(inf.hp >= 9 || /drinks it in/.test(logOf(s, 0)));
+});
+
+test("the dice roller sums mixed terms", async () => {
+  const { makeRng, roll } = await import("../game/rng.js");
+  const r = roll(makeRng(5), "1d12+1d8");
+  assert.equal(r.rolls.length, 2);
+  assert.equal(r.total, r.rolls[0] + r.rolls[1]);
+});

@@ -64,7 +64,7 @@ const label = ([c, s]) => s === 1 ? "1" : `${c > 1 ? c : ""}d${s}`;
  */
 function rollPool(rng, dice, { edge = 0, bonus = 0, inferiority = false, superiority = false, extra = -1 } = {}) {
   if (inferiority && superiority) inferiority = superiority = false;
-  let total = bonus, kept = 0;
+  let total = bonus, kept = 0, exploded = false;
   const parts = [];
   dice.forEach((d, i) => {
     const [c, s] = shift(d, edge);
@@ -78,14 +78,14 @@ function rollPool(rng, dice, { edge = 0, bonus = 0, inferiority = false, superio
     const sum = (ch) => ch.reduce((a, b) => a + b, 0);
     let dropped = null;
     if (i === extra) { dropped = chains.reduce((lo, ch, j) => sum(ch) < sum(chains[lo]) ? j : lo, 0); }
-    chains.forEach((ch, j) => { if (j !== dropped) { total += sum(ch); kept += ch.length; } });
+    chains.forEach((ch, j) => { if (j !== dropped) { total += sum(ch); kept += ch.length; if (ch.length > 1) exploded = true; } });
     const shown = chains.map((ch, j) => `${j === dropped ? "~" : ""}${ch.join("!")}`).join(",");
     parts.push(`${label([c + (i === extra ? 1 : 0), s])}${i === extra ? "kh" + c : ""}[${shown}]`);
   });
   const mods = [];
   if (bonus) mods.push(bonus > 0 ? `+ ${bonus}` : `− ${-bonus}`);
   const tags = [edge > 0 ? "Dominance" : edge < 0 ? "Impotence" : "", inferiority ? "Inferiority" : "", superiority ? "Superiority" : ""].filter(Boolean);
-  return { total: Math.max(0, total), kept, text: `${parts.join(" + ")}${mods.length ? " " + mods.join(" ") : ""}${tags.length ? ` (${tags.join(", ")})` : ""} = ${Math.max(0, total)}` };
+  return { total: Math.max(0, total), kept, exploded, text: `${parts.join(" + ")}${mods.length ? " " + mods.join(" ") : ""}${tags.length ? ` (${tags.join(", ")})` : ""} = ${Math.max(0, total)}` };
 }
 
 /* ------------------------------------------------------------------ */
@@ -198,6 +198,7 @@ export function setReaction(m, k, v) { if (REACTIONS[k] && ["ask", "always", "ne
 
 export const COND_LABELS = {
   restricted: { 1: "Grappled", 2: "Pinned", 3: "Restrained" },
+  exhausted: { 1: "Weary", 2: "Fatigued", 3: "Depleted" },
   tainted: { 1: "Dosed", 2: "Blighted", 3: "Corrupted" },
   infected: { 1: "Afflicted", 2: "Sickened", 3: "Diseased" },
   inspired: { 1: "Rallied", 2: "Emboldened", 3: "Fearless" },
@@ -205,7 +206,9 @@ export const COND_LABELS = {
 };
 const PHYSICAL = ["strength", "agility", "physique", "endurance"];
 /** Conditions that deteriorate on their own; Impaired's Startle tiers follow the Startle rule instead, and Demoralized holds while its source is in sight. */
-const DECAYS = ["impaired", "restricted", "tainted", "inspired", "invigorated"];
+const DECAYS = ["impaired", "restricted", "tainted", "inspired", "invigorated", "quarry"];
+/** Halved movement: Tainted 2 and up, Exhausted 3. */
+const slowed = (u) => cond(u, "tainted") >= 2 || cond(u, "exhausted") >= 3;
 const cond = (u, k) => (k === "impaired" ? u.impaired : k === "demoralized" ? u.demoralized : u.cond?.[k]) || 0;
 function setCond(u, k, v) {
   if (k === "impaired") u.impaired = v;
@@ -226,7 +229,7 @@ function immuneToDamage(state, u, type) {
  * Demoralized counter each other tier for tier. Infected lives on the
  * character, not the fight.
  */
-function addCond(state, note, u, k, n = 1, { max = 3, by = null } = {}) {
+function addCond(state, note, u, k, n = 1, { max = 3, by = null, lasting = false, decays = null } = {}) {
   if (immuneTo(state, u, k)) { note(`${u.name} is immune to ${k === "tainted" ? "poison" : k === "infected" ? "disease" : k}.`); return; }
   if (k === "infected" && u.pc) {
     const m = memberOf(state, u);
@@ -246,7 +249,7 @@ function addCond(state, note, u, k, n = 1, { max = 3, by = null } = {}) {
   if (next === before) return;
   setCond(u, k, next);
   // It wears off from the end of the advancer's next turn (Conditions, Stacking).
-  if (DECAYS.includes(k)) (u.decay ||= {})[k] = { by, round: state.battle.round };
+  if (!lasting && (decays ?? DECAYS.includes(k))) (u.decay ||= {})[k] = { by, round: state.battle.round };
   const name = k === "impaired" ? IMPAIRED[next] : k === "demoralized" ? DEMORALIZED[next] : COND_LABELS[k]?.[next] || k;
   note(`${u.name} is ${name} (${k[0].toUpperCase() + k.slice(1)} ${next}).`, ["inspired", "invigorated"].includes(k) ? "" : "event");
 }
@@ -262,7 +265,9 @@ function mods(state, u, kind) {
   const combat = kind === "attack" || kind === "defense";
   let pen = m?.injuries || 0, bonus = 0, dom = false, imp = false, sup = false, inf = false;
   const im = cond(u, "impaired"), re = cond(u, "restricted"), ta = cond(u, "tainted"), de = cond(u, "demoralized");
-  const iv = cond(u, "invigorated"), ins = cond(u, "inspired");
+  const iv = cond(u, "invigorated"), ins = cond(u, "inspired"), ex = cond(u, "exhausted");
+  if (ex >= 1) imp = true;
+  if (ex >= 2 && combat) inf = true;
   pen += im === 1 ? 1 : im === 2 ? 2 : 0;
   if (im === 2 && combat) inf = true;
   if (physical) pen += re >= 2 ? 2 : re;
@@ -282,8 +287,10 @@ function mods(state, u, kind) {
 }
 
 /** A trial to resist: the character's attribute trial, or the creature's trial dice, with its conditions. */
-function resist(state, rng, u, attr, dc, { edge = 0, hearten } = {}) {
+function resist(state, rng, u, attr, dc, { edge = 0, hearten, forCond } = {}) {
   const md = mods(state, u, attr);
+  const rb = forCond && has(u, "resistBonus");
+  if (rb && rb.conds.includes(forCond)) md.bonus += rb.bonus;
   const e = Math.sign(edge + md.edge);
   // Hearten: chosen at a prompt (hearten is the helper's id, or null for no), or Always.
   const helper = hearten ? unitById(state.battle, hearten) : hearten === undefined && u.pc && state.battle ? heartener(state, u, "heartenTrial") : null;
@@ -298,13 +305,20 @@ function resist(state, rng, u, attr, dc, { edge = 0, hearten } = {}) {
 /* Creatures                                                            */
 
 const RANGE_RE = /(\d+)\s*\/\s*(\d+)\s*\/\s*(\d+)/;
-const rangeOf = (a) => { const m = RANGE_RE.exec(a?.range || ""); return m ? m.slice(1, 4).map(n => Math.floor(Number(n) / 5)) : null; };
+/** Range bands in squares; a missile with no numbers written (a hornbow) is given a short bow's 60/120/180 feet. */
+const rangeOf = (a) => {
+  const r = a?.range || "", m = RANGE_RE.exec(r);
+  if (m) return m.slice(1, 4).map(n => Math.floor(Number(n) / 5));
+  return /projectile|ranged|thrown|bow/i.test(r) || /bow/i.test(a?.name || "") ? [12, 24, 36] : null;
+};
 const avg = (a) => a.dice.reduce((n, s) => n + (s + 1) / 2, 0) + (a.bonus || 0);
 const meleeAttack = (c) => [...c.attacks].filter(a => !rangeOf(a)).sort((x, y) => avg(y) - avg(x))[0] || null;
 const rangedAttack = (c) => c.attacks.find(a => rangeOf(a)) || null;
 const armorRes = (c, type) => c.armor.reduce((n, p) => n + (p.resistance?.[type] || 0), 0);
 const sizeRow = (c) => sizeRowForSquares(c.size.width * c.size.height);
-const reachOf = (u, c) => (u.pc ? 1 : Math.max(1, Math.floor((c?.size?.reach || 5) / 5)));
+/** Reach in squares: the creature's, or a polearm's written "Reach 10 ft". */
+const reachOf = (u, c) => (u.pc ? 1 : Math.max(1, Math.floor((c?.size?.reach || 5) / 5),
+  ...(c?.attacks || []).map(a => Math.floor(Number((/Reach (\d+)/i.exec(a.range || "") || [])[1] || 0) / 5))));
 
 function creatureAttackDice(u, c, a) {
   const dice = u.minion ? [[u.heads, 2]] : a.dice.map(s => [1, s]);
@@ -358,6 +372,7 @@ export function startBattle(state, rng, note) {
     b.units.push({ id: m.id, pc: true, side: "party", name: m.name, x, y, w: 1, h: 1, ap: 0, weapon: m.weapons.length ? 0 : -1,
       guard: "mutable", impaired: e.impaired?.[m.id] || 0, demoralized: 0, phase: "fast", doneIn: [], moveLeft: 0, lastMove: false, attacks: 0,
       startle: e.impaired?.[m.id] || 0, mode: "strike", ...FRESH() });
+    if (m.exhausted) b.units[b.units.length - 1].cond.exhausted = m.exhausted;
   });
   const gapCols = { Close: 2, Near: 6, Far: 10 }[e.distance] ?? 6;
   let n = 0;
@@ -385,7 +400,8 @@ export function startBattle(state, rng, note) {
   if (e.enemyStartle) {
     for (const u of b.units.filter(x => !x.pc)) {
       const c = CREATURES[u.cname];
-      const t = c.rank === "minion" ? trial(rng, [dieOfTier(c.tier), dieOfTier(c.tier)]) : trial(rng, [dieOfTier(c.attributes.agility.tier), dieOfTier(c.attributes.perception.tier)]);
+      const keen = abilitiesOf(c).find(a => a.kind === "unflankable")?.startle || 0;
+      const t = c.rank === "minion" ? trial(rng, [dieOfTier(c.tier), dieOfTier(c.tier)]) : trial(rng, [dieOfTier(c.attributes.agility.tier), dieOfTier(c.attributes.perception.tier)], { bonus: keen });
       const miss = e.enemyStartle - t.total;
       u.impaired = passes(t, e.enemyStartle) ? 0 : miss >= 5 ? 3 : miss >= 3 ? 2 : 1;
       u.startle = u.impaired;
@@ -412,7 +428,7 @@ function place(b, u, col) {
 function startRound(state, rng, note) {
   const b = state.battle;
   b.round += 1;
-  b.stage = "declare"; b.phaseIdx = 0; b.sideIdx = 0; b.current = null;
+  b.stage = "declare"; b.phaseIdx = 0; b.sideIdx = 0; b.current = null; b.rolls = {};
   for (const u of b.units) {
     // Impaired from Startle eases one tier at the start of each round after the first (Combat, Startle).
     // Impaired from anything else wears off like any other condition.
@@ -420,7 +436,7 @@ function startRound(state, rng, note) {
     u.doneIn = []; u.moveLeft = 0; u.lastMove = false; u.attacks = 0; u.helpedBy = [];
     if (u.pc) {
       const m = memberOf(state, u);
-      u.ap = m.down || u.impaired >= 3 ? 0 : 2;
+      u.ap = m.down || u.impaired >= 3 ? 0 : cond(u, "exhausted") >= 3 ? 1 : 2;
       u.tookTurn = false;
     } else {
       u.tookTurn = false;
@@ -431,7 +447,8 @@ function startRound(state, rng, note) {
       const base = a?.phase || "fast";
       // Epic and Legendary creatures get 2 AP in each phase they act in.
       u.phases = rank.phasesActive >= 3 ? [...PHASES] : rank.phasesActive === 2 ? (base === "slow" ? ["moderate", "slow"] : [base, "slow"]) : [u.impaired ? "slow" : base];
-      u.ap = u.impaired >= 3 ? 0 : rank.phasesActive > 1 ? 0 : rank.ap;
+      u.ap = u.impaired >= 3 ? 0 : rank.phasesActive > 1 ? 0 : cond(u, "exhausted") >= 3 ? 1 : rank.ap;
+      u.feintOn = null;
       // Smash is declared: the creature acts in the Slow phase, open to Superiority until it lands.
       const smash = abilitiesOf(c).find(a => a.kind === "smash");
       u.smashing = !!(smash && onField(u) && u.ap >= 2 && b.units.some(t => t.pc && standing(state, t) && gap(u, t) <= reachOf(u, c)));
@@ -526,6 +543,7 @@ function nextActor(state, rng, note) {
   if (u) {
     b.current = u.id;
     u.moveLeft = 0; u.lastMove = false; u.attacks = 0; u.brokeFree = false;
+    u.movedLastTurn = !!u.movedThisTurn; u.movedThisTurn = false;
     if (!u.pc && u.phases.length > 1) u.ap = 2;
     startOfTurn(state, rng, note, u);
     return;
@@ -547,12 +565,26 @@ function finishTurn(state, u, rng, note) {
 /** Things that happen as a creature starts its turn: Mob traits that work on presence (Death Tick). */
 function startOfTurn(state, rng, note, u) {
   const b = state.battle;
-  for (const o of b.units.filter(x => x.side !== u.side && x.minion && onField(x) && x.heads > 0)) {
+  // Regrowth at the start of its own turn (Tree-Bound).
+  const rg = has(u, "regen");
+  if (rg && u.hp < u.hpMax) {
+    const n = roll(rng, u.meldBoost ? "2d6" : rg.amount).total;
+    u.meldBoost = false;
+    u.hp = Math.min(u.hpMax, u.hp + n);
+    note(`${u.name} regrows ${n} health (${rg.name}).`);
+  }
+  for (const o of b.units.filter(x => x.side !== u.side && !x.pc && onField(x) && (!x.minion || x.heads > 0))) {
     for (const a of abilitiesOf(CREATURES[o.cname]).filter(x => x.kind === "presence")) {
+      const key = `${o.id}:${a.name}`;
+      // An aura you enter once (Presence of the Ideal) tests you on entering, and not again unless you leave and return; a success makes you immune.
+      if (a.once && gap(o, u) > a.range) { if (u.auraIn) delete u.auraIn[key]; continue; }
       if (gap(o, u) > a.range || cond(u, a.cond.name) >= (a.cond.max || 3)) continue;
-      const dc = mobDC(CREATURES[o.cname].tier, o.heads);
+      if (a.once && (u.auraIn?.[key] || u.auraImmune?.includes(key))) continue;
+      if (a.once) (u.auraIn ||= {})[key] = true;
+      const dc = a.resist.dc === "band" ? mobDC(CREATURES[o.cname].tier, o.heads) : a.resist.dc;
       const t = resist(state, rng, u, a.resist.attr, dc);
       note(`${o.name}: ${a.name}. ${u.name} resists (${t.text} against ${dc}): ${t.ok ? "steady" : "it gets under the skin"}.`);
+      if (t.ok && a.once) (u.auraImmune ||= []).push(key);
       if (!t.ok) { addCond(state, note, u, a.cond.name, a.cond.n, { max: a.cond.max, by: o.id }); if (a.cond.name === "demoralized") u.fearOf = o.id; }
     }
   }
@@ -576,7 +608,7 @@ function endOfTurn(state, rng, note, u) {
       // Attrition removes one head per instance.
       u.heads -= 1; u.hp = u.heads;
       note(`Attrition (${a.label}): one of the ${u.cname.toLowerCase()}s falls${u.heads ? `, ${u.heads} left` : ""}.`, "event");
-      if (u.heads <= 0) { u.dead = true; note(`The last of the ${u.cname.toLowerCase()}s falls.`, "reward"); morale(state, rng, note, "fall"); }
+      if (u.heads <= 0) { note(`The last of the ${u.cname.toLowerCase()}s falls.`, "reward"); creatureFalls(state, rng, note, u); }
       else regroupHeads(u);
       continue;
     }
@@ -598,6 +630,8 @@ function endOfTurn(state, rng, note, u) {
  */
 function secondaryDamage(state, rng, note, t, amount, type, label, { direct = false, noResist = false } = {}) {
   if (!onField(t) || !(amount > 0)) return;
+  const ab = has(t, "absorb");
+  if (ab && ab.type === type) { t.hp = Math.min(t.hpMax, t.hp + amount); note(`${label}: ${t.name} drinks it in (${ab.name}), healing ${amount}.`, "event"); return; }
   if (type && immuneToDamage(state, t, type)) { note(`${label}: ${t.name} is immune.`); return; }
   if (t.pc) {
     const m = memberOf(state, t);
@@ -618,7 +652,7 @@ function secondaryDamage(state, rng, note, t, amount, type, label, { direct = fa
   if (t.minion) { if (r.healthDamage) { t.heads -= 1; t.hp = t.heads; regroupHeads(t); } }
   else t.hp = Math.max(0, t.hp - (r.healthDamage || 0));
   note(`${label}: ${t.name} takes ${[r.durabilityDamage ? `${r.durabilityDamage} to armor` : "", r.healthDamage ? (t.minion ? "a head" : `${r.healthDamage} to health`) : ""].filter(Boolean).join(", ") || "nothing"}.`, "event");
-  if (t.hp <= 0) { t.dead = true; note(`${t.name} falls.`, "reward"); morale(state, rng, note, "fall"); }
+  if (t.hp <= 0) { note(`${t.name} falls.`, "reward"); creatureFalls(state, rng, note, t); }
 }
 
 /**
@@ -637,6 +671,17 @@ function wearOff(state, note, u, k) {
   if (!cond(u, k)) { delete u.decay[k]; note(`${u.name} is no longer ${k}.`); }
 }
 
+/** A creature falls: Grief Fury in its kin, then morale. */
+function creatureFalls(state, rng, note, t) {
+  t.dead = true;
+  for (const o of state.battle.units.filter(x => !x.pc && x !== t && standing(state, x) && gap(x, t) <= 6)) {
+    const g = abilitiesOf(CREATURES[o.cname]).find(a => a.kind === "griefFury");
+    if (g && g.who.test(t.cname)) { note(`${o.name} roars in grief (Grief Fury).`, "event"); addCond(state, note, o, "invigorated", 1, { by: o.id }); }
+  }
+  morale(state, rng, note, "fall");
+}
+const has = (u, kind) => !u.pc && abilitiesOf(CREATURES[u.cname]).find(a => a.kind === kind);
+
 function regroupHeads(u) {
   const c = CREATURES[u.cname];
   const fp = groupTokenSize(Math.max(1, u.heads), c.size.width * c.size.height);
@@ -647,7 +692,7 @@ function regroupHeads(u) {
 /** A grab holds only while the grabber stands beside its catch. */
 function holdStands(state, u) {
   const g = u.held && unitById(state.battle, u.held.by);
-  return !!(g && standing(state, g) && gap(g, u) <= reachOf(g, CREATURES[g.cname]));
+  return !!(g && standing(state, g) && (u.held.ranged || gap(g, u) <= reachOf(g, CREATURES[g.cname])));
 }
 
 /** Run the battle until it needs the player: a character's turn, a decision, or the next declarations. */
@@ -689,7 +734,7 @@ export function moveCost(state, u, x, y) {
   if (fear && onField(fear) && gap({ ...u, x, y }, fear) < gap(u, fear)) return null;
   // Prone: one square per AP. Tainted 2 and up: movement halved.
   let speed = u.prone ? 1 : speedOf(memberOf(state, u));
-  if (cond(u, "tainted") >= 2) speed = Math.max(1, Math.floor(speed / 2));
+  if (slowed(u)) speed = Math.max(1, Math.floor(speed / 2));
   let left = u.moveLeft, ap = 0, last = u.lastMove;
   while (left < path.length) {
     if (ap >= u.ap) return null;
@@ -1031,6 +1076,14 @@ function runOp(state, rng, note) {
   if (op.op === "move") return runMove(state, rng, note, op);
   if (op.op === "attack") return runAttack(state, rng, note, op);
   if (op.op === "breakaway") return runBreakaway(state, rng, note);
+  if (op.op === "trample" || op.op === "bolt" || op.op === "feed") { b.queue.shift(); return runEffect(state, rng, note, op); }
+  if (op.op === "fallback") {
+    b.queue.shift();
+    const u = unitById(b, op.id), from = unitById(b, op.from);
+    const path = u && from && onField(u) ? fallBackPath(state, u, from, op.steps) : null;
+    if (path) b.queue.unshift({ op: "move", id: u.id, path, asked: [], noReprisal: true });
+    return;
+  }
   if (op.op === "afterHit") {
     b.queue.shift();
     const a = unitById(b, op.by), t = unitById(b, op.target);
@@ -1049,7 +1102,7 @@ function runMove(state, rng, note, op) {
     const [nx, ny] = op.path[0];
     if (blockedFor(b, u, nx, ny)) break;
     const next = { ...u, x: nx, y: ny };
-    for (const o of b.units) {
+    for (const o of op.noReprisal ? [] : b.units) {
       if (o.side === u.side || op.asked.includes(o.id) || !standing(state, o) || o.ap < 1 || o.impaired >= 3) continue;
       const reach = reachOf(o, CREATURES[o.cname]);
       if (o.pc && weaponOf(memberOf(state, o), o)?.ranged) continue;
@@ -1071,7 +1124,7 @@ function runMove(state, rng, note, op) {
       }
     }
     // Snap Shot (Untrained ranged baseline): a creature closing within 15 feet of a ready missile.
-    if (!u.pc) for (const o of b.units.filter(x => x.pc && standing(state, x) && x.ap > 0 && !op.asked.includes(`snap:${x.id}`))) {
+    if (!u.pc && !op.noReprisal) for (const o of b.units.filter(x => x.pc && standing(state, x) && x.ap > 0 && !op.asked.includes(`snap:${x.id}`))) {
       if (gap(o, u) <= 3 || gap(o, next) > 3 || !snapReady(state, o)) continue;
       op.asked.push(`snap:${o.id}`);
       const set = reactOf(memberOf(state, o), "snap");
@@ -1084,6 +1137,7 @@ function runMove(state, rng, note, op) {
     }
     const wasIn = auraHolders(state, u).filter(h => gap(h.o, u) <= h.a.radius).map(h => h.o.id);
     u.x = nx; u.y = ny;
+    if (u.id === b.current) u.movedThisTurn = true;
     op.path.shift();
     // Stepping into an aura on your own turn burns.
     if (u.id === b.current) for (const h of auraHolders(state, u)) {
@@ -1166,7 +1220,13 @@ function runAttack(state, rng, note, op) {
   const b = state.battle;
   const a = unitById(b, op.by), t = unitById(b, op.target);
   if (!a || !t || !standing(state, a) || !onField(t) || (t.pc && memberOf(state, t).dead)) { b.queue.shift(); return; }
-  if (!op.ranged && gap(a, t) > reachOf(a, CREATURES[a.cname])) { b.queue.shift(); return; }
+  if (!op.ranged && !op.lineReach && gap(a, t) > reachOf(a, CREATURES[a.cname])) { b.queue.shift(); return; }
+  // Intercept: a knight beside the target steps in and takes the attack, defending with Dominance.
+  if (a.pc && !t.pc && !op.interceptChecked) {
+    op.interceptChecked = true;
+    const k = b.units.find(o => !o.pc && o !== t && standing(state, o) && o.ap >= 2 && gap(o, t) <= 1 && has(o, "intercept") && (op.ranged || gap(o, a) <= reachOf(a)));
+    if (k) { k.ap -= 1; op.target = k.id; op.interceptDom = true; note(`${k.name} steps in front of ${t.name} (Intercept).`, "event"); return; }
+  }
   const info = attackInfo(state, a, op);
   // Grab: in lieu of an attack roll, a trial.
   if (op.grab) {
@@ -1192,7 +1252,13 @@ function runAttack(state, rng, note, op) {
       b.prompt = { kind: "defend", by: a.id, target: t.id, helper: auto ? null : helper?.id, helperName: helper?.name, autoHearten: auto,
         text: `${a.name} ${op.reaction === "reprisal" ? "lashes out at" : op.reaction === "counter" || op.reaction === "riposte" ? "counters" : op.charge ? "charges" : "attacks"} ${t.name} (${info.name}${op.ranged ? ", ranged" : ""}). Defend (1 AP, ${t.ap} left)?` };
       return;
-    } else op.defend = t.ap > (t.doneIn.length || b.current === t.id ? 0 : 1);
+    } else if (has(t, "doubleDamage") && !op.ranged && t.ap >= 1 && t.hp > t.hpMax / 2) {
+      // Double Damage: it lets the blow land, with Superiority, to answer it with its own.
+      t.ap -= 1; op.defend = false; op.sup = true; op.doubleDamage = true;
+      note(`${t.name} opens its guard to take the blow (Double Damage).`, "event");
+    } else if (op.reaction === "reprisal" && has(t, "false") && t.ap >= 1) {
+      op.defend = true; op.falseBonus = 1;
+    } else op.defend = op.interceptDom ? t.ap >= 1 : t.ap > (t.doneIn.length || b.current === t.id ? 0 : 1);
   }
   // Hearten the attack (Presence, Rhetoric), if an ally is set to.
   if (a.pc && !op.heartenAsked) {
@@ -1237,17 +1303,34 @@ function runAttack(state, rng, note, op) {
   if (!op.ranged && t.prone) sup = true;
   if (op.ranged && t.prone) inf = true;
   if (t.smashing) sup = true;
+  // Root Snare's Pin, Mark Quarry at Tier 3, a Cunning Feint: Superiority against that one target.
+  if (has(a, "hold")?.supWhenPinned && t.held?.by === a.id && cond(t, "restricted") >= 2) sup = true;
+  if (cond(a, "quarry") >= 3 && a.quarryOn === t.id) sup = true;
+  if (a.feintOn === t.id) { sup = true; a.feintOn = null; }
+  // Incorporeal: mundane damage has Inferiority against it.
+  if (has(t, "incorporeal") && ["cutting", "cleaving", "crushing", "piercing", "puncturing"].includes(info.type)) inf = true;
   const lift = op.heartenAtk ? heartenBonus(state, op.heartenAtk) : 0;
   if (lift) note(`${unitById(b, op.heartenAtk).name} heartens ${a.name} (+${lift}).`);
-  const atk = rollPool(rng, info.dice, { edge: (dom ? 1 : 0) - (imp ? 1 : 0), bonus: info.bonus + (op.bonus || 0) + (flank ? 2 : 0) + am.bonus - am.pen + lift, inferiority: inf, superiority: sup, extra: info.extra });
+  // One roll against several targets (Swipe, Timber, Boulder Throw): the first rolls, the rest share it.
+  let atk = op.shared && b.rolls?.[op.shared];
+  if (!atk) {
+    atk = rollPool(rng, info.dice, { edge: (dom ? 1 : 0) - (imp ? 1 : 0), bonus: info.bonus + (op.bonus || 0) + (flank ? 2 : 0) + am.bonus - am.pen + lift, inferiority: inf, superiority: sup, extra: info.extra });
+    // Breaker: an exploding die lets the orc add its Strength score, and costs it three tiers of Exhausted.
+    if (!a.pc && atk.exploded && !cond(a, "exhausted") && abilitiesOf(CREATURES[a.cname]).some(x => x.kind === "breaker")) {
+      const str = CREATURES[a.cname].attributes.strength.score;
+      atk = { ...atk, total: atk.total + str, text: `${atk.text}, Breaker + ${str} = ${atk.total + str}` };
+      addCond(state, note, a, "exhausted", 3, { by: a.id, decays: true });
+    }
+    if (op.shared) (b.rolls ||= {})[op.shared] = atk;
+  }
   let def = null;
   if (op.defend) {
     const d = canDefend(state, { ...t, ap: 1 }, info.type, op.ranged);
     const dm = mods(state, t, "defense");
-    let ddom = dm.edge > 0, dimp = dm.edge < 0;
+    let ddom = dm.edge > 0 || !!op.interceptDom, dimp = dm.edge < 0;
     if (t.pc) { if (t.guard === "stable") ddom = true; if (t.guard === "striking") dimp = true; }
     const hearten = op.hearten ? heartenBonus(state, op.hearten) : 0;
-    def = rollPool(rng, d.dice, { edge: (ddom ? 1 : 0) - (dimp ? 1 : 0), bonus: d.bonus + dm.bonus - dm.pen + hearten, inferiority: dm.inf || d.unarmed, superiority: dm.sup });
+    def = rollPool(rng, d.dice, { edge: (ddom ? 1 : 0) - (dimp ? 1 : 0), bonus: d.bonus + dm.bonus - dm.pen + hearten + (op.falseBonus || 0), inferiority: dm.inf || d.unarmed, superiority: dm.sup });
     if (hearten) note(`${unitById(b, op.hearten).name} heartens ${t.name} (+${hearten}).`);
   }
   const verb = op.reaction === "counter" || op.reaction === "riposte" ? "counters" : op.reaction === "reprisal" ? "strikes at" : op.reaction === "pack" ? "piles onto" : op.charge ? "charges" : op.ranged ? "shoots" : "attacks";
@@ -1276,6 +1359,40 @@ function afterHit(state, rng, note, a, t, op, hit, info, heartenTrial) {
     }
     for (const r of riders) applyRider(state, rng, note, a, t, r, hit, heartenTrial);
     if (!a.pc) for (const f of abilitiesOf(CREATURES[a.cname]).filter(x => x.kind === "flame" && x.whenType === info.type)) secondaryDamage(state, rng, note, t, f.amount, f.type, `${a.name}'s ${f.name}`);
+  }
+  if (dealt && op.push && onField(t) && !(t.pc && memberOf(state, t).dead)) {
+    const r = resist(state, rng, t, op.push.resist.attr, op.push.resist.dc);
+    note(`${t.name} braces against the blow (Strength ${r.text} against ${op.push.resist.dc}): ${r.ok ? "holds" : "is thrown back"}.`);
+    if (!r.ok) pushAway(state, t, a, op.push.squares);
+  }
+  if (dealt && a.minion) for (const m of abilitiesOf(CREATURES[a.cname]).filter(x => x.kind === "mobSelf")) addCond(state, note, a, m.cond, 1, { by: a.id });
+  // Double Damage: having taken the blow, the orc answers with Superiority and Dominance.
+  if (op.doubleDamage && standing(state, t) && standing(state, a) && meleeAttack(CREATURES[t.cname])) {
+    t.attack = CREATURES[t.cname].attacks.indexOf(meleeAttack(CREATURES[t.cname]));
+    b.queue.unshift({ op: "attack", by: t.id, target: a.id, ranged: false, reaction: "counter", sup: true, edge: 1 });
+    return;
+  }
+  // False: the reprisal missed, and the warrior answers with Superiority before it moves on.
+  if (op.falseBonus && hit.defended && standing(state, t) && meleeAttack(CREATURES[t.cname])) {
+    b.queue.unshift({ op: "attack", by: t.id, target: a.id, ranged: false, reaction: "counter", sup: true });
+    note(`${t.name} turns the reprisal into an opening (False).`, "event");
+    return;
+  }
+  // Shed: a successful defense lets the wolf shove its attacker aside.
+  if (hit.defended && !op.ranged && has(t, "shed") && t.ap >= 1 && standing(state, a) && a.w * a.h <= t.w * t.h) {
+    const spots = [];
+    for (let y = a.y - 1; y <= a.y + 1; y++) for (let x = a.x - 1; x <= a.x + 1; x++) {
+      if ((x !== a.x || y !== a.y) && !blockedFor(b, a, x, y) && gap({ ...a, x, y }, t) <= reachOf(t, CREATURES[t.cname])) spots.push([x, y]);
+    }
+    const spot = spots.find(([x, y]) => !b.units.some(o => o.side === a.side && o !== a && standing(state, o) && gap(o, t) <= 1 && opposite({ ...a, x, y }, o, t))) || spots[0];
+    if (spot) { t.ap -= 1; a.x = spot[0]; a.y = spot[1]; note(`${t.name} sheds ${a.name} aside (Shed).`, "event"); }
+  }
+  // Press: its melee blow turned without harm, the revenant strikes twice more with Inferiority.
+  if (!a.pc && !op.ranged && !dealt && hit.defended && has(a, "press") && a.ap >= 1 && standing(state, t) && !op.pressed) {
+    a.ap -= 1;
+    for (let i = 0; i < 2; i++) b.queue.unshift({ op: "attack", by: a.id, target: t.id, ranged: false, inf: true, pressed: true });
+    note(`${a.name} presses the attack (Press).`, "event");
+    return;
   }
   // Challenge: the killing blow on the challenged foe inspires the challenger.
   if (a.pc && !onField(t) && a.challenge === t.id) {
@@ -1324,8 +1441,9 @@ function applyRider(state, rng, note, a, t, ab, hit, hearten) {
   if (!onField(t) || (t.pc && memberOf(state, t).dead)) return;
   if (ab.cond && cond(t, ab.cond.name) >= (ab.cond.max || 3) && ab.cond.name !== "infected") return;
   if (ab.resist) {
-    const dc = ab.resist.dc === "band" ? mobDC(CREATURES[a.cname].tier, a.heads) : ab.resist.dc;
-    const r = resist(state, rng, t, ab.resist.attr, dc, { hearten });
+    const dc0 = ab.resist.dc === "band" ? mobDC(CREATURES[a.cname].tier, a.heads) : ab.resist.dc;
+    const dc = dc0 + (ab.resist.plus || 0);
+    const r = resist(state, rng, t, ab.resist.attr, dc, { hearten, forCond: ab.cond?.name });
     hearten = null; // one Hearten, one roll
     note(`${ab.name}: ${t.name} resists with ${ab.resist.attr[0].toUpperCase() + ab.resist.attr.slice(1)} (${r.text} against ${dc}), ${r.ok ? "and shrugs it off" : "and fails"}.`);
     if (r.ok) return;
@@ -1348,11 +1466,11 @@ function applyRider(state, rng, note, a, t, ab, hit, hearten) {
 /** Grab and Constrict: a Strength trial or Restricted, held while the grabber stays beside its catch. */
 function runGrab(state, rng, note, a, t, ab, hearten) {
   if (cond(t, "restricted") >= 3) return;
-  const r = resist(state, rng, t, ab.resist.attr, ab.resist.dc, { hearten });
+  const r = resist(state, rng, t, ab.resist.attr, ab.resist.dc, { hearten, forCond: "restricted" });
   note(`${a.name} tries to ${ab.name === "Constrict" ? "wrap around" : "seize"} ${t.name} (${ab.name}). ${t.name} resists with Strength (${r.text} against ${ab.resist.dc}), ${r.ok ? "and slips free" : "and is caught"}.`, r.ok ? "" : "event");
   if (r.ok) return;
   addCond(state, note, t, "restricted", 1, { by: a.id });
-  t.held = { by: a.id, dc: ab.resist.dc, name: ab.name };
+  t.held = { by: a.id, dc: ab.resist.dc, name: ab.name, ranged: (ab.range || 1) > 1 };
 }
 
 /** Corra's Hearten (Presence, Rhetoric): a standing ally with AP can add their Charisma tier to this roll. */
@@ -1368,6 +1486,7 @@ function heartenBonus(state, id) {
 
 /** Is the ally on the far side of the target from the attacker? (Combat, Flanking) */
 function opposite(a, o, t) {
+  if (has(t, "unflankable")) return false;
   const side = (u) => [u.x + u.w - 1 < t.x ? -1 : u.x > t.x + t.w - 1 ? 1 : 0, u.y + u.h - 1 < t.y ? -1 : u.y > t.y + t.h - 1 ? 1 : 0];
   const [ax, ay] = side(a), [ox, oy] = side(o);
   return (ax !== 0 && ox === -ax) || (ay !== 0 && oy === -ay);
@@ -1378,6 +1497,13 @@ export const flanking = (state, a, t) => state.battle.units.some(o => o.side ===
 /* Damage                                                               */
 
 function applyHit(state, rng, note, a, t, atk, def, type, ranged) {
+  const ab = has(t, "absorb");
+  if (ab && ab.type === type && !(def && def.total >= atk.total)) {
+    const gain = Math.max(0, atk.total - (def?.total || 0));
+    t.hp = Math.min(t.hpMax, t.hp + gain);
+    note(`${t.name} drinks it in (${ab.name}): it heals ${gain}.`, "event");
+    return { defended: false, durabilityDamage: 0, healthDamage: 0 };
+  }
   if (immuneToDamage(state, t, type)) { note(`${t.name} is immune to ${type} damage.`); return { defended: false, durabilityDamage: 0, healthDamage: 0 }; }
   if (t.pc) {
     const m = memberOf(state, t);
@@ -1416,9 +1542,8 @@ function applyHit(state, rng, note, a, t, atk, def, type, ranged) {
   if (t.minion) note(bits.length ? `${bits.join(", ").replace(/^./, ch => ch.toUpperCase())}.` : "None of them fall.", "event");
   else note(`${t.name} takes ${bits.join(", ") || "nothing"}.`, "event");
   if (t.hp <= 0) {
-    t.dead = true;
     note(`${t.minion ? `The last of the ${t.cname.toLowerCase()}s falls` : `${t.name} falls`}.`, "reward");
-    morale(state, rng, note, "fall");
+    creatureFalls(state, rng, note, t);
   } else morale(state, rng, note, "hurt", t);
   return r;
 }
@@ -1529,6 +1654,62 @@ function morale(state, rng, note, why, hurt = null) {
 /* ------------------------------------------------------------------ */
 /* The enemy                                                            */
 
+/** Shove a creature straight away from another, square by square, until something stops it. */
+function pushAway(state, t, from, squares) {
+  const b = state.battle;
+  const cx = (u) => u.x + (u.w - 1) / 2, cy = (u) => u.y + (u.h - 1) / 2;
+  const dx = Math.sign(cx(t) - cx(from)), dy = Math.sign(cy(t) - cy(from));
+  for (let i = 0; i < squares; i++) {
+    if (blockedFor(b, t, t.x + dx, t.y + dy)) break;
+    t.x += dx; t.y += dy;
+  }
+}
+
+/** Up to steps squares, as far from the threat as the ground allows. */
+function fallBackPath(state, u, from, steps) {
+  const b = state.battle;
+  let best = null;
+  for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) {
+    const path = pathTo(b, u, x, y);
+    if (!path || !path.length || path.length > steps) continue;
+    const d = gap({ ...u, x, y }, from);
+    if (!best || d > best.d) best = { d, path };
+  }
+  return best?.path || null;
+}
+
+/** Straight runs from a unit: each direction's free squares, up to len. */
+function straightRuns(b, u, len) {
+  const runs = [];
+  for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+    const path = [];
+    for (let k = 1; k <= len; k++) { const x = u.x + dx * k, y = u.y + dy * k; if (blockedFor(b, u, x, y)) break; path.push([x, y]); }
+    if (path.length) runs.push({ dx, dy, path });
+  }
+  return runs;
+}
+
+/** Trample (everyone beside the path resists), bolt (a trial or the damage), feed (damage, then a trial). */
+function runEffect(state, rng, note, op) {
+  const b = state.battle;
+  const a = unitById(b, op.by);
+  const ab = abilitiesOf(CREATURES[a.cname]).find(x => x.name === op.ab);
+  const targets = (op.ids || [op.target]).map(id => unitById(b, id)).filter(t => t && onField(t) && !(t.pc && memberOf(state, t).dead));
+  for (const t of targets) {
+    if (op.op === "feed") {
+      secondaryDamage(state, rng, note, t, roll(rng, ab.damage).total, ab.type, `${a.name} feeds on ${t.name}`);
+      if (!onField(t)) continue;
+    }
+    const r = resist(state, rng, t, ab.resist.attr, ab.resist.dc, { forCond: ab.cond?.name });
+    note(`${ab.name}: ${t.name} resists with ${ab.resist.attr[0].toUpperCase() + ab.resist.attr.slice(1)} (${r.text} against ${ab.resist.dc}), ${r.ok ? "and avoids it" : "and fails"}.`);
+    if (r.ok) continue;
+    if (op.op === "bolt") secondaryDamage(state, rng, note, t, roll(rng, ab.damage).total, ab.type, `${a.name}'s ${ab.name}`);
+    if (!onField(t)) continue;
+    if (ab.cond) addCond(state, note, t, ab.cond.name, ab.cond.n, { by: a.id, lasting: ab.cond.name === "exhausted" });
+    if (ab.attrition) { t.attrition.push({ ...ab.attrition }); note(`${t.name} suffers Attrition (${ab.attrition.label}) ${ab.attrition.amount}.`, "event"); }
+  }
+}
+
 function aiStep(state, rng, note, u) {
   const b = state.battle;
   const c = CREATURES[u.cname];
@@ -1576,19 +1757,160 @@ function aiStep(state, rng, note, u) {
       return;
     }
   }
-  // A Leader's buff (2 AP): when it isn't engaged and has allies near to stir.
+  const hurt = u.hp < u.hpMax / 2;
+  // Woodland Meld: badly hurt and pressed, it sinks into the ground and rises far off.
+  if (has(u, "meld") && hurt && near.length && u.ap >= 1 && !cond(u, "restricted")) {
+    let spot = null;
+    for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) {
+      if (blockedFor(b, u, x, y)) continue;
+      const d = Math.min(...pcs.map(t => gap({ ...u, x, y }, t)));
+      if (!spot || d > spot.d) spot = { x, y, d };
+    }
+    if (spot) { u.ap -= 1; u.x = spot.x; u.y = spot.y; u.meldBoost = true; note(`${u.name} melds into the earth and rises elsewhere (Woodland Meld).`, "event"); return; }
+  }
+  // Reconstitute: once a round, when badly hurt.
+  const heal = has(u, "heal");
+  if (heal && hurt && u.ap >= 1 && u.healedRound !== b.round) {
+    u.ap -= 1; u.healedRound = b.round;
+    const n = roll(rng, heal.amount).total;
+    u.hp = Math.min(u.hpMax, u.hp + n);
+    note(`${u.name} draws itself back together (${heal.name}): ${n} health.`, "event");
+    return;
+  }
+  // Roar and Stomp (2 AP): when two or more of the party stand within it.
+  const roar = abs.find(a => a.kind === "roar");
+  if (roar && u.ap >= 2 && u.attacks === 0 && u.roared !== b.round) {
+    const hit = pcs.filter(t => gap(u, t) <= roar.range && (roar.prone ? !t.prone : cond(t, roar.cond.name) < 3));
+    if (hit.length >= 2) {
+      u.ap -= 2; u.roared = b.round;
+      note(`${u.name} uses ${roar.name}.`, "event");
+      for (const t of hit) {
+        const r = resist(state, rng, t, roar.resist.attr, roar.resist.dc, { forCond: roar.prone ? "prone" : roar.cond.name });
+        note(`${t.name} resists with ${roar.resist.attr[0].toUpperCase() + roar.resist.attr.slice(1)} (${r.text} against ${roar.resist.dc}): ${r.ok ? "holds" : "fails"}.`);
+        if (r.ok) continue;
+        if (roar.prone) { t.prone = true; note(`${t.name} is knocked prone.`, "event"); }
+        else { addCond(state, note, t, roar.cond.name, roar.cond.n, { by: u.id }); if (roar.cond.name === "demoralized") t.fearOf = u.id; }
+      }
+      return;
+    }
+  }
+  // A Leader's buff (2 AP): when it isn't engaged and has allies near to stir. Some can be used once, and last the fight.
   const buff = abs.find(a => a.kind === "buff");
-  if (buff && !near.length && u.ap >= 2 && u.attacks === 0) {
+  if (buff && !near.length && u.ap >= 2 && u.attacks === 0 && !(buff.once && u.usedOnce?.includes(buff.name))) {
     const allies = b.units.filter(o => o !== u && !o.pc && standing(state, o) && buff.who.test(o.cname) && gap(o, u) <= buff.range && cond(o, buff.cond) < 3);
-    if (allies.length >= 2) {
+    if (allies.length >= 2 || (buff.once && allies.length)) {
       u.ap -= 2;
+      if (buff.once) (u.usedOnce ||= []).push(buff.name);
       note(`${u.name} uses ${buff.name}.`, "event");
-      for (const o of allies) addCond(state, note, o, buff.cond, 1, { by: u.id });
+      for (const o of allies) addCond(state, note, o, buff.cond, 1, { by: u.id, lasting: !!buff.lasting });
       return finishTurn(state, u, rng, note);
     }
   }
+  // Mark Quarry (2 AP): allies within range are Inspired against one target.
+  const quarry = has(u, "quarry");
+  if (quarry && !near.length && u.ap >= 2 && u.attacks === 0) {
+    const t = [...pcs].sort((x, y) => gap(u, x) - gap(u, y))[0];
+    const allies = b.units.filter(o => !o.pc && standing(state, o) && gap(o, u) <= quarry.range);
+    if (t && allies.length >= 2) {
+      u.ap -= 2;
+      note(`${u.name} marks ${t.name} as quarry (Mark Quarry).`, "event");
+      for (const o of allies) { if (o.quarryOn !== t.id) setCond(o, "quarry", 0); o.quarryOn = t.id; addCond(state, note, o, "quarry", 1, { by: u.id }); }
+      return finishTurn(state, u, rng, note);
+    }
+  }
+  // Several at once: Swipe at two in reach, Timber down a line, a boulder on a 2 × 2.
+  const multi = has(u, "multi");
+  if (multi && near.length >= 2 && mayAttack) {
+    const atk = c.attacks.find(a => multi.attack.test(a.name) && !rangeOf(a)) || melee;
+    u.ap -= 1; u.attacks += 1; u.attack = c.attacks.indexOf(atk);
+    const key = `${u.id}:${b.round}:${u.attacks}`;
+    note(`${u.name} swings at ${near.slice(0, multi.targets).map(t => t.name).join(" and ")} (${multi.name}).`, "event");
+    for (const t of near.slice(0, multi.targets)) b.queue.push({ op: "attack", by: u.id, target: t.id, ranged: false, inf: !!multi.inf, shared: key });
+    return;
+  }
+  const line = has(u, "line");
+  if (line && u.ap >= 2 && u.attacks === 0) {
+    // The line runs out from any square of its body, in any of the eight directions.
+    let bestLine = null;
+    for (let fy = u.y; fy < u.y + u.h; fy++) for (let fx = u.x; fx < u.x + u.w; fx++) {
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+        let x = fx, y = fy;
+        while (covers(u, x, y)) { x += dx; y += dy; }
+        const cells = Array.from({ length: line.length }, (_, k) => [x + dx * k, y + dy * k]);
+        const hit = pcs.filter(t => cells.some(([px, py]) => covers(t, px, py)));
+        if (!bestLine || hit.length > bestLine.length) bestLine = hit;
+      }
+    }
+    if (bestLine?.length >= 2) {
+      const atk = c.attacks.find(a => line.attack.test(a.name)) || melee;
+      u.ap -= 2; u.attacks += 1; u.attack = c.attacks.indexOf(atk);
+      const key = `${u.id}:${b.round}:${u.attacks}`;
+      note(`${u.name} sweeps a line (${line.name}).`, "event");
+      for (const t of bestLine) b.queue.push({ op: "attack", by: u.id, target: t.id, ranged: false, shared: key, push: line.push, lineReach: true });
+      return;
+    }
+  }
+  const area = has(u, "area");
+  const areaAtk = area && c.attacks.find(a => area.attack.test(a.name) && rangeOf(a));
+  if (areaAtk && mayAttack && !near.length) {
+    const rr = rangeOf(areaAtk);
+    let bestBox = null;
+    for (let y = 0; y < b.h - 1; y++) for (let x = 0; x < b.w - 1; x++) {
+      const box = { x, y, w: area.size, h: area.size };
+      if (gap(u, box) > rr[2]) continue;
+      const hit = pcs.filter(t => gap(t, box) === 0);
+      if (!bestBox || hit.length > bestBox.length) bestBox = hit;
+    }
+    if (bestBox?.length >= 2) {
+      u.ap -= 1; u.attacks += 1; u.attack = c.attacks.indexOf(areaAtk);
+      const key = `${u.id}:${b.round}:${u.attacks}`;
+      note(`${u.name} hurls at ${bestBox.map(t => t.name).join(" and ")} (${area.name}).`, "event");
+      for (const t of bestBox) b.queue.push({ op: "attack", by: u.id, target: t.id, ranged: true, edge: area.edge || 0, shared: key });
+      return;
+    }
+  }
+  // Ranged holds (Web, Root Snare, Ensnare): seize one not yet held.
+  const hold = has(u, "hold");
+  if (hold && u.ap >= 1 && u.attacks === 0) {
+    const t = pcs.filter(x => !x.held && gap(u, x) <= hold.range && cond(x, "restricted") < 3).sort((x, y) => gap(u, x) - gap(u, y))[0];
+    if (t) {
+      u.ap -= 1; u.attacks += 1;
+      b.queue.push({ op: "attack", by: u.id, target: t.id, ranged: true, grab: { ...hold, range: hold.range } });
+      return;
+    }
+  }
+  // Feed: on a helpless one beside it.
+  const feed = has(u, "feed");
+  const prey = feed && b.units.find(t => t.pc && onField(t) && !memberOf(state, t).dead && gap(u, t) <= reach && helpless(state, t));
+  if (prey && u.ap >= 1) { u.ap -= 1; u.attacks += 1; b.queue.push({ op: "feed", by: u.id, target: prey.id, ab: feed.name }); return; }
+  // Cunning Feint: distract one before striking it.
+  const feint = has(u, "feint");
+  if (feint && u.ap >= 2 && u.attacks === 0 && !u.feintOn) {
+    const t = pcs.find(x => gap(u, x) <= feint.range);
+    if (t) {
+      u.ap -= 1;
+      const r = resist(state, rng, t, feint.resist.attr, feint.resist.dc);
+      note(`${u.name} feints at ${t.name} (Cunning Feint; Perception ${r.text} against ${feint.resist.dc}): ${r.ok ? "not fooled" : "fooled"}.`);
+      if (!r.ok) u.feintOn = t.id;
+      return;
+    }
+  }
+  // Bolts at range (Thorn Bolt, Consume): when nothing is in reach.
+  const bolt = abs.find(a => a.kind === "bolt" && u.ap >= (a.ap || 1));
+  if (bolt && !near.length && mayAttack) {
+    const t = pcs.filter(x => gap(u, x) <= bolt.range).sort((x, y) => gap(u, x) - gap(u, y))[0];
+    if (t) { u.ap -= bolt.ap || 1; u.attacks += 1; note(`${u.name} uses ${bolt.name} on ${t.name}.`, "event"); b.queue.push({ op: "bolt", by: u.id, target: t.id, ab: bolt.name }); return; }
+  }
   if (near.length && melee) {
     if (!mayAttack) return finishTurn(state, u, rng, note);
+    // A heavy blow (Vicious Bite, 2 AP) to open.
+    const heavy = has(u, "heavy");
+    if (heavy && u.ap >= 2 && u.attacks === 0) {
+      const t = near.find(x => x.quarryOn) || near[0];
+      u.ap -= 2; u.attacks += 1;
+      b.queue.push({ op: "attack", by: u.id, target: t.id, ranged: false, special: { ...heavy.special } });
+      return;
+    }
     // Squeeze what it holds; seize what it doesn't.
     const grab = abs.find(a => a.kind === "grab");
     const caught = near.find(t => t.held?.by === u.id);
@@ -1601,14 +1923,44 @@ function aiStep(state, rng, note, u) {
       const t = near.find(x => !x.held) || near[0];
       if (!t.held) { attack(b, u, t, false); b.queue[b.queue.length - 1].grab = grab; return; }
     }
-    const t = near[0];
+    const t = near.find(x => u.quarryOn === x.id && cond(u, "quarry") >= 1) || near[0];
     const pick = riderFor(state, u, c, t, false);
     u.attack = c.attacks.indexOf(pick?.atk || melee);
     attack(b, u, t, false);
-    if (pick) Object.assign(b.queue[b.queue.length - 1], { rider: pick.ab.name, edge: pick.ab.edge || 0, inf: !!pick.ab.inf, forfeitFlank: !!pick.ab.needsFlank });
+    if (pick) Object.assign(b.queue[b.queue.length - 1], { rider: pick.ab.name, edge: pick.ab.edge || 0, inf: !!pick.ab.inf, sup: !!pick.ab.sup, forfeitFlank: !!pick.ab.needsFlank, special: pick.ab.special ? { ...pick.ab.special } : undefined });
     return;
   }
   if (cond(u, "restricted")) return finishTurn(state, u, rng, note);
+  // Rush (Relentless Chase, Dive): any route in, drawing no reprisals, then the attack. Dive flies back out.
+  const rush = has(u, "rush");
+  if (rush && u.ap >= 2 && u.attacks === 0 && !u.demoralized) {
+    const r = pcs.map(t => ({ t, path: pathToReach(b, u, t, reach) })).filter(x => x.path && x.path.length <= speed).sort((x, y) => x.path.length - y.path.length)[0];
+    const atk = c.attacks.find(a => rush.attack.test(a.name)) || melee;
+    if (r && atk) {
+      u.ap -= 2; u.attacks += 1; u.attack = c.attacks.indexOf(atk);
+      note(`${u.name} ${rush.flyBack ? "dives on" : "runs down"} ${r.t.name} (${rush.name}).`, "event");
+      b.queue.push({ op: "move", id: u.id, path: r.path, asked: [], noReprisal: true });
+      b.queue.push({ op: "attack", by: u.id, target: r.t.id, ranged: false, sup: !!(rush.supIfMoved && r.t.movedLastTurn) });
+      if (rush.flyBack) b.queue.push({ op: "fallback", id: u.id, from: r.t.id, steps: Math.floor(speed / 2) });
+      return;
+    }
+  }
+  // Trample (Wildfire, Avalanche): a straight run past the party; everyone beside the path resists.
+  const tr = has(u, "trample");
+  if (tr && u.ap >= 2 && u.attacks === 0 && !u.demoralized) {
+    let bestRun = null;
+    for (const run of straightRuns(b, u, speed)) {
+      const hit = pcs.filter(t => run.path.some(([x, y]) => gap({ ...u, x, y }, t) <= 1));
+      if (!bestRun || hit.length > bestRun.hit.length) bestRun = { ...run, hit };
+    }
+    if (bestRun?.hit.length) {
+      u.ap -= 2; u.attacks += 1;
+      note(`${u.name} tears through (${tr.name}).`, "event");
+      b.queue.push({ op: "move", id: u.id, path: bestRun.path, asked: [], noReprisal: true });
+      b.queue.push({ op: "trample", by: u.id, ids: bestRun.hit.map(t => t.id), ab: tr.name });
+      return;
+    }
+  }
   // Charge: a straight run into the nearest it can reach that way.
   const ch = abs.find(a => a.kind === "charge");
   if (ch && u.ap >= 2 && u.attacks === 0 && !u.moveLeft && !u.demoralized) {
@@ -1628,7 +1980,10 @@ function aiStep(state, rng, note, u) {
   const routes = pcs.map(t => ({ t, path: pathToReach(b, u, t, reach) })).filter(r => r.path).sort((x, y) => x.path.length - y.path.length);
   const best = routes[0];
   const reachable = best && best.path.length <= u.moveLeft + speed + (u.ap > 1 ? speed + Math.floor(speed / 2) : 0);
-  if (ranged && mayAttack && (!melee || !reachable || u.demoralized >= 1)) {
+  // Archers shoot while no one is beside them (a bow can't be loosed with an enemy within 5 feet).
+  const archer = ranged && /bow|projectile/i.test(`${ranged.name} ${ranged.range}`);
+  const pressed = pcs.some(t => gap(u, t) <= 1);
+  if (ranged && mayAttack && !(archer && pressed) && (!melee || !reachable || u.demoralized >= 1 || archer)) {
     const rr = rangeOf(ranged);
     const shot = pcs.filter(t => gap(u, t) <= rr[2]).sort((x, y) => gap(u, x) - gap(u, y))[0];
     if (shot) {
@@ -1641,16 +1996,16 @@ function aiStep(state, rng, note, u) {
   }
   if (!best || u.demoralized >= 1 || !melee) return finishTurn(state, u, rng, note);
   let steps = u.moveLeft;
-  if (cond(u, "tainted") >= 2) steps = Math.min(steps, Math.floor(speed / 2));
+  if (slowed(u)) steps = Math.min(steps, Math.floor(speed / 2));
   if (steps < best.path.length) {
     if (u.ap < 1) return finishTurn(state, u, rng, note);
     u.ap -= 1;
-    steps += cond(u, "tainted") >= 2 ? Math.floor(moveStep(u, speed) / 2) : moveStep(u, speed);
+    steps += slowed(u) ? Math.floor(moveStep(u, speed) / 2) : moveStep(u, speed);
   }
   const go = best.path.slice(0, steps);
   u.moveLeft = steps - go.length;
   u.lastMove = true;
-  b.queue.push({ op: "move", id: u.id, path: go, asked: [] });
+  b.queue.push({ op: "move", id: u.id, path: go, asked: [], noReprisal: !!has(u, "stride") });
 }
 
 /** Which rider, if any, the creature uses on this attack: one whose effect the target doesn't already carry. */
@@ -1659,6 +2014,7 @@ function riderFor(state, u, c, t, ranged) {
     const atk = c.attacks.find(a => ab.attack.test(a.name) && !!rangeOf(a) === ranged);
     if (!atk) continue;
     if (ab.needsFlank && !flanking(state, u, t)) continue;
+    if (ab.needsCond && !cond(t, ab.needsCond)) continue;
     if (ab.cond && cond(t, ab.cond.name) >= 1) continue;
     if (ab.attrition && t.attrition?.length) continue;
     return { ab, atk };
@@ -1754,6 +2110,7 @@ function finish(state, rng, note, outcome) {
     }
   }
   if (outcome === "won" || outcome === "fled") tend(state, rng, note);
+  for (const u of b.units.filter(x => x.pc)) { const m = memberOf(state, u); m.exhausted = cond(u, "exhausted") || 0; }
   for (const m of state.party.members) { m.down = m.dead || m.hp <= 0; m.fightingOn = false; m.stable = false; m.dying = null; }
   state.encounter = null;
   state.battle = null;
@@ -1785,6 +2142,7 @@ export function conditionsOf(state, u) {
   if (u.impaired) bits.push(IMPAIRED[u.impaired]);
   if (u.demoralized) bits.push(DEMORALIZED[u.demoralized]);
   for (const k of Object.keys(COND_LABELS)) if (cond(u, k)) bits.push(COND_LABELS[k][cond(u, k)]);
+  if (cond(u, "quarry") && u.quarryOn) bits.push(`hunting ${unitById(state.battle, u.quarryOn)?.name || "its quarry"} (${cond(u, "quarry")})`);
   if (u.held) bits.push(`held (${u.held.name})`);
   if (u.prone) bits.push("prone");
   if (u.attrition?.length) bits.push(`bleeding ${u.attrition.reduce((n, a) => n + a.amount, 0)}`);

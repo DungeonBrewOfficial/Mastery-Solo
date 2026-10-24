@@ -62,7 +62,14 @@ The game saves after every action: on the hosted page, to the player's own priva
      - Corra's Hearten, offered on an ally's Defend prompt;
      - Gisla's immunity to Profane damage.
    - *Synergies on the page.* A "Right now" list on each turn names what's open (Opportunist, Charge, flanking, a prone or winding-up foe, someone bleeding out or held, Hearten on hand); tap a line for its rule (`game/data/rules-text.js`). Each character's Reactions page, opened from the party list, sets Ask, Always, or Never for each reaction.
-   - *Stage 2, next.* The Band II abilities (about forty: Command and Command Shout, Pride Roar, Roar, Intercept, Shield Punch, Half-Sword, Press, Pinning Shot, Constrict's kin, Web, Dive, and others). The maneuvers and guards past Untrained wait for advancement (milestone 3), since no one can learn them before then.
+   - *Stage 2, Band II, built.* About sixty more abilities, with what they needed added to the engine:
+     - attacks with one roll against several targets (Swipe, Timber, Boulder Throw) and pushes;
+     - holds at range (Web, Root Snare, Ensnare), fear auras (Presence of the Ideal) and Roar and Stomp;
+     - moves that draw no reprisals (Relentless Chase, Dive, Unyielding Advance) and trampling runs (Wildfire, Avalanche);
+     - trials in place of attack rolls (Thorn Bolt, Consume, Feed);
+     - regrowth and healing (Tree-Bound, Reconstitute), Woodland Meld, Mark Quarry, Cunning Feint;
+     - reactions (Intercept, Double Damage, Shed, False, Press), Grief Fury, Breaker, Incorporeal, Three Heads, Absorb Flame, Blood Up.
+     The Exhausted condition now exists: in fights, carried out of them, and eased by rest. Archers now shoot while no one is beside them. Abilities that need water, fog, walls, or the Magpie's talk are named in the log as waiting on those. The maneuvers and guards past Untrained wait for advancement (milestone 3), since no one can learn them before then.
    - *Stage 3.* Spells (Flame Dart, Stoneskin, Mend, Sacred Ward) and the companions (Tallow, Clabber).
 
 ## Known gaps
