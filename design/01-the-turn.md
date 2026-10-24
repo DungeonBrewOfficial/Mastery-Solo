@@ -128,6 +128,6 @@ A run ends when the last of its heroes dies, or when the player retires them [Jo
 These pages are referred to above and not yet written:
 
 - **Encounters:** started in `02-encounters.md` (woodland only so far).
-- **Sites:** a small paper generator for lairs, ruins, and dungeons, with treasure by Division.
+- **Sites:** a small paper generator for lairs, ruins, and dungeons. Their treasure is drafted in `03-treasure.md`.
 - **Settlements:** what each size of settlement offers, and recruiting.
 - **Map generation:** terrain at the frontier, and the discovery tables.

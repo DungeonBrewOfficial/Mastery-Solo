@@ -64,4 +64,5 @@ Jon is still building monsters. His current guess at the party levels each creat
 - Whether Epic and Legendary creatures retreat to their lairs at half health, or use the morale ladder like everything else. See `design/02-encounters.md`, Breaking point.
 - The chase, until it's tested.
 - How far from roads and settlements Deep country starts. See `design/01-the-turn.md`.
+- The treasure questions at the top of `design/03-treasure.md`: salvaged armor, the hoard multiplier, gem grades by band, selling, and purse sizes.
 - Metals. The five-metal ladder (Iron, Steel, Silver, Gold, Mithril) needs a purpose. Candidates so far: Durability grades on armor and shields, or the substrate for permanent enchantment (which waits on Mastery's magic items).
