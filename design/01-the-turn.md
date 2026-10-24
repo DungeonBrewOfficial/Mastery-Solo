@@ -50,7 +50,7 @@ If the roll is more than the hours left in the day, you have a choice. You can s
 
 ### 3. Move
 
-Move up to (hours × squares per hour) along your route, paying terrain costs. If you enter a blank square, it is generated as you arrive [N; see the map generation file, to come].
+Move up to (hours × squares per hour) along your route, paying terrain costs. If you enter a blank tile, it is generated as you arrive [N; see `04-the-map.md`].
 
 ### 4. What happened there
 
@@ -73,9 +73,9 @@ Roll a d6 on the square where you stopped [S: "one die to determine what happene
 |:---|:---|:---|
 | **Settled** | On a road, or within 2 squares of a settlement | An Encounter only on a 6; a 5 is Quiet. |
 | **Wild** | Everywhere else | As the table above. |
-| **Deep** | More than 8 squares (half a day at Normal pace) from any road or settlement | Encounters roll on the next band up. Discoveries are richer (see the sites file, to come). |
+| **Deep** | A tile with no road or settlement, and none in any of the eight tiles around it (see `04-the-map.md`) | Encounters roll on the next band up. Discoveries are richer (see the sites file, to come). |
 
-Above-band results in Deep country still arrive as Signs first, so the rule about warnings holds. What changes is how often the warnings come and what's waiting behind them. The road home is always the safer way, and the shortcut through the deep wood always pays better and costs more. [?] Eight squares is a guess.
+Above-band results in Deep country still arrive as Signs first, so the rule about warnings holds. What changes is how often the warnings come and what's waiting behind them. The road home is always the safer way, and the shortcut through the deep wood always pays better and costs more. [?] The definition of Deep is proposed in `04-the-map.md`.
 
 ### 5. Encounter
 
@@ -130,4 +130,4 @@ These pages are referred to above and not yet written:
 - **Encounters:** started in `02-encounters.md` (woodland only so far).
 - **Sites:** a small paper generator for lairs, ruins, and dungeons. Their treasure is drafted in `03-treasure.md`.
 - **Settlements:** what each size of settlement offers, and recruiting.
-- **Map generation:** terrain at the frontier, and the discovery tables.
+- **Map generation:** drafted in `04-the-map.md`.

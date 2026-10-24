@@ -69,6 +69,6 @@ Jon is still building monsters. His current guess at the party levels each creat
 
 - Whether Epic and Legendary creatures retreat to their lairs at half health, or use the morale ladder like everything else. See `design/02-encounters.md`, Breaking point.
 - The chase, until it's tested.
-- How far from roads and settlements Deep country starts. See `design/01-the-turn.md`.
+- The map questions at the top of `design/04-the-map.md`: tiles, region size, hills, Deep country by tile, road and settlement density, spell sources, and river crossings.
 - The hoard multiplier (40 sp per point of the guardian's XP value), waiting on play.
 - Metals. The five-metal ladder (Iron, Steel, Silver, Gold, Mithril) needs a purpose. Candidates so far: Durability grades on armor and shields, or the substrate for permanent enchantment (which waits on Mastery's magic items).
