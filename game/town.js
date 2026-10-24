@@ -32,13 +32,17 @@ export const SHOP = [
 ];
 /**
  * Arms and armor: weapons by price (up to 12 sp Serf, 80 Peasant, 600
- * Knight, more Burgher), armor by weight (light Peasant, medium Knight,
- * heavy Burgher), shields Peasant [N, a first guess like the rest].
+ * Knight, more Burgher) and shields Peasant [N, a first guess]. Armor:
+ * "Plate armor is a knight's armor, so it's usually Knight" (Equipment,
+ * Availability), so heavy armor and the plate pieces of medium armor
+ * (breastplate, half-plate) are Knight; mail, scale, brigandine, and light
+ * armor are Peasant [Jon, 2026-10-24; the medium split is a guess].
  */
+const armorClass = (a) => a.weightClass === "heavy" || /plate/i.test(a.name) && a.weightClass === "medium" ? "Knight" : "Peasant";
 const weaponClass = (sp) => sp <= 12 ? "Serf" : sp <= 80 ? "Peasant" : sp <= 600 ? "Knight" : "Burgher";
 SHOP.push(
   { group: "Weapons", arms: "weapon", items: Object.fromEntries(Object.values(WEAPONS).sort((a, b) => a.sp - b.sp).map(w => [w.name, weaponClass(w.sp)])) },
-  { group: "Armor", arms: "armor", items: Object.fromEntries(Object.values(ARMOR).sort((a, b) => a.sp - b.sp).map(a => [a.name, { light: "Peasant", medium: "Knight", heavy: "Burgher" }[a.weightClass]])) },
+  { group: "Armor", arms: "armor", items: Object.fromEntries(Object.values(ARMOR).sort((a, b) => a.sp - b.sp).map(a => [a.name, armorClass(a)])) },
   { group: "Shields", arms: "shield", items: Object.fromEntries(Object.values(SHIELDS).map(x => [x.name, "Peasant"])) }
 );
 const CLASS_OF = Object.fromEntries(SHOP.flatMap(g => Object.entries(g.items)));

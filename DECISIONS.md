@@ -97,7 +97,8 @@ Rulings Jon has made for this design, newest last within each section. Each line
   - Their level-1 mastery points go to what they carry, then to the styles, the entropic forms their class allows, and the skills the class leans toward; a higher-level recruit's points go the same way.
   - Spells known: up to two of the six the game has, in forms they've reached.
   - The party holds four [Jon, 2026-10-23]; recruits wait until there's room.
-  - Arms and armor at the market: weapons up to 12 sp Serf, 80 Peasant, 600 Knight, more Burgher; light armor Peasant, medium Knight, heavy Burgher; shields Peasant.
+  - Arms and armor at the market: weapons up to 12 sp Serf, 80 Peasant, 600 Knight, more Burgher; shields Peasant. Plate is knight's armor [Jon, 2026-10-24]: heavy armor and the plate sets among the medium ones (breastplate, half-plate) are Knight; mail, scale, brigandine, and light armor are Peasant (the medium split is a guess).
+  - Character building's automatic choices (starting points, gear, masteries) are placeholders until a building screen exists [Jon, 2026-10-24: fine for now].
   - The next generation starts with what its members bring; the fallen party's supplies are lost with it.
 - Milestone 3, stage 3 (the town), calls made while building (raised with Jon in chat):
   - Any day the party doesn't travel counts as a day's rest for the Trauma Table, in camp or in town.
