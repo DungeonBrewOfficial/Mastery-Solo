@@ -6,6 +6,8 @@
  * Saves are compacted: each tile's 36 squares become one short string.
  */
 
+import { PREGENS } from "./data/party.js";
+
 const LOCAL_KEY = "mastery-solo-save-v2";
 const FLAGS = ["road", "river", "lake"];
 
@@ -24,6 +26,11 @@ export function unpack(json) {
     if (typeof t.sq === "string") t.sq = [...t.sq].map(ch => { const n = ch.charCodeAt(0) - 48; return Object.fromEntries(FLAGS.map((f, i) => [f, !!(n & (1 << i))])); });
   }
   s.world.places ??= {};
+  // Saves from before a field existed pick it up from the starting roster.
+  for (const m of s.party?.members || []) {
+    const p = PREGENS.find(x => x.id === m.id);
+    if (p) for (const k of ["spells", "gear", "shieldAbsorbs"]) if (m[k] === undefined && p[k] !== undefined) m[k] = structuredClone(p[k]);
+  }
   return s;
 }
 

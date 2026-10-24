@@ -61,6 +61,13 @@ Rulings Jon has made for this design, newest last within each section. Each line
 - Broken armor of any kind sells as scrap at 5% of its listed value; secondhand gear sells at half value times condition. Repairing loot is profitable on purpose: a character who invests in the Blacksmith discipline gives up advancing something else, and low-level parties can carry back only a couple of suits. (2026-10-24)
 - Settlement coin on hand (about 4 sp per resident, 8 in cities, refilling a quarter each week) is accepted as a ballpark. (2026-10-24)
 
+**Combat (2026-10-24)**
+- A full defeat is a wipe: when the whole party is down, the run ends and everyone dies. Other outcomes may come later as a difficulty setting.
+- When the party wins with someone still dying, saving them is all but automatic if the party has the means (a Healer's Kit, or a healing spell and the magan for it). Without the means, the rounds go on until each dying character is reached and triaged, or dies.
+- A minion group counts each head as a body for morale numbers. That's the mob mentality working as intended.
+- Enemies show their health as words (unhurt, hurt, bloodied, near death), and minion groups show the heads left.
+- Whether the shield takes durability damage before the armor is each character's standing choice, set at declaration (as in Foundry's `shieldAbsorbs`, on by default).
+
 **Creature tiers (a guess, 2026-10-24)**
 Jon is still building monsters. His current guess at the party levels each creature Tier serves, used until the tables test it:
 
@@ -82,12 +89,6 @@ Jon is still building monsters. His current guess at the party levels each creat
 - The hoard multiplier (40 sp per point of the guardian's XP value), waiting on play.
 - The site questions at the top of `design/05-sites.md`: areas instead of grid maps, site sizes, default DCs by band, the clock inside, the guardian's group spread through the site, cleared sites refilling, magic treasure, and lost-place guardians.
 - The settlement questions at the top of `design/06-settlements.md`: recruit level, who's available, hiring a smith, rumors, libraries, and a hamlet's hospitality.
-- **Combat stage 1 stand-ins, waiting on Jon** (2026-10-24):
-  - When the whole party is down, the run ends and everyone dies, whatever the enemy. Raiders might rob and leave the party; beasts might drag one off.
-  - If the party wins while someone is still dying, the survivors stop the bleeding in time.
-  - Running from a fight is the chase. Anyone still dying is left to die on the way, so stop the bleeding first. A failed chase costs the party the round.
-  - Morale counts each head of a minion group as one body when comparing numbers.
-  - Enemy health shows as words (unhurt, hurt, bloodied, near death), minion groups as heads left.
-  - The shield soaks durability damage before the armor.
-  - Changing weapons at declaration drops the old one (picked up after a won fight) and draws the new for 1 AP.
-- Metals. The five-metal ladder (Iron, Steel, Silver, Gold, Mithril) needs a purpose. Candidates so far: Durability grades on armor and shields, or the substrate for permanent enchantment (which waits on Mastery's magic items).
+- **Running from a fight with someone dying** (asked again, 2026-10-24). Today anyone on the dying timer and not yet stabilized dies during the escape, and a failed chase costs the party its round. The proposal is to treat it like the end of a won fight: with a Healer's Kit or a healing spell standing, the dying are carried off and saved.
+- **Difficulty settings** (later). Candidates so far: what a wipe means (everyone dies; everyone but the dynasty's main character survives; raiders rob and leave, beasts drag one off), and whether healing means make saving the dying after a fight automatic.
+- Metals. The five-metal ladder- Metals. The five-metal ladder (Iron, Steel, Silver, Gold, Mithril) needs a purpose. Candidates so far: Durability grades on armor and shields, or the substrate for permanent enchantment (which waits on Mastery's magic items).

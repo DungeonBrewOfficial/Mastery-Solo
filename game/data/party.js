@@ -21,6 +21,7 @@ export const PREGENS = [
     weapons: [{ name: "Dagger", ...LIGHT_1H, type: "daggers", damage: "piercing" }],
     weaponSkill: { daggers: 2 }, styles: {},
     skills: { spellcraft: 2, lore: 2 },
+    spells: ["Flame Dart", "Demoralize"],
     notes: "Possessed. Flame Dart, Demoralize. Agathion: Tallow, a black goat."
   },
   {
@@ -35,6 +36,7 @@ export const PREGENS = [
     ],
     weaponSkill: { bludgeons: 2, axes: 2 }, styles: {},
     skills: { healer: 2, presence: 2, wilderness: 2 },
+    spells: ["Stoneskin", "Mend Flesh"], gear: ["Healer's Kit"],
     notes: "Stoneskin, Mend Flesh. Puca: Clabber, a boar. Healer's Kit."
   },
   {
@@ -61,6 +63,7 @@ export const PREGENS = [
     weapons: [{ name: "Swordbreaker", category: "Heavy One-Handed", track: 2, speed: "moderate", attribute: "strength", type: "daggers", damage: "cutting", defense: 1 }],
     weaponSkill: { daggers: 2 }, styles: { shield: 2, single: 2 },
     skills: { athletics: 2, presence: 2 },
+    spells: ["Mend", "Sacred Ward"], shieldAbsorbs: true,
     notes: "Swordbreaker (her holy focus), heater shield. Mend, Sacred Ward."
   }
 ];

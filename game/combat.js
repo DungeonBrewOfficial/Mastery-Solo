@@ -312,6 +312,7 @@ export function beginRound(state, rng, note, picks = {}) {
     const m = memberOf(state, u);
     const p = picks[u.id] || {};
     if (p.guard && GUARDS[p.guard]) u.guard = p.guard;
+    if (m.shield && typeof p.shieldAbsorbs === "boolean") m.shieldAbsorbs = p.shieldAbsorbs;
     let slowest = null;
     if (Number.isInteger(p.weapon) && p.weapon !== u.weapon && m.weapons[p.weapon]) {
       // Drop what's in hand (free) and draw the new weapon (1 AP). Dropped weapons are picked up after the fight.
@@ -380,6 +381,7 @@ export function advance(state, rng, note) {
   for (let n = 0; n < 2000 && state.battle === b; n++) {
     if (b.prompt || b.stage !== "phase") return;
     if (b.queue.length) { runOp(state, rng, note); if (checkEnd(state, rng, note)) return; continue; }
+    if (checkEnd(state, rng, note)) return;
     if (b.current) {
       const u = unitById(b, b.current);
       if (!able(state, u) || u.ap <= 0) { finishTurn(state, u); continue; }
@@ -660,7 +662,8 @@ function applyHit(state, rng, note, a, t, atk, def, type, ranged) {
   const b = state.battle;
   if (t.pc) {
     const m = memberOf(state, t);
-    const shield = usesShield(m, weaponOf(m, t)) ? m.shield.durability : 0;
+    // Whether the shield takes the hit is the character's standing choice (Foundry's shieldAbsorbs).
+    const shield = usesShield(m, weaponOf(m, t)) && m.shieldAbsorbs !== false ? m.shield.durability : 0;
     const armor = m.armor?.durability || 0;
     const r = resolveDamage({ attackTotal: atk.total, damageType: type, armorResistance: armor > 0 ? (m.armor.resistance[type] || 0) : 0,
       durabilityCurrent: shield + armor, healthCurrent: m.hp, activeDefense: !!def, defenseTotal: def?.total || 0 });
@@ -849,9 +852,47 @@ function checkEnd(state, rng, note) {
   if (!b || b.outcome) return true;
   const foes = b.units.filter(u => !u.pc && onField(u));
   const pcs = b.units.filter(u => u.pc && standing(state, u));
-  if (!foes.length) { finish(state, rng, note, "won"); return true; }
+  if (!foes.length) return aftermath(state, rng, note, pcs);
   if (!pcs.length) { finish(state, rng, note, "lost"); return true; }
   return false;
+}
+
+/**
+ * The last enemy is gone, but someone may still be bleeding out. With the
+ * means to hand (a Healer's Kit, or a healing spell and the magan for it),
+ * saving them is all but certain [Jon, 2026-10-24]. Without, the rounds go
+ * on until each one is stopped by Triage or dies.
+ */
+function aftermath(state, rng, note, pcs) {
+  const b = state.battle;
+  const bleeding = b.units.filter(u => u.pc && onField(u) && memberOf(state, u).dying != null && !memberOf(state, u).stable);
+  if (bleeding.length) {
+    const means = healingMeans(pcs.map(u => memberOf(state, u)));
+    if (means) {
+      for (const u of bleeding) { const m = memberOf(state, u); m.stable = true; m.dying = null; }
+      note(`${means.who} stops the bleeding with ${means.what}: ${bleeding.map(u => u.name).join(", ")} will live.`, "reward");
+    } else if (pcs.length) {
+      if (!b.aftermath) {
+        b.aftermath = true;
+        note(`The field is yours, but ${bleeding.map(u => u.name).join(" and ")} ${bleeding.length > 1 ? "are" : "is"} bleeding out and no one has a kit or a healing spell. Get to them and stop the bleeding (Triage, 2 AP).`, "event");
+      }
+      return false;
+    } else for (const u of bleeding) die(state, note, u, "dies with no one left standing to help");
+  }
+  finish(state, rng, note, "won");
+  return true;
+}
+
+const HEALING_SPELLS = ["Mend", "Mend Flesh"];
+/** Who can save the dying after a fight, and with what. */
+export function healingMeans(standingMembers) {
+  for (const m of standingMembers) {
+    // TODO(party): kits and current magan are tracked from milestone 3; for now carrying a kit or knowing the spell is enough.
+    if (m.gear?.includes("Healer's Kit")) return { who: m.name, what: "a Healer's Kit" };
+    const spell = (m.spells || []).find(sp => HEALING_SPELLS.includes(sp));
+    if (spell && m.magan > 0) return { who: m.name, what: spell };
+  }
+  return null;
 }
 
 function finish(state, rng, note, outcome) {
@@ -867,8 +908,6 @@ function finish(state, rng, note, outcome) {
   }
   if (outcome === "won") {
     note("The field is yours.", "reward");
-    // TODO(combat): a ruling for whoever is still dying when the fight ends; for now the survivors have time to stop the bleeding.
-    for (const m of living.filter(x => x.dying != null && !x.stable)) { m.stable = true; m.dying = null; note(`You stop ${m.name}'s bleeding before it's too late.`); }
     awardCombatXp(state, b.xp, note);
     if (b.units.some(u => !u.pc && u.dead && u.cname === b.head)) spoils(state, rng, e, note);
     for (const d of b.dropped) note(`${state.party.members.find(m => m.id === d.member).name} picks up the ${state.party.members.find(m => m.id === d.member).weapons[d.weapon].name.toLowerCase()}.`);

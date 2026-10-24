@@ -181,7 +181,7 @@ function renderBattle(box) {
     form.className = "declare";
     for (const x of b.units.filter(v => v.pc && standing(state, v))) {
       const m = memberFor(state, x);
-      picks[x.id] ??= { weapon: x.weapon, guard: x.guard };
+      picks[x.id] ??= { weapon: x.weapon, guard: x.guard, shieldAbsorbs: m.shieldAbsorbs !== false };
       const line = document.createElement("div");
       line.className = "declare-row";
       line.innerHTML = `<strong>${m.name}</strong>${x.ap ? "" : ' <span class="warn">no AP</span>'}`;
@@ -195,6 +195,16 @@ function renderBattle(box) {
       gs.title = GUARDS[gs.value].text;
       gs.onchange = () => { picks[x.id].guard = gs.value; gs.title = GUARDS[gs.value].text; };
       line.append(ws, gs);
+      if (m.shield) {
+        const lab = document.createElement("label");
+        lab.className = "small";
+        lab.title = "Durability damage goes to the shield before the armor. A broken shield gives no Defense and can't stop missiles.";
+        const cb = document.createElement("input");
+        cb.type = "checkbox"; cb.checked = picks[x.id].shieldAbsorbs;
+        cb.onchange = () => { picks[x.id].shieldAbsorbs = cb.checked; };
+        lab.append(cb, ` ${m.shield.name} takes hits`);
+        line.append(lab);
+      }
       form.appendChild(line);
     }
     box.appendChild(form);
@@ -203,6 +213,7 @@ function renderBattle(box) {
     row.appendChild(go);
     const dying = b.units.some(v => v.pc && onField(v) && memberFor(state, v).dying != null && !memberFor(state, v).stable);
     const run = button("Run", () => battleAct((rng) => retreat(state, rng, say)));
+    run.hidden = !!b.aftermath;
     run.title = dying ? "Anyone still dying is left to die on the way. Stop the bleeding first." : "The chase: three successes before two failures.";
     row.appendChild(run);
   } else if (u) {

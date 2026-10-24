@@ -102,3 +102,36 @@ test("Triage stops the dying timer", () => {
   }
   assert.ok(!gisla.dead && gisla.stable, "Gisla is stable");
 });
+
+function wonWithGislaBleeding(seed, strip) {
+  const s = battle(seed, [{ name: "Wild Dog", count: 1 }]);
+  if (strip) for (const m of s.party.members) { m.gear = []; m.spells = []; }
+  const gisla = s.party.members.find(m => m.id === "gisla");
+  gisla.hp = 0; gisla.dying = 3; gisla.down = true;
+  const dog = s.battle.units.find(u => !u.pc);
+  dog.dead = true; dog.hp = 0;
+  const say = (t, k) => note(s, t, k);
+  runWithDice(s, (rng) => beginRound(s, rng, say));
+  return { s, gisla, say };
+}
+
+test("after a win, the party's healing means save the dying", () => {
+  const { s, gisla } = wonWithGislaBleeding(4, false);
+  assert.equal(s.battle, null);
+  assert.ok(!gisla.dead);
+});
+
+test("after a win without the means, the dying must be reached and triaged", () => {
+  const { s, gisla, say } = wonWithGislaBleeding(4, true);
+  assert.ok(s.battle && s.battle.aftermath, "the rounds go on");
+  for (let i = 0; i < 50 && s.battle; i++) {
+    const u = currentPC(s);
+    if (!u) break;
+    const t = triageTargets(s, u)[0];
+    if (t && u.ap >= 2) runWithDice(s, (rng) => pcTriage(s, rng, say, t.id));
+    else runWithDice(s, (rng) => pcEndTurn(s, rng, say));
+    if (s.battle?.stage === "declare") runWithDice(s, (rng) => beginRound(s, rng, say));
+  }
+  assert.equal(s.battle, null);
+  assert.ok(!gisla.dead);
+});
