@@ -77,6 +77,7 @@ Rulings Jon has made for this design, newest last within each section. Each line
 - Root Snare reaches 30 feet for now. False costs 1 AP, which also pays for the defense; the strike with Superiority is free. The enemy-AI calls (Double Damage above half health; Intercept costs 1 AP plus the defense, and needs the attacker able to reach the knight) stand for now. Missing weapon ranges come from the equipment entry.
 - The Dryad fights beside her bonded tree, as her stat block describes. The tree can't defend and can't be destroyed in a fight. Damage to it between her turns stops her regrowth and steps up her spells (7+), and stops her Woodland Meld and wakes the tree (14+).
 - Rules gaps found while building are listed in `RULES-GAPS.md` and raised in chat when found.
+- The White Hart is a narrative pull more than a fight: tracking it can lead to a hidden or lost place. It stays off the encounter tables until sites are built (milestone 4). Its Charmed and Concealed abilities wait for stage 3.
 - Whether the shield takes durability damage before the armor is each character's standing choice, set at each round's declarations (as in Foundry's `shieldAbsorbs`, on by default). A ranged hit doesn't have to go to the shield.
 
 **Creature tiers (a guess, 2026-10-24)**
