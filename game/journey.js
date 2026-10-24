@@ -17,7 +17,8 @@ import { ensureAdvancement, checkLevels } from "./advance.js";
 import { ensureStores, morningSupplies, eveningSupplies, refill, exhaustFloor, outfit, treatInjuries, treatTraumas, repairGear } from "./supplies.js";
 import { restDay, hardToKillDay, ensureTrauma } from "./health.js";
 import { rumorAtInn, rumorHere } from "./town.js";
-import { atSite, makeSite, enter, siteAct, afterFight, restClock } from "./sites.js";
+import { atSite, makeSite, enter, siteAct, afterFight, restClock, takeCache } from "./sites.js";
+import { leadsHere, search, leadText } from "./leads.js";
 
 export const DAY_HOURS = 8;
 export const SEASONS = ["spring", "summer", "autumn", "winter"];
@@ -148,22 +149,51 @@ export function travelLeg(state, choice = null) {
       note(state, `Travel die ${hours}: ${hours} hour${hours === 1 ? "" : "s"} on the road.`);
     }
     move(state, rng, hours);
-    state.hoursUsed += hours;
-    // An Open Wound loses 1 health every hour until the bleeding is stopped (Trauma Table).
-    for (const m of state.party.members.filter(x => !x.dead && x.hp > 0 && (x.traumas || []).some(t => t.name === "Open Wound" && !t.treated))) {
-      const was = m.hp; m.hp = Math.max(0, m.hp - hours);
-      note(state, `${m.name}'s open wound bleeds: ${was} → ${m.hp} health.`, "event");
-      if (!m.hp) { m.collapsed = true; note(state, `${m.name} collapses from the bleeding.`, "event"); }
-    }
-    const h = state.party.hours;
-    h.total += hours;
-    if (state.party.pace === "fast") h.fast += hours;
-    if (state.party.pace === "marathon") h.marathon += hours;
-    eventDie(state, rng);
-    if (state.hoursUsed >= DAY_HOURS) {
-      if (state.encounter || state.sign) state.campDue = true;
-      else camp(state, rng);
-    }
+    afterHours(state, rng, hours);
+  });
+  return state;
+}
+
+/** The hours of a leg are spent: Open Wounds bleed, the pace is counted, the event die, and camp at day's end. */
+function afterHours(state, rng, hours) {
+  state.hoursUsed += hours;
+  // An Open Wound loses 1 health every hour until the bleeding is stopped (Trauma Table).
+  for (const m of state.party.members.filter(x => !x.dead && x.hp > 0 && (x.traumas || []).some(t => t.name === "Open Wound" && !t.treated))) {
+    const was = m.hp; m.hp = Math.max(0, m.hp - hours);
+    note(state, `${m.name}'s open wound bleeds: ${was} → ${m.hp} health.`, "event");
+    if (!m.hp) { m.collapsed = true; note(state, `${m.name} collapses from the bleeding.`, "event"); }
+  }
+  const h = state.party.hours;
+  h.total += hours;
+  if (state.party.pace === "fast") h.fast += hours;
+  if (state.party.pace === "marathon") h.marathon += hours;
+  eventDie(state, rng);
+  if (state.hoursUsed >= DAY_HOURS) {
+    if (state.encounter || state.sign) state.campDue = true;
+    else camp(state, rng);
+  }
+}
+
+/**
+ * A leg spent searching the tile a lead points to (design/04-the-map.md):
+ * the travel die for the hours, no movement, and the event die as usual.
+ */
+export function searchLeg(state) {
+  if (state.encounter || state.sign || state.over || state.site || state.pending || state.battle) return state;
+  if (!leadsHere(state).length) { note(state, "Nothing points here. Without a lead there's nothing to search for."); return state; }
+  const down = state.party.members.filter(m => !m.dead && m.collapsed);
+  if (down.length) { note(state, `${down.map(m => m.name).join(" and ")} can't go on. Make camp.`, "event"); return state; }
+  withDice(state, (rng) => {
+    const say = (t, k) => note(state, t, k);
+    if (!state.morningDone) morning(state, rng);
+    const left = DAY_HOURS - state.hoursUsed;
+    if (left <= 0) { camp(state, rng); return; }
+    const hours = Math.min(rng.d(6), left);
+    note(state, `You spend ${hours} hour${hours === 1 ? "" : "s"} searching.`);
+    const place = search(state, rng, say);
+    if (place?.type === "cache") takeCache(state, rng, say, place);
+    else if (place) makeSite(state, rng, place, say);
+    afterHours(state, rng, hours);
   });
   return state;
 }
@@ -206,6 +236,8 @@ function move(state, rng, hours) {
     state.visitId = (state.visitId || 0) + 1; // a new visit: new recruits, a fresh look at the market
     reachSafety(state, rng);
   }
+  const leads = leadsHere(state, (t, k) => note(state, t, k));
+  if (leads.length) note(state, `You're where a lead points: ${leads.map(leadText).join(" and ")}. Spend a leg searching.`, "place");
   const place = state.world.places?.[`${p.x},${p.y}`];
   if (atSite(state)) {
     const say = (t, k) => note(state, t, k);

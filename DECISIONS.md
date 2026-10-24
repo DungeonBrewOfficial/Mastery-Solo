@@ -127,6 +127,16 @@ Rulings Jon has made for this design, newest last within each section. Each line
   - A Band I purse in remains is 1d6 sp, Band II 2d6, Band III 3d6.
   - Thieves' Picks and the Crowbar are on the market at Peasant. Hamon has neither, as his build episode chose.
 
+- Milestone 4, stage 2, calls made while building leads (raised with Jon in chat) [N]:
+  - Questioning a beaten guardian follows Interrogation as the rules write it: the creature rolls Charisma against the questioner's Presence Mastery DC (mastery level + Charisma tier), and a failure gives the clue. The design file had it the other way round (a Presence trial against Division + 1); the rules win. Once per site, after the heart is won. Anything with Intelligence 3 or more that isn't a beast can talk.
+  - A fragment gets one reading in the field, when found; after that only a Sage can read it. A Sage is in any town or city and charges 8 sp a fragment, a skilled hireling's day; a Sage always reads it.
+  - A lead whose tiles haven't been seen stops at the first unseen one, and carries on when the party gets there and finds it isn't Deep.
+  - The searcher is the Scout; the Helper is anyone else with Alertness at Untrained or better (+2). A searching leg can't push past nightfall.
+  - What a clue finds is placed on the square the party searched to.
+  - An outlaws' hideout is held by the Bandit Leader's band at Band I, and from Band II by bandits or the Ranger Captain's outlaws, even or odd on a d6.
+  - A cache's purse is (band)d6 sp.
+  - A refilled site keeps its drawn map: traps and locks already dealt with stay that way; Occupied areas fill from the new guardian's group. Its hoard is 20 sp a point of XP (half). Rolled once each month the site stands empty.
+
 **Creature tiers (a guess, 2026-10-24)**
 Jon is still building monsters. His current guess at the party levels each creature Tier serves, used until the tables test it:
 

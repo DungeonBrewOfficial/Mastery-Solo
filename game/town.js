@@ -3,6 +3,7 @@
  * Whether a market has something is its dice against the item's Social
  * Class DC (Equipment, Availability), rolled once per visit.
  */
+import { readFragment, unreadFragments } from "./leads.js";
 import { GEAR } from "./data/gear.js";
 import { WEAPONS, ARMOR, SHIELDS } from "./data/arms.js";
 import { CLASSES } from "./data/classes.js";
@@ -175,6 +176,22 @@ export function sell(state, rng, note, id) {
   delete m.buyers[id];
   for (const k of Object.keys(m.buyers)) if (k.startsWith(`${kind}:`) && kind !== "item") delete m.buyers[k]; // indexes shift
   note(`Sold the ${piece.label} for ${piece.value} sp.`, "reward");
+  return true;
+}
+
+/* ------------------------------------------------------------------ */
+/* The Sage (design/04-the-map.md, Hidden and lost places)              */
+
+/** A Sage in a town or city reads a fragment of lost lore the party couldn't, for a day's fee as a skilled hireling [N]. */
+export const hasSage = (size) => ["town", "city", "metropolis"].includes(size);
+export const SAGE_FEE = 8;
+export function sageReads(state, rng, note) {
+  const s = settlementHere(state);
+  const f = unreadFragments(state.world)[0];
+  if (!s || !hasSage(s.size) || !f || state.party.coin < SAGE_FEE) return false;
+  state.party.coin -= SAGE_FEE;
+  note(`A Sage studies the fragment for ${SAGE_FEE} sp, and reads it.`, "reward");
+  readFragment(state, rng, note, f, { sage: true });
   return true;
 }
 

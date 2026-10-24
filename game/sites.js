@@ -10,11 +10,12 @@ import { trial, passes, tierOf, dieOfTier } from "./mastery.js";
 import { CREATURES } from "./data/creatures.js";
 import { ENCOUNTERS } from "./data/encounters.js";
 import { ARMOR, SHIELDS } from "./data/arms.js";
-import { alive, living, partyLevel, bandFor, ROMAN, EVEN_DC, HARD_DC, xpFor, aboveBand, rollTable } from "./events.js";
+import { alive, living, partyLevel, bandFor, ROMAN, EVEN_DC, HARD_DC, xpFor, aboveBand, rollTable, creatureTrial } from "./events.js";
 import { squareAt, countryAt } from "./world.js";
 import { count, take, refill } from "./supplies.js";
 import { armorResist } from "./combat.js";
 import { rollPiece } from "./vendor/foundry/module/helpers/hoard-rules.mjs";
+import { clue, fragment } from "./leads.js";
 
 export const SITE_TYPES = ["lair", "cave", "ruin", "barrow", "lost"];
 const LABEL = { lair: "lair", cave: "cave", ruin: "ruin", barrow: "barrow", lost: "lost place" };
@@ -87,7 +88,11 @@ function muster(rng, g) {
   return entourage;
 }
 
+/** An outlaws' hideout: a ruin held by bandits or outlaws (design/04-the-map.md, Hidden and lost places), even or odd on a d6. */
+const HIDEOUT = (d, band) => band === 1 || d % 2 === 0 ? GUARDIANS.ruin[1][0][1] : GUARDIANS.ruin[2][1][1];
+
 function rollGuardian(rng, state, type, band, place) {
+  if (place.hideout) { const d = rng.d(6); return { ...structuredClone(HIDEOUT(d, band)), d6: d }; }
   if (type === "lair") {
     let o = place.creature ? (place.group ? place : entryFor(place.creature)) : null;
     if (!o) {
@@ -185,6 +190,10 @@ function takeHoard(state, rng, note, site) {
   state.party.bankedXp += xp;
   note(`The hoard: ${n} notable piece${n === 1 ? "" : "s"} worth ${Math.round(total * 4) / 4} sp${coin ? `, and ${coin} sp in coin` : ""} (a hoard of ${site.hoard.value} sp). ${site.hoard.hidden ? "Hidden Hoard" : "Hoard"}: ${xp} XP, banked.`, "reward");
   if (coin >= 3200) note(`That much coin is the bulk of a Light object for every 3,200 sp.`);
+  // A clue in the hoard on a 6 (5–6 in a Deep site); in a Deep hoard, a 6 is a fragment of lost lore instead.
+  const d = rng.d(6);
+  if (site.deep && d === 6) fragment(state, rng, note, `In the hoard (d6 ${d})`);
+  else if (d === 6 || (site.deep && d === 5)) clue(state, rng, note, `In the hoard (d6 ${d}), a map scrap`);
 }
 
 /* ------------------------------------------------------------------ */
@@ -245,7 +254,7 @@ function enterArea(state, rng, note, site, a) {
       const ahead = site.areas.length < site.size;
       if (c <= 4 && ahead) { site.foretold = (site.foretold || 0) + 1; note(`A clue (d6 ${c}): scratched notes on what lies ahead. The next area you go into holds no surprises.`); }
       else if (c <= 4) note(`A clue (d6 ${c}), but nothing here is still unknown.`);
-      else { (state.world.clues ||= []).push({ day: state.day, from: `${state.party.x},${state.party.y}` }); note(`A clue (d6 ${c}) to a hidden place, kept for later.`, "event"); }
+      else clue(state, rng, note, `On the remains (d6 ${c})`);
       bank(1, "Explored");
       break;
     }
@@ -337,8 +346,8 @@ function feature(state, rng, note, site, a) {
       else {
         a.name = "a ruined library"; site.sources = [...(site.sources || []), "occult writings"];
         const f = rng.d(6);
-        if (f === 6) state.world.lore = (state.world.lore || 0) + 1;
-        note(`The remains of a library (d6 ${d}): occult writings, a source for occult casters${f === 6 ? `, and a fragment of lost lore (d6 6; ${state.world.lore} of 3)` : ""}.`, "place");
+        note(`The remains of a library (d6 ${d}): occult writings, a source for occult casters.`, "place");
+        if (f === 6) fragment(state, rng, note, "Among the shelves (d6 6)");
       }
       break;
     case "barrow":
@@ -348,7 +357,7 @@ function feature(state, rng, note, site, a) {
     case "lost":
       if (d <= 3) { a.name = "occult writings"; site.sources = [...(site.sources || []), "occult writings"]; note(`Occult writings (d6 ${d}): a source for occult casters.`, "place"); }
       else if (d <= 5) { a.name = "a font"; site.sources = [...(site.sources || []), "font"]; note(`A font (d6 ${d}): a priscan source.`, "place"); }
-      else { a.name = "an inscription"; a.inscription = true; a.done = false; state.world.lore = (state.world.lore || 0) + 1; note(`An inscription (d6 ${d}): a fragment of lost lore (${state.world.lore} of 3). Read with Lore, it shows the way to the heart.`, "place"); }
+      else { a.name = "an inscription"; a.inscription = true; a.done = false; note(`An inscription (d6 ${d}) in a script no one uses: a fragment of lost lore. Read, it also shows the way to the heart.`, "place"); }
       break;
   }
 }
@@ -481,7 +490,7 @@ export function afterFight(state, rng, note) {
       note(`${site.guardian.head} is dead. The ${LABEL[site.type]} is yours.`, "reward");
       if (a) a.done = true;
     }
-    if (!site.headAlive && site.hoard.taken) site.cleared = true;
+    if (!site.headAlive && site.hoard.taken) clearSite(state, site);
     if (state.party.members.some(m => !m.dead && m.hp > 0)) clock(state, rng, note, { afterFight: true });
   } else if (f.outcome === "fled") {
     note(`You flee the ${LABEL[site.type]}.`, "event");
@@ -498,6 +507,51 @@ function heartGroup(site) {
   return merge(g);
 }
 
+/** A hidden cache: one notable piece and a purse, with no guardian (design/04-the-map.md). */
+export function takeCache(state, rng, note, place) {
+  gain(state, notablePiece(rng, partyLevel(state)), note, "The cache");
+  const purse = roll(rng, `${bandFor(partyLevel(state))}d6`).total;
+  state.party.coin += purse;
+  note(`And a purse: ${purse} sp.`, "reward");
+  place.taken = true;
+}
+
+const clearSite = (state, site) => { site.cleared = true; site.clearedDay ??= state.day; };
+
+/**
+ * Coming back (design/05-sites.md): a month or more after it was cleared, a
+ * d6 on 1–2 means something new has moved in, with a hoard worth half.
+ * Rolled once for each month the site has stood empty.
+ */
+function restock(state, rng, note, site) {
+  if (!site.cleared || state.day - (site.checkedDay ?? site.clearedDay) < 30) return;
+  site.checkedDay = state.day;
+  const d = rng.d(6);
+  if (d > 2) { note(`The ${LABEL[site.type]} is as you left it (d6 ${d}).`); return; }
+  const place = state.world.places[state.site.key];
+  const g = rollGuardian(rng, state, site.type, site.band, { ...place, creature: null, text: null, group: null });
+  Object.assign(site, { guardian: g, entourage: muster(rng, g), headAlive: true, cleared: false, clearedDay: null, questioned: false,
+    hoard: { value: 20 * g.xp * (site.deep ? 2 : 1), taken: false, hidden: site.hoard.hidden } });
+  for (const a of site.areas) if (a.kind === "occupied") { a.group = occupants(rng, site); a.done = false; }
+  note(`Something new has moved in (d6 ${d}): ${g.text}. Its hoard is worth half the usual.`, "event");
+}
+
+/** A beaten guardian that can talk (no beast, nothing mindless: Intelligence 3 or more) can be made to (Skill Mastery, Presence, Interrogation): it rolls Charisma against the questioner's Presence Mastery DC. */
+export const canQuestion = (site) => {
+  const c = CREATURES[site.guardian.head];
+  return !site.headAlive && !site.questioned && c && c.kingdom !== "beast" && c.rank !== "minion" && (c.attributes?.intelligence?.score || 0) >= 3;
+};
+function question(state, rng, note, site) {
+  site.questioned = true;
+  const c = CREATURES[site.guardian.head];
+  const m = [...alive(state)].sort((a, b) => (skillOf(b, "presence") + tier(b, "charisma")) - (skillOf(a, "presence") + tier(a, "charisma")))[0];
+  const dc = skillOf(m, "presence") + tier(m, "charisma");
+  const t = creatureTrial(rng, c, "charisma");
+  if (passes(t, dc)) { note(`${m.name} questions the last of them. ${site.guardian.head}, Charisma ${t.text} against ${m.name}'s Presence ${dc}: it tells you nothing.`); return; }
+  note(`${m.name} questions the last of them. ${site.guardian.head}, Charisma ${t.text} against ${m.name}'s Presence ${dc}: it talks.`);
+  clue(state, rng, note, "Under questioning");
+}
+
 /* ------------------------------------------------------------------ */
 /* Going in, moving, and leaving                                        */
 
@@ -512,6 +566,7 @@ export function enter(state, rng, note) {
   const site = place.site || makeSite(state, rng, place, note);
   state.site = { key: `${place.x},${place.y}`, at: 0, rounds: 0, minutes: 0, torch: 0 };
   note(`You go into the ${LABEL[site.type]}.`, "place");
+  restock(state, rng, note, site);
   if (siteDark(site)) light(state, note);
   if (!site.areas.length) drawArea(state, rng, note, site, null);
   else note(`You know the way: ${site.areas.length} area${site.areas.length > 1 ? "s" : ""} drawn.`);
@@ -535,6 +590,7 @@ export function siteChoices(state) {
     list.push({ id: "heart", label: `Fight ${site.guardian.head}` });
   }
   if (a.kind === "heart" && !site.headAlive && !site.hoard.taken) list.push({ id: "hoard", label: "Take the hoard" });
+  if (a.kind === "heart" && canQuestion(site)) list.push({ id: "question", label: "Question the last of them (Presence)" });
   if (a.graveGoods) list.push({ id: "graves", label: "Take the grave goods" });
   if (a.inscription) list.push({ id: "inscription", label: "Read the inscription (Lore)" });
   if (a.blocked && a.kind === "lock") { if (!a.broken) list.push({ id: "pick", label: "Pick the lock (Thievery)" }); list.push({ id: "force", label: "Force it (Strength; loud)" }); }
@@ -578,7 +634,8 @@ export function siteAct(state, rng, note, id, arg) {
       fightHere(state, site, g, "heart", { area: a.id });
       return;
     }
-    case "hoard": if (a.kind === "heart" && !site.headAlive && !site.hoard.taken) { takeHoard(state, rng, note, site); site.cleared = true; } return;
+    case "hoard": if (a.kind === "heart" && !site.headAlive && !site.hoard.taken) { takeHoard(state, rng, note, site); clearSite(state, site); } return;
+    case "question": if (canQuestion(site)) question(state, rng, note, site); return;
     case "graves": {
       a.graveGoods = false; a.done = true;
       gain(state, notablePiece(rng, partyLevel(state)), note, "Grave goods");
@@ -590,11 +647,9 @@ export function siteAct(state, rng, note, id, arg) {
       return;
     }
     case "inscription": {
-      const m = best(state, "intelligence", "lore");
-      const t = rollFor(rng, m, "intelligence", "lore");
       a.inscription = false; a.done = true;
-      if (passes(t, hard) && site.heart == null) { site.size = site.areas.length + 1; note(`${m.name} reads it, Lore ${t.text} against ${hard}: the way to the heart lies straight on.`, "event"); }
-      else note(`${m.name} ${passes(t, hard) ? "reads it" : "can't make it out"}, Lore ${t.text} against ${hard}.`);
+      const f = fragment(state, rng, note, "The inscription, copied");
+      if (f.read && site.heart == null) { site.size = site.areas.filter(x => !x.secret).length + 1; note("It also tells the way: the heart lies straight on.", "event"); }
       tick(state, rng, note);
       return;
     }

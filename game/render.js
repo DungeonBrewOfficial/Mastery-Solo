@@ -3,6 +3,7 @@
  * country, the party, and where it's headed. Blank tiles stay dark.
  */
 import { TILE, getTile, squareAt } from "./world.js";
+import { leadMarks } from "./leads.js";
 
 export const COLORS = {
   blank: "#1d1a16",
@@ -96,7 +97,7 @@ export function draw(canvas, state, view) {
   }
 
   // places found
-  const ICON = { lair: ["L", "#a33"], cave: ["C", "#444"], ruin: ["R", "#6b5a45"], barrow: ["B", "#5a4a6b"], source: ["✦", "#3b6fb0"], landmark: ["▲", "#555"], camp: ["×", "#7a5230"], ground: ["❦", "#3f6b33"] };
+  const ICON = { lair: ["L", "#a33"], cave: ["C", "#444"], ruin: ["R", "#6b5a45"], barrow: ["B", "#5a4a6b"], source: ["✦", "#3b6fb0"], landmark: ["▲", "#555"], camp: ["×", "#7a5230"], ground: ["❦", "#3f6b33"], lost: ["Ω", "#7a3b8f"], cache: ["$", "#8a6d1f"] };
   for (const pl of Object.values(world.places || {})) {
     if (pl.x < x0 || pl.x > x1 || pl.y < y0 || pl.y > y1) continue;
     const [cx, cy] = toScreen(pl.x + 0.5, pl.y + 0.5);
@@ -116,6 +117,16 @@ export function draw(canvas, state, view) {
     ctx.beginPath(); ctx.arc(cx, cy, s * 2.2, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = "#8a6d1f"; ctx.font = `bold ${Math.max(10, Math.round(s * 0.9))}px Georgia`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText("?", cx, cy);
+  }
+
+  // leads: a dotted ring over the tile a clue or lost lore points to
+  for (const l of leadMarks(world)) {
+    const [cx, cy] = toScreen(l.x, l.y);
+    const col = l.lost ? "#7a3b8f" : "#3f6b33";
+    ctx.setLineDash([2, 3]); ctx.lineWidth = 2; ctx.strokeStyle = col;
+    ctx.beginPath(); ctx.arc(cx, cy, s * 2.6, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = col; ctx.font = `bold ${Math.max(10, Math.round(s * 0.9))}px Georgia`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(l.lost ? "Ω" : "!", cx, cy);
   }
 
   // route and target

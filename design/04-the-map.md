@@ -146,7 +146,7 @@ In a game with a GM, hidden and lost places are found through real exploration: 
 **Where clues come from** [N]:
 
 - The remains of those who came before, in a site [`05-sites.md`, Contents].
-- The guardian of a site, beaten or bargained with: a Presence (Interrogation) trial against its Division + 1 [M, Skill Mastery, Presence]. Beasts know nothing.
+- The guardian of a site, beaten or bargained with: Interrogation, where the guardian rolls Charisma against the questioner's Presence Mastery DC and gives up what it knows on a failure [M, Skill Mastery, Presence, Interrogation; corrected 2026-10-24 to follow the rules]. Beasts know nothing.
 - A hoard: when the party takes one, roll a d6. On a 6, or a 5–6 in a Deep site, it holds a clue (a map scrap, a letter, a confession).
 
 **Clues lead to hidden places.** A clue gives a direction (d8) and a distance (1d3 tiles), and what's hidden there (d6): 1 a lair, 2 a cave, 3 a ruin, 4 a barrow, 5 an outlaws' hideout (a ruin with bandits or outlaws as its guardian), 6 a cache (one notable piece and a purse, with no guardian). If that tile isn't Deep, carry on in the same direction to the first tile that is. Mark it.

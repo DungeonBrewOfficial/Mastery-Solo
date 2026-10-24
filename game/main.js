@@ -2,7 +2,8 @@
  * The page: wires the map canvas and the side panel to the game state, and
  * saves after every action.
  */
-import { stay, maxMagan, newGame, travelLeg, campNow, setTarget, setPace, seasonOf, DAY_HOURS, squaresPerHour, note, afterEvent, runWithDice, siteAction } from "./journey.js";
+import { stay, maxMagan, newGame, travelLeg, campNow, setTarget, setPace, seasonOf, DAY_HOURS, squaresPerHour, note, afterEvent, runWithDice, siteAction, searchLeg } from "./journey.js";
+import { leadsHere, leadText, fragmentsRead, unreadFragments } from "./leads.js";
 import { atSite, siteHere, siteChoices, areaLabel, inDark } from "./sites.js";
 import { choices, choose, signChoices, chooseSign, partyLevel, bandFor, ROMAN } from "./events.js";
 import { CREATURES } from "./data/creatures.js";
@@ -12,7 +13,7 @@ import { turnOptions, pcTurn, pcStopTurning, turning, imbueOptions, pcImbue, cas
 import { BAND_LABELS } from "./vendor/foundry/module/helpers/weather-rules.mjs";
 import { openStorage, pack, unpack } from "./storage.js";
 import { count, meals, KEEPS, waterNeed, SKIN_GALLONS } from "./supplies.js";
-import { mayUse, armsKind, SHOP, openMarket, buy, priceOf, settlementHere, hasHealer, healerTreats, saleList, sell, townCoin, hasSmith, hireSmith, healerTreatsTrauma } from "./town.js";
+import { mayUse, armsKind, SHOP, openMarket, buy, priceOf, settlementHere, hasHealer, healerTreats, saleList, sell, townCoin, hasSmith, hireSmith, healerTreatsTrauma, hasSage, sageReads, SAGE_FEE } from "./town.js";
 import { needsHealer, recoveryOf } from "./health.js";
 import { recruitsHere, hire, build, nextGeneration, recruitCost, PARTY_SIZE, HUMANS, DEMIHUMANS } from "./recruits.js";
 import { GEAR } from "./data/gear.js";
@@ -55,6 +56,10 @@ function render() {
   $("choice").hidden = !pending;
   $("travel").disabled = pending || busy || !!state.site;
   $("camp").disabled = pending || busy;
+  const leads = state.site ? [] : leadsHere(state);
+  $("search").hidden = !leads.length;
+  $("search").disabled = pending || busy || !!state.site;
+  $("search").textContent = leads.length ? `Search for ${leads.map(leadText).join(" or ")} (a leg)` : "Search";
   renderEvent();
   renderParty();
   renderSupplies();
@@ -531,6 +536,8 @@ function renderParty() {
   $("quiet").checked = !!p.quiet;
   if (p.pelts.length) $("pelts").textContent = `Pelts: ${p.pelts.map(x => `${x.quality} ${x.name.toLowerCase()} (${x.value} sp)`).join(", ")}`;
   else $("pelts").textContent = "";
+  const lore = fragmentsRead(state.world), unread = unreadFragments(state.world).length, open = (state.world.leads || []).filter(l => !l.found);
+  if (lore || unread || open.length) $("pelts").textContent += `${$("pelts").textContent ? " · " : ""}${lore || unread ? `Lost lore: ${lore % 3} of 3 read toward the next lost place${unread ? `, ${unread} unread` : ""}. ` : ""}${open.length ? `Leads: ${open.map(l => `${leadText(l)}, ${l.far} tile${l.far > 1 ? "s" : ""} ${l.dir}`).join("; ")}.` : ""}`;
   if (p.treasure?.length) $("pelts").textContent += `${p.pelts.length ? " · " : ""}Treasure: ${p.treasure.map(x => `${x.name} (${x.value} sp)`).join(", ")}`;
 }
 
@@ -666,6 +673,14 @@ function renderTown(busy) {
     rdet.append(brow);
   }
   box.append(rdet);
+  if (hasSage(s.size) && unreadFragments(state.world).length) {
+    const row = document.createElement("div");
+    row.className = "buttons";
+    const b = button(`Have a Sage read a fragment of lost lore (${SAGE_FEE} sp)`, () => act(() => runWithDice(state, (rng) => sageReads(state, rng, say))));
+    b.disabled = state.party.coin < SAGE_FEE;
+    row.append(b);
+    box.append(row);
+  }
   if (hasHealer(s.size)) {
     const row = document.createElement("div");
     row.className = "buttons";
@@ -800,6 +815,7 @@ function act(fn) {
 
 $("travel").onclick = () => act(() => travelLeg(state));
 $("camp").onclick = () => act(() => campNow(state));
+$("search").onclick = () => act(() => { searchLeg(state); afterEvent(state); });
 $("stop").onclick = () => act(() => travelLeg(state, "stop"));
 $("push").onclick = () => act(() => travelLeg(state, "push"));
 $("pace").onchange = (e) => act(() => setPace(state, e.target.value));
