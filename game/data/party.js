@@ -11,6 +11,12 @@
  * Avoid Death; Presence's Challenge and Hearten), from the build episodes.
  * Gisla's Possessed hallmark makes her immune to Profane damage.
  *
+ * Casting: the attribute their tradition casts with (Priscan Perception,
+ * Telluric Wisdom, Theurgic Charisma), spell DC (mastery level + that tier),
+ * and forms at their mastery level. Gerberga recorded Mend and a one-round
+ * Sacred Ward without gestures (recorded below, 2 magan each before her
+ * Polestar). Companions are Gisla's agathion Tallow and Corra's Puca Clabber.
+ *
  * Weapons follow Equipment › Weapons Reference and Weapon Mastery › Weapon
  * Speed and Attribute by Category: track is the Weapon Mastery Attack Dice
  * column (I–VI). Ranges are in squares (5 ft). Light armor already includes
@@ -26,7 +32,11 @@ export const PREGENS = [
     weapons: [{ name: "Dagger", ...LIGHT_1H, type: "daggers", damage: "piercing" }],
     weaponSkill: { daggers: 2 }, styles: {},
     skills: { spellcraft: 2, lore: 2 },
-    spells: ["Flame Dart", "Demoralize"], immune: ["profane"], abilities: [],
+    spells: ["Flame Dart", "Demoralize"], immune: ["profane"], abilities: ["Hard to Kill", "Possessed"],
+    casting: { attr: "perception", dc: 5, forms: { fire: 2, void: 2, profane: 2, stone: 2 } },
+    companion: { id: "tallow", name: "Tallow", kind: "agathion", spirit: "daeva", tier: 1, health: 16, speed: 8, boundMagan: 1,
+      attack: { name: "Horns", type: "crushing" }, resistance: 6, ability: "Hellfire",
+      notes: "A black goat, Daeva spirit, beast form. Hates the pious and whoever touched it last." },
     notes: "Possessed. Flame Dart, Demoralize. Agathion: Tallow, a black goat."
   },
   {
@@ -42,6 +52,10 @@ export const PREGENS = [
     weaponSkill: { bludgeons: 2, axes: 2 }, styles: {},
     skills: { healer: 2, presence: 2, wilderness: 2 },
     spells: ["Stoneskin", "Mend Flesh"], gear: ["Healer's Kit"], abilities: ["Hearten"],
+    casting: { attr: "wisdom", dc: 5, forms: { primal: 2, stone: 2, sea: 2, fire: 2 } },
+    companion: { id: "clabber", name: "Clabber", kind: "puca", tier: 1, health: 16, speed: 8, form: "boar",
+      attack: { name: "Tusks", type: "piercing" }, resistance: 6, immune: ["primal"], ability: "Spell Conduit",
+      notes: "A Puca in boar form: Charge, Gore, Trample. Spell Conduit." },
     notes: "Stoneskin, Mend Flesh. Puca: Clabber, a boar. Healer's Kit."
   },
   {
@@ -68,7 +82,11 @@ export const PREGENS = [
     weapons: [{ name: "Swordbreaker", category: "Heavy One-Handed", track: 2, speed: "moderate", attribute: "strength", type: "daggers", damage: "cutting", defense: 1 }],
     weaponSkill: { daggers: 2 }, styles: { shield: 2, single: 2 },
     skills: { athletics: 2, presence: 2 },
-    spells: ["Mend", "Sacred Ward"], shieldAbsorbs: true, abilities: ["Avoid Death", "Challenge"],
+    spells: ["Mend", "Sacred Ward"], shieldAbsorbs: true, abilities: ["Avoid Death", "Challenge", "Turn", "Imbue"],
+    casting: { attr: "charisma", dc: 5, forms: { sacred: 2, sky: 2 }, polestar: true,
+      // As recorded in her prayer book: no gestures; the ward lasts one round (pool 10).
+      recorded: { "Mend": { cost: 2, noSomatic: true }, "Sacred Ward": { cost: 2, noSomatic: true, duration: 1, concentration: false } } },
+    theurgy: { lore: 2, chantment: 1 },
     notes: "Swordbreaker (her holy focus), heater shield. Mend, Sacred Ward."
   }
 ];

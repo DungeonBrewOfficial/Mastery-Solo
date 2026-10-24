@@ -17,7 +17,8 @@ function battle(seed, group = BANDITS, extra = {}) {
 test("a battle sets both sides on the grid without overlap", () => {
   const s = battle(1);
   const us = s.battle.units;
-  assert.equal(us.filter(u => u.pc).length, 4);
+  assert.equal(us.filter(u => u.pc && !u.companion).length, 4);
+  assert.deepEqual(us.filter(u => u.companion).map(u => u.name).sort(), ["Clabber", "Tallow"], "the companions come too");
   const thugs = us.find(u => u.minion);
   assert.equal(thugs.heads, 6);
   assert.equal(thugs.w * thugs.h, 6, "a Cluster of six fills six squares");

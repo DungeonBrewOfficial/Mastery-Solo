@@ -2,7 +2,7 @@
  * The page: wires the map canvas and the side panel to the game state, and
  * saves after every action.
  */
-import { newGame, travelLeg, campNow, setTarget, setPace, seasonOf, DAY_HOURS, squaresPerHour, note, afterEvent, runWithDice } from "./journey.js";
+import { maxMagan, newGame, travelLeg, campNow, setTarget, setPace, seasonOf, DAY_HOURS, squaresPerHour, note, afterEvent, runWithDice } from "./journey.js";
 import { choices, choose, signChoices, chooseSign, partyLevel, bandFor, ROMAN } from "./events.js";
 import { CREATURES } from "./data/creatures.js";
 import { squareAt, countryAt, findPath, moveCost, TERRAINS, SETTLEMENTS } from "./world.js";
@@ -158,7 +158,7 @@ function unitLine(u) {
   if (u.pc) {
     const m = memberFor(state, u), w = weaponOf(m, u);
     const gear = [m.armor ? `${m.armor.name} ${m.armor.durability}/${m.armor.max}` : "", m.shield ? `${m.shield.name} ${m.shield.durability}/${m.shield.max}` : ""].filter(Boolean).join(" · ");
-    return `<strong>${m.name}</strong> <span>${m.hp}/${m.health} hp</span> <span class="muted">${u.ap} AP · ${w ? w.name : "unarmed"} · ${GUARDS[u.guard].label}</span>${condHtml(conds)}${gear ? `<br><span class="muted small">${gear}</span>` : ""}`;
+    return `<strong>${m.name}</strong> <span>${m.hp}/${m.health} hp</span> <span class="muted">${u.ap} AP · ${u.companion ? m.attack.name : `${w ? w.name : "unarmed"} · ${GUARDS[u.guard].label}`}</span>${condHtml(conds)}${gear ? `<br><span class="muted small">${gear}</span>` : ""}`;
   }
   const c = creatureFor(u);
   if (u.object) return `<strong>${u.name}</strong> <span class="muted">can't defend; ${u.dmgSince} damage since the Dryad's last turn (7 stops her regrowth, 14 her melding)</span>`;
@@ -215,6 +215,21 @@ function renderBattle(box) {
       const line = document.createElement("div");
       line.className = "declare-row";
       line.innerHTML = `<strong>${m.name}</strong>${x.ap ? "" : ' <span class="warn">no AP</span>'}`;
+      if (x.companion) {
+        const owner = state.party.members.find(o => o.id === x.owner);
+        if (m.ability === "Hellfire") {
+          const lab = document.createElement("label");
+          lab.className = "small";
+          lab.title = "Declared: Tallow acts in the Fast phase and can breathe a 15-foot cone of fire (2 AP, 2 of the caster's magan). Agility trial or d2 + d4 fire, friend or foe. On a 1 on the control die, the Daeva aims it.";
+          const cb = document.createElement("input");
+          cb.type = "checkbox"; cb.checked = !!picks[x.id].hellfire; cb.disabled = (owner.mp || 0) < 2;
+          cb.onchange = () => { picks[x.id].hellfire = cb.checked; };
+          lab.append(cb, ` Hellfire (${owner.name} ${owner.mp || 0} magan)`);
+          line.append(lab);
+        } else line.insertAdjacentHTML("beforeend", ` <span class="muted small">${m.attack.name}, Moderate phase</span>`);
+        form.appendChild(line);
+        continue;
+      }
       const ws = document.createElement("select");
       m.weapons.forEach((w, i) => ws.add(new Option(`${w.name} (${w.speed})`, i)));
       ws.value = picks[x.id].weapon;
@@ -258,7 +273,7 @@ function renderBattle(box) {
     row.appendChild(run);
   } else if (u) {
     const m = memberFor(state, u), w = weaponOf(m, u);
-    box.insertAdjacentHTML("beforeend", `<p><strong>${m.name}</strong>'s turn · ${u.ap} AP · ${w ? w.name : "unarmed"}${u.moveLeft ? ` · ${u.moveLeft} squares of movement left` : ""}</p><p class="small muted">Click a lit square to move, a ringed enemy to attack. A ringed enemy 3 or more squares off in a straight line is a Charge (2 AP, Dominance). AP you keep can defend, counter, and strike at enemies who leave your reach.</p>`);
+    box.insertAdjacentHTML("beforeend", `<p><strong>${m.name}</strong>'s turn · ${u.ap} AP · ${u.companion ? m.attack.name : w ? w.name : "unarmed"}${u.moveLeft ? ` · ${u.moveLeft} squares of movement left` : ""}</p><p class="small muted">Click a lit square to move, a ringed enemy to attack. A ringed enemy 3 or more squares off in a straight line is a Charge (2 AP, Dominance). AP you keep can defend, counter, and strike at enemies who leave your reach.</p>`);
     const hints = opportunities(state, u);
     if (hints.length) {
       const hl = document.createElement("ul");
@@ -321,7 +336,7 @@ function battleHover(sq) {
     if (u.pc) { const m = memberFor(state, u); return `${m.name} · ${m.hp}/${m.health} hp · ${u.ap} AP${conds.length ? " · " + conds.join(", ") : ""}`; }
     const c = creatureFor(u), me = currentPC(state);
     const can = me ? canAttack(state, me, u) : null;
-    return `${u.name} · Tier ${c.tier} ${c.rank} · ${u.minion ? `${u.heads} heads` : describeHealth(u)}${conds.length ? " · " + conds.join(", ") : ""}${can ? (can.ok ? ` · click to ${can.charge ? "charge" : can.ranged ? "shoot" : "attack"} (${can.cost} AP)` : can.why ? ` · ${can.why}` : "") : ""}`;
+    return `${u.name} · Tier ${c.tier} ${c.rank} · ${u.minion ? `${u.heads} heads` : describeHealth(u)}${conds.length ? " · " + conds.join(", ") : ""}${can ? (can.ok ? ` · click to ${can.hellfire ? "breathe Hellfire at" : can.trample ? `trample (${can.trample.hit.map(x => x.name).join(", ")})` : can.charge ? "charge" : can.ranged ? "shoot" : "attack"} (${can.cost} AP)` : can.why ? ` · ${can.why}` : "") : ""}`;
   }
   const me = currentPC(state);
   const cost = me && stepCost(state, me, sq.x, sq.y);
@@ -346,7 +361,9 @@ function renderParty() {
     const li = document.createElement("li");
     const state_ = m.dead ? "dead" : m.hp <= 0 ? "unconscious" : "";
     const scars = [m.injuries ? `${m.injuries} injur${m.injuries === 1 ? "y" : "ies"}` : "", m.exhausted ? `Exhausted ${m.exhausted}` : "", m.infected ? `Infected ${m.infected}` : "", ...(m.traumas || []).map(t => t.name)].filter(Boolean);
-    li.innerHTML = `<strong>${m.name}</strong> <span class="muted">${m.cls} ${m.level}</span> <span>${state_ ? `<span class="warn">${state_}</span>` : `${m.hp}/${m.health} hp`}</span> <span class="muted">${m.xp} XP</span>${scars.length ? `<span class="muted small">${scars.join(", ")}</span>` : ""}`;
+    const pet = m.companion;
+    const petText = pet ? ` <span class="muted small">${pet.name} ${pet.dead ? "dead" : `${pet.hp}/${pet.health}`}</span>` : "";
+    li.innerHTML = `<strong>${m.name}</strong> <span class="muted">${m.cls} ${m.level}</span> <span>${state_ ? `<span class="warn">${state_}</span>` : `${m.hp}/${m.health} hp`}</span>${m.casting ? ` <span class="muted">${m.mp ?? 0}/${maxMagan(m)} mg</span>` : ""} <span class="muted">${m.xp} XP</span>${petText}${scars.length ? `<span class="muted small">${scars.join(", ")}</span>` : ""}`;
     if (m.dead) li.className = "dead";
     else {
       const rb = button("Reactions", () => openReactions(m.id));

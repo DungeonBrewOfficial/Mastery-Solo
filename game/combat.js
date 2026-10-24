@@ -110,7 +110,16 @@ function rollPool(rng, dice, { edge = 0, bonus = 0, inferiority = false, superio
 /* The grid                                                             */
 
 const unitById = (b, id) => b.units.find(u => u.id === id);
-const memberOf = (state, u) => state.party.members.find(m => m.id === u.id);
+/** A character, or a character's companion (Tallow, Clabber), which keeps its own record on its owner. */
+const memberOf = (state, u) => state.party.members.find(m => m.id === u.id) || state.party.members.find(m => m.companion?.id === u.id)?.companion;
+const ownerOf = (state, u) => state.party.members.find(m => m.companion?.id === u.id);
+/** A companion's dice: its owner's attribute tier die (Perception for an agathion, Wisdom for a Puca) and its own tier die. */
+function petDice(state, u) {
+  const o = ownerOf(state, u), pet = o.companion;
+  const attr = pet.kind === "agathion" ? "perception" : "wisdom";
+  return { owner: [1, dieOfTier(tierOf(o.attributes[attr]))[1]], tier: dieOfTier(pet.tier), dc: pet.tier + tierOf(o.attributes[attr]) };
+}
+const speedFor = (state, u) => u.companion ? memberOf(state, u).speed : speedOf(memberOf(state, u));
 /** Squares between two footprints, Chebyshev: 1 is adjacent. */
 export function gap(a, b) {
   const dx = Math.max(0, a.x - (b.x + b.w - 1), b.x - (a.x + a.w - 1));
@@ -166,6 +175,7 @@ const usesShield = (m, w) => !!(m.shield && m.shield.durability > 0 && (!w || ON
 
 function pcAttackDice(state, u, w) {
   const m = memberOf(state, u);
+  if (u.companion) { const d = petDice(state, u); return { dice: [d.owner, d.tier], bonus: 0, extra: -1, type: m.attack.type, name: m.attack.name }; }
   if (!w) return { dice: [attrTD(m, m.attributes.strength >= m.attributes.physique ? "strength" : "physique")], bonus: 0, extra: -1, type: "crushing", name: "Unarmed" };
   const level = m.weaponSkill?.[w.type] || 1;
   const wd = fromCS(MASTERY.weaponAttackTable[level][w.track]);
@@ -178,6 +188,11 @@ function pcAttackDice(state, u, w) {
 /** Can this character defend, and with what? (Combat, Defense) */
 function pcDefense(state, u, type, ranged) {
   const m = memberOf(state, u);
+  if (u.companion) {
+    if (ranged) return { can: false, why: "only a shield stops a missile" };
+    const d = petDice(state, u);
+    return { can: true, dice: [d.owner, d.tier], bonus: ["cutting", "cleaving", "crushing", "piercing", "puncturing"].includes(type) ? m.resistance : 0 };
+  }
   const w = weaponOf(m, u);
   const shield = usesShield(m, w);
   if (ranged && !shield) return { can: false, why: "only a shield stops a missile" };
@@ -313,7 +328,9 @@ function resist(state, rng, u, attr, dc, { edge = 0, hearten, forCond } = {}) {
   // Hearten: chosen at a prompt (hearten is the helper's id, or null for no), or Always.
   const helper = hearten ? unitById(state.battle, hearten) : hearten === undefined && u.pc && state.battle ? heartener(state, u, "heartenTrial") : null;
   const lift = helper && (hearten || reactOf(memberOf(state, helper), "heartenTrial") === "always") ? heartenBonus(state, helper.id) : 0;
-  const t = u.pc
+  const pd = u.companion ? petDice(state, u) : null;
+  const t = u.companion ? trial(rng, [pd.tier, pd.owner], { edge: e, bonus: md.bonus - md.pen })
+    : u.pc
     ? trial(rng, [dieOfTier(tierOf(memberOf(state, u).attributes[attr])), dieOfTier(tierOf(memberOf(state, u).attributes[attr]))], { edge: e, bonus: md.bonus - md.pen + lift })
     : creatureTrial(rng, CREATURES[u.cname], attr, { edge: e, bonus: md.bonus - md.pen });
   return { ok: passes(t, dc), miss: dc - t.total, text: t.text + (lift ? `, ${helper.name} heartens +${lift}` : "") };
@@ -391,6 +408,14 @@ export function startBattle(state, rng, note) {
       startle: e.impaired?.[m.id] || 0, mode: "strike", ...FRESH() });
     if (m.exhausted) b.units[b.units.length - 1].cond.exhausted = m.exhausted;
   });
+  for (const m of members.filter(x => x.companion && !x.companion.dead && x.companion.hp > 0)) {
+    const pet = m.companion, owner = b.units.find(u => u.id === m.id);
+    pet.down = false;
+    const u = { id: pet.id, pc: true, companion: true, owner: m.id, side: "party", name: pet.name, x: 0, y: 0, w: 1, h: 1, ap: 0, weapon: -1,
+      guard: "mutable", impaired: 0, demoralized: 0, phase: "moderate", doneIn: [], moveLeft: 0, lastMove: false, attacks: 0, startle: 0, mode: "strike", ...FRESH() };
+    place(b, u, owner.x);
+    b.units.push(u);
+  }
   const gapCols = { Close: 2, Near: 6, Far: 10 }[e.distance] ?? 6;
   let n = 0;
   for (const g of e.group || [{ name: e.head, count: 1 }]) {
@@ -506,6 +531,13 @@ export function beginRound(state, rng, note, picks = {}) {
   for (const u of b.units.filter(x => x.pc && standing(state, x))) {
     const m = memberOf(state, u);
     const p = picks[u.id] || {};
+    if (u.companion) {
+      // Hellfire is declared: the Agathion acts in the Fast phase, if its caster has the magan.
+      const o = ownerOf(state, u);
+      u.declared = { hellfire: !!p.hellfire && m.ability === "Hellfire" && (o.mp || 0) >= 2 };
+      u.hellfired = false;
+      if (u.declared.hellfire) note(`${m.name} gathers Hellfire (Fast phase).`);
+    }
     if (p.guard && GUARDS[p.guard]) u.guard = p.guard;
     if (m.shield && typeof p.shieldAbsorbs === "boolean") m.shieldAbsorbs = p.shieldAbsorbs;
     if (p.challenge && challengeTargets(state, u).some(t => t.id === p.challenge)) {
@@ -523,7 +555,7 @@ export function beginRound(state, rng, note, picks = {}) {
       note(`${m.name} ${old ? `drops the ${old.name.toLowerCase()} and ` : ""}draws the ${weaponOf(m, u).name.toLowerCase()} (1 AP).`);
     }
     const w = weaponOf(m, u);
-    const speeds = [w?.speed || "fast", slowest].filter(Boolean);
+    const speeds = u.companion ? [u.declared?.hellfire ? "fast" : "moderate"] : [w?.speed || "fast", slowest].filter(Boolean);
     u.phase = u.impaired === 1 || u.impaired === 2 ? "slow" : PHASES[Math.max(...speeds.map(s => PHASES.indexOf(s)))];
   }
   const d = rng.d(6);
@@ -682,6 +714,12 @@ function secondaryDamage(state, rng, note, t, amount, type, label, { direct = fa
     return;
   }
   const c = CREATURES[t.cname];
+  if (isObject(t)) {
+    const got = Math.max(0, amount - (noResist || !type ? 0 : c.resistance?.[type] || 0));
+    t.dmgSince += got;
+    note(`${label}: the bonded tree takes ${got} (${t.dmgSince} since the Dryad's last turn).`, got ? "event" : "");
+    return;
+  }
   const res = noResist || !type ? 0 : (c.resistance?.[type] || 0) + (t.armorDur > 0 && !direct ? armorRes(c, type) : 0);
   const r = direct ? { healthDamage: Math.max(0, amount - res), durabilityDamage: 0 }
     : resolveDamage({ attackTotal: amount, damageType: type, armorResistance: res, durabilityCurrent: t.armorDur, healthCurrent: t.hp, activeDefense: false });
@@ -770,7 +808,7 @@ export function moveCost(state, u, x, y) {
   const fear = u.demoralized && u.fearOf && unitById(b, u.fearOf);
   if (fear && onField(fear) && gap({ ...u, x, y }, fear) < gap(u, fear)) return null;
   // Prone: one square per AP. Tainted 2 and up: movement halved.
-  let speed = u.prone ? 1 : speedOf(memberOf(state, u));
+  let speed = u.prone ? 1 : speedFor(state, u);
   if (slowed(u)) speed = Math.max(1, Math.floor(speed / 2));
   let left = u.moveLeft, ap = 0, last = u.lastMove;
   while (left < path.length) {
@@ -796,6 +834,13 @@ export function pcMove(state, rng, note, x, y) {
 /** The attack modes a character has: a plain strike, the shield bash, Opportunist. */
 export function attackModes(state, u) {
   const m = memberOf(state, u), w = weaponOf(m, u);
+  if (u.companion) {
+    const modes = [{ id: "strike", label: m.attack.name }];
+    // The boar form (Mastery Core Classes, Puca): Gore and Trample. Charge is the plain strike from far off.
+    if (m.form === "boar") modes.push({ id: "gore", label: "Gore (Impotence, bleeding)" }, { id: "trample", label: "Trample (2 AP)" });
+    if (m.ability === "Hellfire" && u.declared?.hellfire && !u.hellfired) modes.push({ id: "hellfire", label: "Hellfire (2 AP, 2 magan)" });
+    return modes;
+  }
   const modes = [{ id: "strike", label: w ? w.name : "Unarmed" }];
   if (usesShield(m, w) && w && !w.ranged) modes.push({ id: "shield", label: `${m.shield.name} bash` });
   if ((m.abilities || []).includes("Opportunist") && w?.attribute === "physique") modes.push({ id: "opportunist", label: "Opportunist (2 AP)" });
@@ -828,14 +873,45 @@ export function chargeLine(state, u, t, speed) {
   return null;
 }
 
+/**
+ * Trample (Puca, boar form): a straight run of up to full speed; the enemies
+ * beside the path, this one first and at most one more, share one tusk roll.
+ */
+function trampleRun(state, u, t) {
+  const b = state.battle;
+  let best = null;
+  for (const run of straightRuns(b, u, speedFor(state, u))) {
+    for (let k = 1; k <= run.path.length; k++) {
+      const path = run.path.slice(0, k);
+      const near = (o) => path.some(([x, y]) => gap({ ...u, x, y }, o) <= 1) || gap(u, o) <= 1;
+      if (!near(t)) continue;
+      const others = b.units.filter(o => o !== t && o.side !== u.side && standing(state, o) && !isObject(o) && near(o));
+      const hit = [t, ...others.slice(0, 1)];
+      if (!best || hit.length > best.hit.length) best = { path, hit };
+    }
+  }
+  return best;
+}
+
 /** Can the current character attack this target? → { ok, why, ranged, charge, cost } */
 export function canAttack(state, u, t, mode = u.mode || "strike") {
   if (!t || t.side === u.side || !onField(t)) return { ok: false };
   if (cond(u, "restricted") >= 3) return { ok: false, why: "Restrained: only breaking free" };
-  const cost = mode === "opportunist" ? 2 : 1;
+  const cost = mode === "opportunist" || mode === "trample" || mode === "hellfire" ? 2 : 1;
   if (u.ap < cost) return { ok: false, why: `needs ${cost} AP` };
   const m = memberOf(state, u), w = weaponOf(m, u);
   const g = gap(u, t);
+  if (mode === "hellfire") {
+    const o = ownerOf(state, u);
+    if ((o.mp || 0) < 2) return { ok: false, why: `${o.name} has no 2 magan to give` };
+    if (g > 3) return { ok: false, why: "beyond the 15-foot cone" };
+    return { ok: true, ranged: false, hellfire: true, cost };
+  }
+  if (mode === "trample") {
+    if (cond(u, "restricted") || u.prone) return { ok: false, why: "can't run" };
+    const run = trampleRun(state, u, t);
+    return run ? { ok: true, ranged: false, trample: run, cost } : { ok: false, why: "no straight run passes it" };
+  }
   const ranged = !!w?.ranged && mode !== "shield";
   if (mode === "opportunist" && !opportunity(state, u, t, ranged)) return { ok: false, why: "no opening for Opportunist (flank it, or two allies on it)" };
   if (ranged) {
@@ -847,7 +923,7 @@ export function canAttack(state, u, t, mode = u.mode || "strike") {
   }
   if (g > 1) {
     // Charge (Untrained baseline maneuver): 2 AP, a straight run of 15 feet or more, then the attack with Dominance.
-    if (mode === "strike" && u.ap >= 2 && !u.prone && chargeLine(state, u, t, speedOf(m))) return { ok: true, ranged: false, charge: true, cost: 2 };
+    if (mode === "strike" && u.ap >= 2 && !u.prone && chargeLine(state, u, t, speedFor(state, u))) return { ok: true, ranged: false, charge: true, cost: 2 };
     return { ok: false, why: "out of reach" };
   }
   return { ok: true, ranged: false, cost };
@@ -878,6 +954,8 @@ export function opportunities(state, u) {
   }
   if (u.held) out.push({ text: `You're held (${u.held.name}): break free for 1 AP, Strength against ${u.held.dc}.`, rule: RULES.breakFree });
   for (const t of b.units.filter(x => x.pc && x !== u && onField(x) && x.held && gap(u, x) <= 1)) out.push({ text: `${t.name} is held: help them break free for 1 AP.`, rule: RULES.assist });
+  if (attackModes(state, u).some(x => x.id === "hellfire")) out.push({ text: `Hellfire is ready: pick a target within 3 squares. Everything in the cone burns, your own side included.`, rule: "Hellfire (2 AP, Fast, declared): spend 2 magan from your bonded caster to breathe a 15-foot cone of hellfire. Creatures in the cone make an Agility trial against your DC or take d2 + d4 fire damage. Control trial: your tier die; on a 1, the Daeva chooses the direction." });
+  if (attackModes(state, u).some(x => x.id === "trample")) for (const t of foes.filter(f => canAttack(state, u, f, "trample").trample?.hit.length > 1)) out.push({ text: `Trample can catch ${canAttack(state, u, t, "trample").trample.hit.map(x => x.name).join(" and ")} in one run (2 AP, Inferiority).`, rule: "Trample (2 AP, Movement + Attack): move in a straight line up to full speed. Roll one tusk attack with Inferiority and apply it to up to 2 targets in the path." });
   const helper = heartener(state, u, "heartenDefense");
   if (helper) out.push({ text: `${helper.name} can hearten your rolls (+${tierOf(memberOf(state, helper).attributes.charisma)}).`, rule: RULES.hearten });
   if (usesShield(m, weaponOf(m, u)) && attackModes(state, u).some(x => x.id === "shield")) out.push({ text: `You can bash with the ${m.shield.name.toLowerCase()} instead of the weapon (1 AP, Crushing).`, rule: RULES.shield });
@@ -898,7 +976,27 @@ export function pcAttack(state, rng, note, targetId) {
   if (!can.ok) { if (can.why) note(can.why[0].toUpperCase() + can.why.slice(1) + "."); return; }
   const m = memberOf(state, u), w = weaponOf(m, u);
   u.ap -= can.cost; u.attacks += 1;
+  if (can.hellfire) {
+    u.mode = "strike";
+    hellfire(state, rng, note, u, t);
+    return advance(state, rng, note);
+  }
+  if (can.trample) {
+    // One tusk roll with Inferiority, shared by everyone beside the path.
+    const key = `trample:${u.id}:${b.round}:${u.attacks}`;
+    b.queue.push({ op: "move", id: u.id, path: can.trample.path, asked: [] });
+    for (const x of can.trample.hit) b.queue.push({ op: "attack", by: u.id, target: x.id, ranged: false, inf: true, shared: key, lineReach: true, rider: "Trample" });
+    note(`${u.name} tramples through (${can.trample.hit.map(x => x.name).join(", ")}).`);
+    u.moveLeft = 0; u.lastMove = false; u.mode = "strike";
+    return advance(state, rng, note);
+  }
   const op = { op: "attack", by: u.id, target: t.id, ranged: can.ranged };
+  if (u.mode === "gore") {
+    // Gore: Impotence, and health damage opens an Endurance trial or Attrition (Bleeding) by the Puca's tier.
+    const pd = petDice(state, u);
+    op.edge = -1; op.rider = "Gore";
+    op.riderSpec = { name: "Gore", gate: "health", resist: { attr: "endurance", dc: pd.dc }, attrition: { label: "Bleeding", amount: m.tier } };
+  }
   if (u.mode === "shield") op.shield = true;
   if (u.mode === "opportunist") {
     op.opportunist = true;
@@ -907,7 +1005,7 @@ export function pcAttack(state, rng, note, targetId) {
   }
   if (can.ranged && w?.thrown) op.thrownKey = `${m.id}:${u.weapon}`;
   if (can.charge) {
-    const path = chargeLine(state, u, t, speedOf(m));
+    const path = chargeLine(state, u, t, speedFor(state, u));
     b.queue.push({ op: "move", id: u.id, path, asked: [] });
     op.edge = 1; op.charge = true;
     note(`${u.name} charges ${t.name}.`);
@@ -916,6 +1014,52 @@ export function pcAttack(state, rng, note, targetId) {
   if (u.mode !== "strike") u.mode = "strike";
   b.queue.push(op);
   advance(state, rng, note);
+}
+
+/**
+ * Hellfire (Agathion, Daeva): declared, Fast, 2 AP, and 2 magan from its
+ * bonded caster. The control trial is the Agathion's tier die; on a 1 the
+ * Daeva aims it. A 15-foot cone (3 squares, 90 degrees): every creature in
+ * it, friend or foe, makes an Agility trial against the Agathion's DC or
+ * takes d2 + d4 fire.
+ */
+const DIRS = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]];
+export function coneSquares(u, dir) {
+  const out = [];
+  const len = Math.hypot(dir[0], dir[1]) || 1;
+  for (let y = u.y - 3; y <= u.y + 3; y++) for (let x = u.x - 3; x <= u.x + 3; x++) {
+    const dx = x - u.x, dy = y - u.y;
+    if (!dx && !dy) continue;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) > 3) continue;
+    const cos = (dx * dir[0] + dy * dir[1]) / (Math.hypot(dx, dy) * len);
+    if (cos >= Math.SQRT1_2 - 1e-9) out.push([x, y]);
+  }
+  return out;
+}
+const centre = (u) => [u.x + (u.w - 1) / 2, u.y + (u.h - 1) / 2];
+function hellfire(state, rng, note, u, t) {
+  const b = state.battle, o = ownerOf(state, u), pet = memberOf(state, u), pd = petDice(state, u);
+  o.mp -= 2; u.hellfired = true;
+  const ctl = rng.d(pd.tier[1]);
+  let dir;
+  if (ctl === 1) {
+    dir = DIRS[rng.d(8) - 1];
+    note(`${pet.name} breathes Hellfire (2 AP; ${o.name} gives 2 magan). Control d${pd.tier[1]} 1: the Daeva aims it.`, "event");
+  } else {
+    const [tx, ty] = centre(t);
+    dir = [tx - u.x, ty - u.y];
+    note(`${pet.name} breathes Hellfire at ${t.name} (2 AP; ${o.name} gives 2 magan). Control d${pd.tier[1]} ${ctl}: it goes where it's sent.`);
+  }
+  const sq = coneSquares(u, dir);
+  const caught = b.units.filter(x => x !== u && onField(x) && !(x.pc && memberOf(state, x).dead) && sq.some(([x0, y0]) => covers(x, x0, y0)));
+  if (!caught.length) { note("The fire finds no one."); return; }
+  for (const x of caught) {
+    if (!onField(x)) continue;
+    if (isObject(x)) { secondaryDamage(state, rng, note, x, rng.d(2) + rng.d(4), "fire", "Hellfire"); continue; }
+    const r = resist(state, rng, x, "agility", pd.dc);
+    note(`${x.name} twists away from the fire (Agility ${r.text} against ${pd.dc}): ${r.ok ? "clear" : "caught"}.`);
+    if (!r.ok) secondaryDamage(state, rng, note, x, rng.d(2) + rng.d(4), "fire", "Hellfire");
+  }
 }
 
 /** Break free of a hold (Conditions, Breaking free), for yourself or an adjacent ally: 1 AP, a Strength trial against the hold. */
@@ -1067,7 +1211,7 @@ function runBreakaway(state, rng, note) {
   }
   b.breaking = null;
   if (!plan.runners.length) { note("No one is left who can run.", "event"); return; }
-  if (!breakAway(state, rng, b.head, note, plan.runners.map(u => memberOf(state, u)), { carrying: carried.length > 0 })) {
+  if (!breakAway(state, rng, b.head, note, plan.runners.filter(u => !u.companion).map(u => memberOf(state, u)), { carrying: carried.length > 0 })) {
     note("The round is spent running, and they come on.", "event");
     return;
   }
@@ -1080,7 +1224,7 @@ function runBreakaway(state, rng, note) {
     m.dying = null; m.stable = true;
     note(`Clear of them, you stop ${m.name}'s bleeding.`, "reward");
   }
-  const runners = plan.runners.filter(onField).map(u => memberOf(state, u));
+  const runners = plan.runners.filter(u => onField(u) && !u.companion).map(u => memberOf(state, u));
   const stillCarried = carried.some(onField);
   if (chase(state, rng, b.head, note, runners, { carrying: stillCarried })) {
     note("No XP for a fight you ran from.");
@@ -1217,7 +1361,7 @@ function snapShot(state, u, t) {
 /** Fall back up to half a move, as far from the threat as the ground allows. */
 function fallBack(state, u, from) {
   const b = state.battle;
-  const steps = Math.floor(speedOf(memberOf(state, u)) / 2);
+  const steps = Math.floor(speedFor(state, u) / 2);
   let best = null;
   for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) {
     const path = pathTo(b, u, x, y);
@@ -1386,7 +1530,7 @@ function afterHit(state, rng, note, a, t, op, hit, info, heartenTrial) {
   const b = state.battle;
   const dealt = (hit.durabilityDamage || 0) + (hit.healthDamage || 0) > 0;
   if (dealt && onField(t)) {
-    const riders = [...(op.rider ? [abilitiesOf(CREATURES[a.cname]).find(x => x.name === op.rider)] : []), ...(a.minion ? abilitiesOf(CREATURES[a.cname]).filter(x => x.kind === "mob") : [])].filter(Boolean);
+    const riders = [...(op.riderSpec ? [op.riderSpec] : op.rider && !a.pc ? [abilitiesOf(CREATURES[a.cname]).find(x => x.name === op.rider)] : []), ...(a.minion ? abilitiesOf(CREATURES[a.cname]).filter(x => x.kind === "mob") : [])].filter(Boolean);
     // A trial is coming and an ally could hearten it: stop and ask, then pick up here.
     if (heartenTrial === undefined && riders.some(r => r.resist) && t.pc) {
       const helper = heartener(state, t, "heartenTrial");
@@ -1598,6 +1742,15 @@ function applyHit(state, rng, note, a, t, atk, def, type, ranged) {
 /** Health damage to a character: 0 health, the dying timer, Fighting On, Traumas (Combat, Death). */
 function hurtPC(state, rng, note, u, dmg) {
   const m = memberOf(state, u);
+  if (u.companion) {
+    m.hp = Math.max(0, m.hp - dmg);
+    if (m.hp > 0) return;
+    m.dead = true; m.down = true; u.dead = true;
+    const o = ownerOf(state, u);
+    note(`${m.name} dies.`, "event");
+    if (m.boundMagan) { o.mp = Math.max(0, (o.mp || 0) - m.boundMagan); note(`${o.name} loses the ${m.boundMagan} magan bound to ${m.name}.`); }
+    return;
+  }
   const endure = () => trial(rng, [dieOfTier(tierOf(m.attributes.endurance)), dieOfTier(tierOf(m.attributes.endurance))]);
   if (m.hp > 0) {
     m.hp = Math.max(0, m.hp - dmg);

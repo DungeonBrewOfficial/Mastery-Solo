@@ -86,15 +86,19 @@ test("Gisla is immune to Grave Rust's Profane rot", () => {
 
 test("Avoid Death works once, then waits for a rest", () => {
   let fired = 0;
-  for (let seed = 1; seed <= 40; seed++) {
-    const s = battle(seed, [{ name: "Bandit Leader", count: 1 }, { name: "Bandit Cutthroat", count: 2 }, { name: "Bandit Thug", heads: 6 }], { temper: "Raider" });
+  for (let seed = 1; seed <= 40 && !fired; seed++) {
+    const s = battle(seed, [{ name: "Bandit Cutthroat", count: 2 }], { temper: "Raider", distance: "Close" });
+    const gerb = s.party.members.find(m => m.id === "gerberga");
+    gerb.hp = 1; gerb.armor.durability = 0; gerb.shield.durability = 0; // nothing between her and the knives
+    for (const [i, f] of s.battle.units.filter(u => !u.pc).entries()) { f.x = unit(s, "gerberga").x + 1; f.y = unit(s, "gerberga").y - 1 + i * 2; }
     const from = s.log.length;
-    playBattle(s);
+    enemyRound(s);
     const n = (logOf(s, from).match(/Avoid Death/g) || []).length;
     assert.ok(n <= 1, "at most once a rest");
     fired += n;
+    if (n) assert.ok(gerb.spent?.avoidDeath, "spent until a rest");
   }
-  assert.ok(fired > 0, "it fires in some fights");
+  assert.ok(fired > 0, "it fires when she would drop");
 });
 
 /** Start round 1 and step to the given character's turn, with the board set by place(). */

@@ -29,7 +29,7 @@ export function newGame(seed = Math.floor(Math.random() * 2 ** 31)) {
     world,
     party: {
       x: 3, y: 3, pace: "normal", carry: 0, quiet: false,
-      members: PREGENS.map(p => ({ ...structuredClone(p), hp: p.health })),
+      members: PREGENS.map(p => { const m = { ...structuredClone(p), hp: p.health, mp: p.magan }; if (m.companion) m.companion.hp = m.companion.health; return m; }),
       roles: { scout: "hamon", watchman: "gerberga" },
       coin: 450 + 160 + 193 + 284,
       pelts: [],
@@ -258,6 +258,8 @@ function camp(state, rng) {
  * A night's rest (General Rules, Resting). Druids treat a safe Wilderness
  * Rest as a Good Night's Rest.
  */
+/** Maximum magan: the pool, less an agathion's bound magan if it has died (Core Classes, Agathion, Bound Magan). */
+export const maxMagan = (m) => (m.magan || 0) - (m.companion?.dead ? (m.companion.boundMagan || 0) : 0);
 const RESTS = { none: "No Rest", dungeon: "Dungeon Rest", wilderness: "Wilderness Rest", good: "Good Night's Rest" };
 function rest(state, rng, kind) {
   const bits = [];
@@ -272,6 +274,24 @@ function rest(state, rng, kind) {
       const before = m.exhausted || 0;
       m.exhausted = k === "none" ? Math.min(3, before + 1) : k === "wilderness" ? Math.max(Math.min(before, 1), before - 1) : k === "good" ? Math.max(0, before - 1) : before;
       if (m.exhausted !== before) bits.push(`${m.name} Exhausted ${before} → ${m.exhausted}`);
+    }
+    // Magan comes back by the same rest: 1, 1d3, or the casting tier die (General Rules, Resting).
+    const maxMp = maxMagan(m);
+    if (m.casting && k !== "none" && (m.mp ?? 0) < maxMp) {
+      const gain = k === "dungeon" ? 1 : k === "wilderness" ? rng.d(3) : total(rng, `1d${dieOfTier(tierOf(m.attributes[m.casting.attr]))[1]}`);
+      const was = m.mp ?? 0;
+      m.mp = Math.min(maxMp, was + gain);
+      bits.push(`${m.name} ${was} → ${m.mp} magan`);
+    }
+    // A companion rests as a character, with its tier die for the Endurance die; a Puca treats a safe Wilderness Rest as a Good Night's.
+    const pet = m.companion;
+    if (pet && !pet.dead && pet.hp < pet.health && k !== "none") {
+      const pk = k === "wilderness" && pet.kind === "puca" ? "good" : k;
+      if (!(pk === "dungeon" && pet.hp < 1)) {
+        const was = pet.hp;
+        pet.hp = Math.min(pet.health, pet.hp + (pk === "dungeon" ? 1 : pk === "wilderness" ? rng.d(3) : rng.d(dieOfTier(pet.tier)[1])));
+        bits.push(`${pet.name} ${was} → ${pet.hp} health`);
+      }
     }
     if (m.hp >= m.health || k === "none" || (k === "dungeon" && m.hp < 1)) continue;
     const gain = k === "dungeon" ? 1 : k === "wilderness" ? rng.d(3) : total(rng, `1d${dieOfTier(tierOf(m.attributes.endurance))[1]}`);
