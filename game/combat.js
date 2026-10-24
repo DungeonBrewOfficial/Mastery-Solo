@@ -179,6 +179,8 @@ export const COND_LABELS = {
   invigorated: { 1: "Energized", 2: "Empowered", 3: "Tireless" }
 };
 const PHYSICAL = ["strength", "agility", "physique", "endurance"];
+/** Conditions that deteriorate on their own. Impaired eases at the start of each round (Startle); Demoralized holds while its source is in sight. */
+const DECAYS = ["restricted", "tainted", "inspired", "invigorated"];
 const cond = (u, k) => (k === "impaired" ? u.impaired : k === "demoralized" ? u.demoralized : u.cond?.[k]) || 0;
 function setCond(u, k, v) {
   if (k === "impaired") u.impaired = v;
@@ -199,7 +201,7 @@ function immuneToDamage(state, u, type) {
  * Demoralized counter each other tier for tier. Infected lives on the
  * character, not the fight.
  */
-function addCond(state, note, u, k, n = 1, { max = 3 } = {}) {
+function addCond(state, note, u, k, n = 1, { max = 3, by = null } = {}) {
   if (immuneTo(state, u, k)) { note(`${u.name} is immune to ${k === "tainted" ? "poison" : k === "infected" ? "disease" : k}.`); return; }
   if (k === "infected" && u.pc) {
     const m = memberOf(state, u);
@@ -218,7 +220,8 @@ function addCond(state, note, u, k, n = 1, { max = 3 } = {}) {
   const next = Math.min(3, Math.max(before, Math.min(max, before + n)));
   if (next === before) return;
   setCond(u, k, next);
-  (u.fresh ||= {})[k] = true;
+  // It wears off from the end of the advancer's next turn (Conditions, Stacking).
+  if (DECAYS.includes(k)) (u.decay ||= {})[k] = { by, round: state.battle.round };
   const name = k === "impaired" ? IMPAIRED[next] : k === "demoralized" ? DEMORALIZED[next] : COND_LABELS[k]?.[next] || k;
   note(`${u.name} is ${name} (${k[0].toUpperCase() + k.slice(1)} ${next}).`, ["inspired", "invigorated"].includes(k) ? "" : "event");
 }
@@ -306,7 +309,7 @@ function rollHealth(rng, c) {
 
 const FORMATION = { gerberga: [3, 5], hamon: [3, 6], gisla: [2, 5], corra: [2, 6] };
 /** Per-unit condition state for a fresh fight. */
-const FRESH = () => ({ cond: {}, fresh: {}, attrition: [], prone: false, held: null, tookTurn: false });
+const FRESH = () => ({ cond: {}, decay: {}, attrition: [], prone: false, held: null, tookTurn: false });
 
 /**
  * Open the battle for the current encounter. Distance sets how far apart the
@@ -464,11 +467,11 @@ function endRound(state, rng, note) {
   // Tiers no source holds deteriorate by one each round; a hold keeps Restricted.
   for (const u of b.units.filter(onField)) {
     if (u.held && !holdStands(state, u)) { note(`${u.name} is no longer held.`); u.held = null; }
-    for (const k of ["restricted", "tainted", "inspired", "invigorated"]) {
-      if (!cond(u, k) || u.fresh?.[k] || (k === "restricted" && u.held)) continue;
-      setCond(u, k, cond(u, k) - 1);
+    // A source that is gone, or had no turn this round, lets its tiers go at the round's end instead.
+    for (const k of Object.keys(u.decay || {})) {
+      const src = u.decay[k].by && unitById(b, u.decay[k].by);
+      if (!src || !onField(src) || !src.tookTurn) wearOff(state, note, u, k);
     }
-    u.fresh = {};
   }
   if (checkEnd(state, rng, note)) return;
   // The dying timer runs down at the end of each round.
@@ -521,7 +524,7 @@ function startOfTurn(state, rng, note, u) {
       const dc = mobDC(CREATURES[o.cname].tier, o.heads);
       const t = resist(state, rng, u, a.resist.attr, dc);
       note(`${o.name}: ${a.name}. ${u.name} resists (${t.text} against ${dc}): ${t.ok ? "steady" : "it gets under the skin"}.`);
-      if (!t.ok) { addCond(state, note, u, a.cond.name, a.cond.n, { max: a.cond.max }); if (a.cond.name === "demoralized") u.fearOf = o.id; }
+      if (!t.ok) { addCond(state, note, u, a.cond.name, a.cond.n, { max: a.cond.max, by: o.id }); if (a.cond.name === "demoralized") u.fearOf = o.id; }
     }
   }
 }
@@ -535,6 +538,7 @@ function endOfTurn(state, rng, note, u) {
   if (!onField(u)) return;
   u.tookTurn = true;
   const b = state.battle;
+  for (const v of b.units.filter(onField)) for (const k of Object.keys(v.decay || {})) if (v.decay[k].by === u.id) wearOff(state, note, v, k);
   const hits = u.attrition || [];
   u.attrition = [];
   for (const a of hits) {
@@ -586,6 +590,20 @@ function secondaryDamage(state, rng, note, t, amount, type, label, { direct = fa
   else t.hp = Math.max(0, t.hp - (r.healthDamage || 0));
   note(`${label}: ${t.name} takes ${[r.durabilityDamage ? `${r.durabilityDamage} to armor` : "", r.healthDamage ? (t.minion ? "a head" : `${r.healthDamage} to health`) : ""].filter(Boolean).join(", ") || "nothing"}.`, "event");
   if (t.hp <= 0) { t.dead = true; note(`${t.name} falls.`, "reward"); morale(state, rng, note, "fall"); }
+}
+
+/**
+ * Tiers no source holds drop by one at the end of the turn of the creature
+ * that last advanced them, starting with its next turn, not the turn it
+ * advanced them [Jon, 2026-10-24]. A grab's hold keeps Restricted.
+ */
+function wearOff(state, note, u, k) {
+  const d = u.decay[k];
+  if (!cond(u, k)) { delete u.decay[k]; return; }
+  if (d.round >= state.battle.round || (k === "restricted" && u.held)) return;
+  setCond(u, k, cond(u, k) - 1);
+  d.round = state.battle.round;
+  if (!cond(u, k)) { delete u.decay[k]; note(`${u.name} is no longer ${k}.`); }
 }
 
 function regroupHeads(u) {
@@ -1138,8 +1156,7 @@ function afterHit(state, rng, note, a, t, op, hit, info) {
   if (a.pc && !onField(t) && a.challenge === t.id) {
     const n = { minion: 1, adept: 1, leader: 2, champion: 2 }[CREATURES[t.cname].rank] || 3;
     note(`${a.name} answers the Challenge with the killing blow.`, "reward");
-    addCond(state, note, a, "inspired", n);
-    (a.fresh ||= {}).inspired = true;
+    addCond(state, note, a, "inspired", n, { by: a.id });
   }
   // The pack: allies with Pack or Swarm Frenzy pile onto a creature that was hit.
   if (dealt && !a.pc && onField(t) && standing(state, a)) {
@@ -1184,7 +1201,7 @@ function applyRider(state, rng, note, a, t, ab, hit) {
     note(`${ab.name}: ${t.name} resists with ${ab.resist.attr[0].toUpperCase() + ab.resist.attr.slice(1)} (${r.text} against ${dc}), ${r.ok ? "and shrugs it off" : "and fails"}.`);
     if (r.ok) return;
   }
-  if (ab.cond) addCond(state, note, t, ab.cond.name, ab.cond.n, { max: ab.cond.max });
+  if (ab.cond) addCond(state, note, t, ab.cond.name, ab.cond.n, { max: ab.cond.max, by: a.id });
   if (ab.attrition) {
     const c = CREATURES[a.cname];
     const amount = ab.attrition.amount ?? (a.minion ? c.tier : Math.max(c.attributes.strength.tier, c.attributes.physique.tier));
@@ -1205,7 +1222,7 @@ function runGrab(state, rng, note, a, t, ab) {
   const r = resist(state, rng, t, ab.resist.attr, ab.resist.dc);
   note(`${a.name} tries to ${ab.name === "Constrict" ? "wrap around" : "seize"} ${t.name} (${ab.name}). ${t.name} resists with Strength (${r.text} against ${ab.resist.dc}), ${r.ok ? "and slips free" : "and is caught"}.`, r.ok ? "" : "event");
   if (r.ok) return;
-  addCond(state, note, t, "restricted", 1);
+  addCond(state, note, t, "restricted", 1, { by: a.id });
   t.held = { by: a.id, dc: ab.resist.dc, name: ab.name };
 }
 
@@ -1420,7 +1437,7 @@ function aiStep(state, rng, note, u) {
     if (allies.length >= 2) {
       u.ap -= 2;
       note(`${u.name} uses ${buff.name}.`, "event");
-      for (const o of allies) addCond(state, note, o, buff.cond, 1);
+      for (const o of allies) addCond(state, note, o, buff.cond, 1, { by: u.id });
       return finishTurn(state, u, rng, note);
     }
   }

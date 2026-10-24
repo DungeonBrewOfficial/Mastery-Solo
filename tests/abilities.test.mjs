@@ -163,3 +163,21 @@ test("Infected makes rest a stage worse", () => {
   campNow(s);
   assert.equal(corra.hp, 1, "Diseased: no rest at all");
 });
+
+test("a condition wears off at the end of its source's next turn, not the turn it landed", () => {
+  const s = battle(8, [{ name: "Bandit Cutthroat", count: 1 }], { temper: "Raider" });
+  const foe = s.battle.units.find(u => !u.pc);
+  foe.x = GRID_W - 1; foe.y = 0;
+  const gisla = unit(s, "gisla");
+  gisla.cond.restricted = 1; gisla.decay = { restricted: { by: foe.id, round: 1 } };
+  const step = () => {
+    if (s.battle.prompt) runWithDice(s, (rng) => respond(s, rng, say(s), false));
+    else if (s.battle.stage === "declare") runWithDice(s, (rng) => beginRound(s, rng, say(s)));
+    else if (currentPC(s)) runWithDice(s, (rng) => pcEndTurn(s, rng, say(s)));
+  };
+  runWithDice(s, (rng) => beginRound(s, rng, say(s)));
+  for (let i = 0; i < 40 && s.battle.round === 1; i++) step();
+  assert.equal(gisla.cond.restricted, 1, "still Restricted after the round it landed");
+  for (let i = 0; i < 40 && s.battle && !foe.doneIn.length; i++) step();
+  assert.equal(gisla.cond.restricted || 0, 0, "gone at the end of the bandit's next turn");
+});
