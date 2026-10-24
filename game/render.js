@@ -283,4 +283,25 @@ export function drawBattle(canvas, b, marks) {
     }
     ctx.globalAlpha = 1;
   }
+  // The last attack: a line from attacker to target, green when the party landed it, red when it took it, gold for a miss.
+  const last = marks.last;
+  const from = last && b.units.find(x => x.id === last.a), to = last && b.units.find(x => x.id === last.t);
+  if (from && to && from.x > -50 && to.x > -50) {
+    const cx = (u) => ox + (u.x + u.w / 2) * cell, cy = (u) => oy + (u.y + u.h / 2) * cell;
+    const col = last.kind === "good" ? "#9fd38a" : last.kind === "bad" ? "#f0a08a" : "#d9c48f";
+    const x1 = cx(from), y1 = cy(from), x2 = cx(to), y2 = cy(to), ang = Math.atan2(y2 - y1, x2 - x1), back = Math.min(to.w, to.h) * cell * 0.45;
+    const ex = x2 - Math.cos(ang) * back, ey = y2 - Math.sin(ang) * back;
+    ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = Math.max(2, cell * 0.07);
+    if (last.kind === "miss") ctx.setLineDash([cell * 0.15, cell * 0.12]);
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(ex, ey); ctx.stroke(); ctx.setLineDash([]);
+    const hs = cell * 0.22;
+    ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(ex - hs * Math.cos(ang - 0.45), ey - hs * Math.sin(ang - 0.45)); ctx.lineTo(ex - hs * Math.cos(ang + 0.45), ey - hs * Math.sin(ang + 0.45)); ctx.fill();
+    const word = last.kind === "miss" ? "MISS" : "HIT";
+    ctx.font = `bold ${Math.max(10, Math.floor(cell * 0.3))}px "Alegreya Sans", sans-serif`;
+    ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+    ctx.lineWidth = 3; ctx.strokeStyle = "rgba(0,0,0,0.75)";
+    // The word sits beside the line, clear of the tokens.
+    const lx = (x1 + ex) / 2 - Math.sin(ang) * cell * 0.45, ly = (y1 + ey) / 2 + Math.cos(ang) * cell * 0.45 - cell * 0.2;
+    ctx.strokeText(word, lx, ly); ctx.fillText(word, lx, ly);
+  }
 }

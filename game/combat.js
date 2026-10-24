@@ -2031,7 +2031,7 @@ function runAttack(state, rng, note, op) {
     const r = per[1] === 1 ? 1 : rng.d(per[1]);
     const hit = r !== 1 && (r === per[1] || r >= dc);
     note(`${a.name} takes aim at ${t.name}: d${per[1]} ${r} against ${dc}${friends ? ` (${friends} of their own beside it)` : ""}${evade ? " (on the wing)" : ""}, ${hit ? "on target" : "misses"}.`);
-    if (!hit) return;
+    if (!hit) { verdict(state, note, a, t, { aimMiss: true, aim: r, dc }); return; }
   }
 
   const am = mods(state, a, "attack");
@@ -2084,10 +2084,35 @@ function runAttack(state, rng, note, op) {
   note(`${a.name} ${verb} ${t.name} with ${info.name.toLowerCase()}${flank ? ", flanking (+2)" : ""}${op.rider ? ` (${op.rider})` : ""}: ${atk.text}.${def ? ` ${t.name} defends: ${def.text}.` : ""}`);
   const killedBefore = !onField(t), before = tally(t);
   const hit = applyHit(state, rng, note, a, t, atk, def, info.type, op.ranged);
+  verdict(state, note, a, t, { atk: atk.total, def: def?.total, hit, killed: !killedBefore && !onField(t), downed: t.pc && memberOf(state, t).hp <= 0 });
   if (!killedBefore) afterHit(state, rng, note, a, t, op, hit, info);
   if (a.pc) demonTrigger(state, rng, note, a, kills(t, before));
   // A contact aura answers a melee blow that lands.
   if (t.shroud && !op.ranged && onField(a) && !hit.defended && ((hit.durabilityDamage || 0) + (hit.healthDamage || 0) > 0)) secondaryDamage(state, rng, note, a, t.shroud.amount, t.shroud.type, `${t.name}'s ${t.shroud.name}`, { magic: true });
+}
+
+/**
+ * The plain result of one attack, for the fight feed and the grid: HIT,
+ * MISS, or NO DAMAGE, with the numbers that decided it. Kind "good" when the
+ * party lands a blow, "bad" when the party takes one, "miss" otherwise.
+ */
+function verdict(state, note, a, t, { aimMiss, aim, dc, atk, def, hit, killed, downed }) {
+  const b = state.battle;
+  const dealt = hit && !hit.defended ? (hit.durabilityDamage || 0) + (hit.healthDamage || 0) : 0;
+  let text, kind;
+  if (aimMiss) { text = `MISS: ${a.name}'s shot at ${t.name} goes wide (aim ${aim}, needed ${dc}).`; kind = "miss"; }
+  else if (hit?.defended) { text = `MISS: ${t.name} defends, ${def} against ${a.name}'s ${atk}.`; kind = "miss"; }
+  else if (!dealt) { text = `NO DAMAGE: ${a.name}'s ${atk} hits ${t.name} but doesn't get through ${t.pc ? "their armor" : "its hide or armor"} (resistance soaks it).`; kind = "miss"; }
+  else {
+    const bits = [];
+    if (hit.durabilityDamage) bits.push(`${hit.durabilityDamage} to ${t.pc ? "armor or shield" : "armor"}`);
+    if (hit.healthDamage) bits.push(t.minion ? `${hit.healthDamage} damage` : `${hit.healthDamage} to health`);
+    const end = killed ? (t.minion && t.heads <= 0 ? ", and the last of them falls" : `, and ${t.name} falls`) : downed ? `, and ${t.name} goes down` : "";
+    text = `HIT: ${a.name} → ${t.name}, ${atk}${def != null ? ` against ${def}` : " (no defense)"}: ${bits.join(" and ")}${end}.`;
+    kind = a.side === "party" ? "good" : "bad";
+  }
+  b.last = { a: a.id, t: t.id, kind: aimMiss || hit?.defended || !dealt ? "miss" : kind, round: b.round };
+  note(text, `verdict ${kind}`);
 }
 
 /** What lands after the damage: riders, Mob traits, flame, the pack, Challenge, Riposte, and counters. */

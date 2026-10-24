@@ -60,6 +60,8 @@ export function newGame(seed = Math.floor(Math.random() * 2 ** 31)) {
 
 export function note(state, text, kind = "") {
   state.log.push({ day: state.day, text, kind });
+  // A fight keeps its own feed, shown beside the grid (main.js).
+  if (state.battle) { const f = (state.battle.feed ||= []); f.push({ round: state.battle.round, text, kind }); if (f.length > 300) f.splice(0, f.length - 300); }
   if (state.log.length > 400) state.log.splice(0, state.log.length - 400);
 }
 

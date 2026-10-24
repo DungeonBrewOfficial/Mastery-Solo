@@ -26,8 +26,27 @@ header h1 { font-family: var(--display); font-weight: 400; font-size: 1.4rem; ma
 button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--event); outline-offset: 1px; }
 header .quiet { margin-left: auto; }
 main { flex: 1; display: flex; min-height: 0; }
-.map-wrap { position: relative; flex: 1; min-width: 0; }
-#map { width: 100%; height: 100%; display: block; cursor: crosshair; touch-action: none; }
+.map-wrap { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; }
+#map { width: 100%; flex: 1; min-height: 0; display: block; cursor: crosshair; touch-action: none; }
+/* The fight feed, under the battle grid */
+.feed { flex: none; height: 34%; overflow-y: auto; border-top: 1px solid var(--line); padding: 8px 14px 12px; font-size: 0.86rem; line-height: 1.35; background: rgba(0,0,0,0.25); }
+.feed .feed-head { display: flex; gap: 12px; align-items: baseline; position: sticky; top: -8px; background: var(--bg, #1d1712); padding: 4px 0; z-index: 1; }
+.feed .feed-head strong { font-size: 0.95rem; }
+.feed .round { color: var(--ink); font-weight: bold; margin: 8px 0 2px; }
+.feed .line { color: var(--muted); padding-left: 10px; }
+.feed .line.event { color: var(--event); }
+.feed .verdict { font-weight: bold; padding: 2px 0 2px 8px; border-left: 3px solid transparent; margin: 2px 0; }
+.feed .verdict.good { color: #9fd38a; border-color: #6fae5a; }
+.feed .verdict.bad { color: #f0a08a; border-color: #c4553d; }
+.feed .verdict.miss { color: #d9c48f; border-color: #8a7a4f; }
+.feed.terse .line { display: none; }
+.feed details { font-size: 0.8rem; color: var(--muted); }
+.feed details p { margin: 4px 0; }
+.log li.verdict { font-weight: bold; }
+.log li.verdict.good { color: #9fd38a; }
+.log li.verdict.bad { color: #f0a08a; }
+.log li.verdict.miss { color: #d9c48f; }
+[title] { text-decoration-style: dotted; }
 .map-tools { position: absolute; top: 10px; left: 10px; display: flex; flex-direction: column; gap: 6px; }
 .map-tools button { width: 34px; height: 34px; padding: 0; font-size: 1.1rem; }
 .hover { position: absolute; bottom: 10px; left: 10px; background: rgba(21,18,15,0.85); padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; pointer-events: none; }

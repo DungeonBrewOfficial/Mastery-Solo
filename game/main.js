@@ -20,6 +20,7 @@ import { recruitsHere, hire, build, nextGeneration, recruitCost, PARTY_SIZE, HUM
 import { GEAR } from "./data/gear.js";
 import { ATTRIBUTES, MASTERY_NAMES, masteryTargets, masteryLabel, masteryIndex, cannotInvest, invest, raiseAttribute, hasUnspent, nextLevelXp, titleOf } from "./advance.js";
 import { pointsHint } from "./vendor/foundry/module/helpers/advancement-rules.mjs";
+import { GLOSSARY, explain } from "./data/glossary.js";
 
 const $ = (id) => document.getElementById(id);
 const canvas = $("map");
@@ -62,6 +63,7 @@ function render() {
   $("search").disabled = pending || busy || !!state.site;
   $("search").textContent = leads.length ? `Search for ${leads.map(leadText).join(" or ")} (a leg)` : "Search";
   renderEvent();
+  renderFeed();
   renderParty();
   renderSupplies();
   renderTown(busy || pending);
@@ -232,7 +234,7 @@ function battleMarks() {
     return { u: x, label: tokenLabel(x), color: x.pc ? "#a8322a" : x.minion ? "#5b4a3c" : "#4b3f5a",
       hpFrac: x.pc ? m.hp / m.health : x.hp / x.hpMax, dim: x.pc ? m.down : x.demoralized >= 3 };
   });
-  return { current: u?.id, moves, targets, units, hover: view.hover };
+  return { current: u?.id, moves, targets, units, hover: view.hover, last: b.last && b.last.round >= b.round - 1 ? b.last : null };
 }
 
 function paint() {
@@ -241,7 +243,10 @@ function paint() {
 }
 
 const GOOD = /^(Rallied|Emboldened|Fearless|Energized|Empowered|Tireless|challenging|casting|holding|Stoneskin|Sacred Ward|imbued|declared)/;
-const condHtml = (conds) => conds.length ? ` ${conds.map(c => `<span class="${GOOD.test(c) ? "good" : "warn"}">${c}</span>`).join(", ")}` : "";
+const esc = (t) => String(t).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+/** A word with its explanation on hover, if the glossary has one. */
+const term = (word, cls = "") => { const t = explain(word); return t ? `<span class="${cls}" title="${esc(t)}" style="text-decoration: underline dotted">${word}</span>` : cls ? `<span class="${cls}">${word}</span>` : word; };
+const condHtml = (conds) => conds.length ? ` ${conds.map(c => term(c, GOOD.test(c) ? "good" : "warn")).join(", ")}` : "";
 const describeHealth = (u) => u.hp >= u.hpMax ? "unhurt" : u.hp > u.hpMax / 2 ? "hurt" : u.hp > u.hpMax / 4 ? "bloodied" : "near death";
 
 function unitLine(u) {
@@ -249,11 +254,42 @@ function unitLine(u) {
   if (u.pc) {
     const m = memberFor(state, u), w = weaponOf(m, u);
     const gear = [m.armor ? `${m.armor.name} ${m.armor.durability}/${m.armor.max}` : "", m.shield ? `${m.shield.name} ${m.shield.durability}/${m.shield.max}` : ""].filter(Boolean).join(" · ");
-    return `<strong>${m.name}</strong> <span>${m.hp}/${m.health} hp</span> <span class="muted">${u.ap} AP · ${u.companion ? m.attack.name : `${w ? w.name : "unarmed"} · ${GUARDS[u.guard].label}`}</span>${condHtml(conds)}${gear ? `<br><span class="muted small">${gear}</span>` : ""}`;
+    return `<strong>${m.name}</strong> <span>${m.hp}/${m.health} hp</span> <span class="muted">${u.ap} ${term("AP")} · ${u.companion ? m.attack.name : `${w ? w.name : "unarmed"} · ${term(GUARDS[u.guard].label)}`}</span>${condHtml(conds)}${gear ? `<br><span class="muted small">${gear}</span>` : ""}`;
   }
   const c = creatureFor(u);
   if (u.object) return `<strong>${u.name}</strong> <span class="muted">can't defend; ${u.dmgSince} damage since the Dryad's last turn (7 stops her regrowth, 14 her melding)</span>`;
-  return `<strong>${u.name}</strong> <span>${u.minion ? `${u.heads} of ${u.headsMax}` : describeHealth(u)}</span> <span class="muted">${c.rank}${u.armorMax ? ` · armor ${u.armorDur > 0 ? "holding" : "broken"}` : ""}</span>${condHtml(conds)}`;
+  return `<strong>${u.name}</strong> <span>${u.minion ? `${u.heads} of ${u.headsMax}` : describeHealth(u)}</span> <span class="muted">${term(c.rank)}${u.armorMax ? ` · armor ${u.armorDur > 0 ? "holding" : "broken"}` : ""}</span>${condHtml(conds)}`;
+}
+
+/**
+ * The fight feed, under the grid: every line of this fight by round, each
+ * attack's verdict in color (green when you land one, red when you take one,
+ * gold for a miss or nothing through), the dice lines muted beneath.
+ */
+let feedTerse = false;
+function renderFeed() {
+  const box = $("feed");
+  const b = state.battle;
+  if (!b) { box.hidden = true; return; }
+  box.hidden = false;
+  box.classList.toggle("terse", feedTerse);
+  const lines = (b.feed || []).filter(e => e.round >= Math.max(1, b.round - 3) && !/^Round \d+\.$/.test(e.text));
+  let html = `<div class="feed-head"><strong>What happened</strong><label class="small muted"><input type="checkbox" id="feed-terse"${feedTerse ? " checked" : ""}> results only</label>
+    <details><summary>How to read this</summary>
+      <p><span class="verdict good">HIT</span> your side got damage through. <span class="verdict bad">HIT</span> you took damage. <span class="verdict miss">MISS / NO DAMAGE</span> it was defended, went wide, or didn't beat resistance.</p>
+      <p>An attack rolls its dice (shown as d8[5]; 4!3 means a 4 exploded and rolled again) plus bonuses. A target that defends rolls too, with its ${term("resistance")} already in the total: if the defense is as high or higher, it's a miss; if not, the difference gets through. A target that doesn't defend takes the attack less its resistance. What gets through goes to armor ${term("Durability")} first, then health.</p>
+      <p>${term("Dominance")} · ${term("Impotence")} · ${term("Superiority")} · ${term("Inferiority")} · ${term("phases")} · ${term("flanking")} (hover for each)</p>
+    </details></div>`;
+  let round = null;
+  for (const e of lines) {
+    if (e.round !== round) { round = e.round; html += `<div class="round">Round ${round}</div>`; }
+    const t = esc(e.text);
+    if (/^verdict/.test(e.kind || "")) html += `<div class="verdict ${e.kind.split(" ")[1]}">${t}</div>`;
+    else html += `<div class="line ${e.kind === "event" ? "event" : ""}">${t}</div>`;
+  }
+  box.innerHTML = html;
+  $("feed-terse").onchange = (ev) => { feedTerse = ev.target.checked; renderFeed(); };
+  box.scrollTop = box.scrollHeight;
 }
 
 function renderBattle(box) {

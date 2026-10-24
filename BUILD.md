@@ -124,7 +124,10 @@ The game saves after every action: on the hosted page, to the player's own priva
 8. **Places in fights:** terrain, cover, and light on the battle grid.
 9. **Magic beyond the fight:** spell sources, learning spells, divination, barriers, summoning, shapeshifting.
 
-Alongside all of these: making the game readable while it's played (what each roll was, why, and what it did).
+Alongside all of these: making the game readable while it's played (what each roll was, why, and what it did). Built so far:
+   - *The fight feed*, under the battle grid: every line of the fight by round, each attack's result as a colored verdict (HIT and what it did, MISS with the two totals, NO DAMAGE when resistance soaked it), the dice beneath, a "results only" switch, and "How to read this". The last attack is drawn on the grid as an arrow.
+   - *Hover explanations* (`game/data/glossary.js`) for conditions, guards, ranks, minion groups, AP, phases, and the dice words, as the game plays them.
+   - Buttons that can't work say why: a toll you can't pay, a break-away no one can make (with the best roll against the DC when it can't succeed).
 
 ## Known gaps
 
