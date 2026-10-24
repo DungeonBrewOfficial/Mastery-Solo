@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mastery Solo</title>
+  <link rel="stylesheet" href="game/style.css">
+</head>
+<body>
+  <header>
+    <h1>Mastery Solo</h1>
+    <span id="seed" class="muted"></span>
+    <button id="new" class="quiet">New dynasty</button>
+  </header>
+  <main>
+    <section class="map-wrap">
+      <canvas id="map" aria-label="The map"></canvas>
+      <div class="map-tools">
+        <button id="zoom-in" title="Zoom in">+</button>
+        <button id="zoom-out" title="Zoom out">−</button>
+        <button id="center" title="Center on the party">◎</button>
+      </div>
+      <div id="hover" class="hover"></div>
+    </section>
+    <aside>
+      <div class="panel">
+        <div class="row"><strong id="day"></strong> <span id="season" class="muted cap"></span></div>
+        <div id="hours" class="muted"></div>
+        <div id="weather"></div>
+        <div id="here" class="here"></div>
+      </div>
+      <div class="panel">
+        <label>Pace
+          <select id="pace">
+            <option value="slow">Slow</option>
+            <option value="normal">Normal</option>
+            <option value="fast">Fast</option>
+            <option value="marathon">Marathon</option>
+          </select>
+        </label>
+        <span id="pace-note" class="muted"></span>
+        <button id="travel" class="primary"></button>
+        <div id="choice" class="choice" hidden>
+          <button id="stop">Stop at nightfall</button>
+          <button id="push">Push on</button>
+        </div>
+        <button id="camp">Make camp</button>
+        <p class="muted small">Space: travel a leg · C: make camp · drag to pan · wheel to zoom</p>
+      </div>
+      <ol id="log" class="log"></ol>
+    </aside>
+  </main>
+  <script type="module" src="game/main.js"></script>
+</body>
+</html>

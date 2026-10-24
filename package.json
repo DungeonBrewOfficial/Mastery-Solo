@@ -1,0 +1,11 @@
+{
+  "name": "mastery-solo",
+  "private": true,
+  "type": "module",
+  "description": "The Solo Game, rebuilt on Mastery, as a browser roguelike.",
+  "scripts": {
+    "test": "node --test tests/",
+    "sync": "node tools/sync-foundry.mjs ../Mastery-Foundry",
+    "serve": "python3 -m http.server 8000"
+  }
+}
