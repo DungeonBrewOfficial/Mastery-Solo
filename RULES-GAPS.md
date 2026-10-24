@@ -2,6 +2,8 @@
 
 Places where Mastery's own text is missing something, contradicts itself, or reads differently from how Jon rules it. This is a record for Jon to fix in the rules; each one is also raised in chat when found. File and line numbers are in the `mastery` repository as of 2026-10-24.
 
+**Status, 2026-10-24:** gaps 1–7 are closed in the rules text (`mastery` commit 68ef36b). Mark Quarry now grants Invigorated against its target, and the game follows. The game reads creatures from the Foundry pack, which picks up the new wording once the Foundry repository carries it.
+
 | # | Where | What the text says | The gap | How the game handles it now |
 |:-:|:---|:---|:---|:---|
 | 1 | `Creatures - Mortal Folk.md:407`, Mark Quarry | "All allied hunters and beasts within 60 feet advance Inspired by 1 tier against that target only." | Inspired Tiers 1 and 2 only help mental rolls and trials; only Tier 3 touches attacks. Against one target, the buff does almost nothing for two rounds. Likely written before Inspired changed. | Tier 3 gives Superiority on attacks against the marked target; Tiers 1–2 do nothing in a fight. |

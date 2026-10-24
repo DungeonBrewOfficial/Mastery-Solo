@@ -195,7 +195,7 @@ export const REACTIONS = {
   counter: { label: "Counterattack", default: "ask", text: "If you successfully defend against an attack, you can spend 1 AP as a reaction to make a counterattack against your attacker (Combat, Triggered Reactions)." },
   reprisal: { label: "Reprisal attack", default: "ask", text: "If a creature moves out of your melee attack range, you can spend 1 AP as a reaction to make an attack against that creature (Combat, Triggered Reactions)." },
   snap: { label: "Snap Shot", default: "ask", text: "Reprisal, when a creature uses movement to approach within 15 feet of your position. Make a ranged attack with Impotence and move up to half your movement speed away from the triggering creature (Weapon Mastery, Ranged Baseline)." },
-  avoidDeath: { label: "Avoid Death", default: "always", text: "When an attack or spell would reduce you to 0 health, you can roll your Endurance tier die and restore that amount of health. You cannot use this again until you complete a rest (Skill Mastery, Athletics)." },
+  avoidDeath: { label: "Avoid Death", default: "always", text: "When an attack or spell would reduce you to 0 health, you can roll your Endurance tier die and restore that amount of health. This costs no AP. You cannot use this again until you complete a rest (Skill Mastery, Athletics)." },
   heartenDefense: { label: "Hearten an ally's defense", default: "ask", text: "As a reaction, you may spend 1 AP when an ally makes a trial, attack, or defense roll. You grant a bonus equal to your Charisma tier to that roll (Skill Mastery, Presence, Rhetoric)." },
   heartenAttack: { label: "Hearten an ally's attack", default: "ask", text: "As a reaction, you may spend 1 AP when an ally makes a trial, attack, or defense roll. You grant a bonus equal to your Charisma tier to that roll (Skill Mastery, Presence, Rhetoric)." },
   heartenTrial: { label: "Hearten an ally's trial", default: "ask", text: "As a reaction, you may spend 1 AP when an ally makes a trial, attack, or defense roll. You grant a bonus equal to your Charisma tier to that roll (Skill Mastery, Presence, Rhetoric). Ask stops for trials against an enemy's attack (venom, a grab, a Low Cut, a Mob trait); other trials, like Endurance at 0 health, take Hearten only on Always." }
@@ -1340,9 +1340,12 @@ function runAttack(state, rng, note, op) {
   if (!op.ranged && t.prone) sup = true;
   if (op.ranged && t.prone) inf = true;
   if (t.smashing) sup = true;
-  // Root Snare's Pin, Mark Quarry at Tier 3, a Cunning Feint: Superiority against that one target.
+  // Root Snare's Pin and a Cunning Feint: Superiority against that one target.
   if (has(a, "hold")?.supWhenPinned && t.held?.by === a.id && cond(t, "restricted") >= 2) sup = true;
-  if (cond(a, "quarry") >= 3 && a.quarryOn === t.id) sup = true;
+  // Mark Quarry: Invigorated against that target only (Dominance; +1 at Tier 2; +2 at Tier 3).
+  const hunt = a.quarryOn === t.id ? cond(a, "quarry") : 0;
+  if (hunt) dom = true;
+  const huntBonus = hunt === 2 ? 1 : hunt === 3 ? 2 : 0;
   if (a.feintOn === t.id) { sup = true; a.feintOn = null; }
   // Incorporeal: mundane damage has Inferiority against it.
   if (has(t, "incorporeal") && ["cutting", "cleaving", "crushing", "piercing", "puncturing"].includes(info.type)) inf = true;
@@ -1351,7 +1354,7 @@ function runAttack(state, rng, note, op) {
   // One roll against several targets (Swipe, Timber, Boulder Throw): the first rolls, the rest share it.
   let atk = op.shared && b.rolls?.[op.shared];
   if (!atk) {
-    atk = rollPool(rng, info.dice, { edge: (dom ? 1 : 0) - (imp ? 1 : 0), bonus: info.bonus + (op.bonus || 0) + (flank ? 2 : 0) + am.bonus - am.pen + lift, inferiority: inf, superiority: sup, extra: info.extra });
+    atk = rollPool(rng, info.dice, { edge: (dom ? 1 : 0) - (imp ? 1 : 0), bonus: info.bonus + (op.bonus || 0) + (flank ? 2 : 0) + am.bonus - am.pen + lift + huntBonus, inferiority: inf, superiority: sup, extra: info.extra });
     // Breaker: an exploding die lets the orc add its Strength score, and costs it three tiers of Exhausted.
     if (!a.pc && atk.exploded && !cond(a, "exhausted") && abilitiesOf(CREATURES[a.cname]).some(x => x.kind === "breaker")) {
       const str = CREATURES[a.cname].attributes.strength.score;
@@ -1364,10 +1367,11 @@ function runAttack(state, rng, note, op) {
   if (op.defend) {
     const d = canDefend(state, { ...t, ap: 1 }, info.type, op.ranged);
     const dm = mods(state, t, "defense");
-    let ddom = dm.edge > 0 || !!op.interceptDom, dimp = dm.edge < 0;
+    const guard = t.quarryOn === a.id ? cond(t, "quarry") : 0; // a hunter defending against its quarry
+    let ddom = dm.edge > 0 || !!op.interceptDom || guard > 0, dimp = dm.edge < 0;
     if (t.pc) { if (t.guard === "stable") ddom = true; if (t.guard === "striking") dimp = true; }
     const hearten = op.hearten ? heartenBonus(state, op.hearten) : 0;
-    def = rollPool(rng, d.dice, { edge: (ddom ? 1 : 0) - (dimp ? 1 : 0), bonus: d.bonus + dm.bonus - dm.pen + hearten + (op.falseBonus || 0), inferiority: dm.inf || d.unarmed, superiority: dm.sup });
+    def = rollPool(rng, d.dice, { edge: (ddom ? 1 : 0) - (dimp ? 1 : 0), bonus: d.bonus + dm.bonus - dm.pen + hearten + (op.falseBonus || 0) + (guard === 2 ? 1 : guard === 3 ? 2 : 0), inferiority: dm.inf || d.unarmed, superiority: dm.sup });
     if (hearten) note(`${unitById(b, op.hearten).name} heartens ${t.name} (+${hearten}).`);
   }
   const verb = op.reaction === "counter" || op.reaction === "riposte" ? "counters" : op.reaction === "reprisal" ? "strikes at" : op.reaction === "pack" ? "piles onto" : op.charge ? "charges" : op.ranged ? "shoots" : "attacks";
@@ -1965,7 +1969,7 @@ function aiStep(state, rng, note, u) {
     // A heavy blow (Vicious Bite, 2 AP) to open.
     const heavy = has(u, "heavy");
     if (heavy && u.ap >= 2 && u.attacks === 0) {
-      const t = near.find(x => x.quarryOn) || near[0];
+      const t = near.find(x => u.quarryOn === x.id) || near[0];
       u.ap -= 2; u.attacks += 1;
       b.queue.push({ op: "attack", by: u.id, target: t.id, ranged: false, special: { ...heavy.special } });
       return;

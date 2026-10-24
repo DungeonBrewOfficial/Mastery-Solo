@@ -135,7 +135,6 @@ export const ABILITIES = {
   "Boulder Throw": { kind: "area", attack: /boulder/i, edge: -1, size: 2,
     text: "The Bergrisar makes a boulder attack with Impotence targeting all creatures in a 2×2 area at the impact point. Roll one attack and apply to all targets." },
 
-  // Root Snare names no range; it's given 30 feet like the Widow's Web.
   "Root Snare": { kind: "hold", range: 6, resist: { attr: "strength", dc: 6 }, supWhenPinned: true,
     text: "The target must succeed on a STR trial [6] or advance Restricted by 1 tier. Advances on repeated application. No damage. Restricted does not deteriorate while held. While a target is Pinned by Root Snare, the Treow's attacks against it have Superiority." },
   "Ensnare": { kind: "hold", range: 12, resist: { attr: "strength", dc: 8 },
@@ -185,7 +184,7 @@ export const ABILITIES = {
   "Command Shout": { kind: "buff", cond: "inspired", range: 6, who: /./, once: true, lasting: true, text: "All allied infantry within 30 feet advance Inspired by 1 tier. Persists until end of encounter." },
   "Pride Roar": { kind: "buff", cond: "invigorated", range: 6, who: /./, text: "All allied beasts within 30 ft advance Invigorated by 1 tier. Can be reapplied to stack tiers." },
   "Call the Flock": { kind: "buff", cond: "invigorated", range: 12, who: /magpie|crow|raven|corvid/i, text: "Allied corvids within range advance Invigorated by 1 tier. Lasts 1 round. Can be reapplied to stack tiers." },
-  "Mark Quarry": { kind: "quarry", range: 12, text: "The ranger captain designates a target within line of sight. All allied hunters and beasts within 60 feet advance Inspired by 1 tier against that target only. Lasts 1 round. Can be reapplied to stack tiers." },
+  "Mark Quarry": { kind: "quarry", range: 12, text: "The ranger captain designates a target within line of sight. All allied hunters and beasts within 60 feet advance Invigorated by 1 tier against that target only. Can be reapplied to stack tiers." },
   "Cunning Feint": { kind: "feint", range: 2, resist: { attr: "perception", dc: 9 }, text: "One head distracts a target within 10 feet. The target must succeed on a PER trial [9] or the Ettin's next attack against that target this round gains Superiority." },
 
   "Unnatural Strength": { kind: "passive", why: "no one in the party grapples yet" },
