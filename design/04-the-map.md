@@ -102,7 +102,7 @@ After terrain, roads, and rivers, roll 2d6 for the tile's features [N, ?5]:
 
 **A river rises** in the tile's highest ground and leaves by an edge away from any hills or mountains.
 
-**A settlement's size**: roll a d20. 1–6 a hamlet; 7–9 a roadhouse (on a road only; otherwise a hamlet); 10–16 a village; 17–19 a town; 20 a city. A town starts 1d2 new roads, and a city 1d3 + 1, toward edges the road doesn't already use. What a settlement offers is covered in the settlements file, to come; its coin on hand is in `03-treasure.md`.
+**A settlement's size**: roll a d20. 1–6 a hamlet; 7–9 a roadhouse (on a road only; otherwise a hamlet); 10–16 a village; 17–19 a town; 20 a city. A town starts 1d2 new roads, and a city 1d3 + 1, toward edges the road doesn't already use. What a settlement offers is in `06-settlements.md`; its coin on hand is in `03-treasure.md`.
 
 ---
 

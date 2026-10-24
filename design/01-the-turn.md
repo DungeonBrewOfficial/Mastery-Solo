@@ -111,7 +111,7 @@ Out in the wild, everything runs down. Health returns 1 or 1d3 a night. Armor lo
 - **Repair.** Hire a smith, or use the party's own Blacksmith in a workshop [M, Skill Mastery, Trade].
 - **Buy.** Whether a settlement sells something is an Availability roll by its size, from a roadhouse's 2d3 to a metropolis's 2d12 [M, Equipment, Availability]. The city stocks what the hamlet can't.
 - **Sell.** Pelts, gear, and treasure.
-- **Recruit.** Replace the dead from the settlement's recruits, or build a new character [Jon, 2026-10-23; procedure to come].
+- **Recruit.** Replace the dead from the settlement's recruits, or build a new character [Jon, 2026-10-23; see `06-settlements.md`].
 
 **Experience comes home with you.** Mastery awards exploration XP "when you are done traveling between locations," not along the way [M, General Rules, Exploration Experience]. Read strictly, the XP for every place a party found on an expedition is banked only when they reach safety. A party that dies on the way back loses it. That puts a push-your-luck decision into the rules as written: one more ruin, or home while you still can. Combat XP is different: it lands at the end of each fight [Jon, 2026-10-24].
 
@@ -129,5 +129,5 @@ These pages are referred to above and not yet written:
 
 - **Encounters:** started in `02-encounters.md` (woodland only so far).
 - **Sites:** drafted in `05-sites.md`.
-- **Settlements:** what each size of settlement offers, and recruiting.
+- **Settlements:** drafted in `06-settlements.md`.
 - **Map generation:** drafted in `04-the-map.md`.
