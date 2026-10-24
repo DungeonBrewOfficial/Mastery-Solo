@@ -153,8 +153,11 @@ export function rollCharacter(rng, cls, { level = 1, taken = [] } = {}) {
   m.purse = outfitCharacter(m, cls, coin);
   ensureAdvancement(m);
   startingMasteries(m, cls);
-  // Spells known: the ones the game has, in forms they've reached Untrained in, up to two.
-  if (m.casting) m.spells = Object.keys(SPELLS).filter(n => (m.casting.forms[SPELLS[n].form] || 1) >= 2).slice(0, 2);
+    if (m.casting) {
+    // Two spells the game plays, in forms they've reached, that their pool can pay for.
+    const can = Object.keys(SPELLS).filter(n => SPELLS[n].kind && !SPELLS[n].unbuilt && (m.casting.forms[SPELLS[n].form] || 1) >= 2 && SPELLS[n].cost <= m.magan);
+    for (let i = 0; i < 2 && can.length; i++) m.spells.push(can.splice(rng.d(can.length) - 1, 1)[0]);
+  }
   m.abilities = classAbilities(rng, m, cls);
   m.features = c.hallmarks || [];
   const pet = companionFor(rng, m, cls);

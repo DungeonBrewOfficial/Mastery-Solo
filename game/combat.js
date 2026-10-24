@@ -1155,7 +1155,7 @@ export function castOptions(state, u) {
   const out = [];
   for (const name of m.spells || []) {
     const sp = spellOf(m, name);
-    if (!sp) continue;
+    if (!sp || sp.unbuilt || !sp.kind) continue; // known, but its mechanics aren't in the game yet
     const pay = (c) => m.casting.polestar ? Math.max(1, c - 1) : c; // the Polestar focus: 1 less, never below 1
     out.push({ key: name, name, label: name, base: sp.cost, cost: pay(sp.cost), phase: spellSpeed(sp.cost), age: sp.kind === "heal" ? "round" : null });
     if (sp.kind === "heal") {
@@ -1216,7 +1216,10 @@ export function castTargets(state, u) {
   if (!c || u.ap < 1 || turning(u)) return [];
   const sp = spellOf(memberOf(state, u), c.name);
   const near = (t) => spellOrigins(state, u).some(o => o === t || gap(o, t) <= (sp.reach || 1));
-  if (sp.kind === "damage" || sp.kind === "condition") return b.units.filter(t => t.side !== u.side && standing(state, t) && !isObject(t) && near(t));
+  // Self spells land on the caster alone (a Spell Conduit carries touch, not self).
+  if (sp.self && !sp.touch) return [u];
+  if (sp.kind === "damage" || sp.kind === "condition" || sp.kind === "area") return b.units.filter(t => t.side !== u.side && standing(state, t) && !isObject(t) && near(t));
+  if (sp.kind === "cleanse") return b.units.filter(t => t.side === u.side && onField(t) && near(t) && cond(t, "tainted") > 0);
   return b.units.filter(t => t.side === u.side && onField(t) && !memberOf(state, t).dead && near(t) &&
     (sp.kind !== "heal" || memberOf(state, t).hp < (t.companion ? memberOf(state, t).health : memberOf(state, t).health)) &&
     (sp.kind !== "heal" || c.age !== "round" || (t.lostThisRound || 0) > 0));
@@ -1260,11 +1263,48 @@ function releaseSpell(state, rng, note, u, t, c) {
     }
     return;
   }
+  if (sp.kind === "area") {
+    // A burst (Large scale: up to 3×3 squares) centered on the target: everyone in it, friend or foe, dodges or takes it.
+    const d = power();
+    const caught = b.units.filter(x => onField(x) && !isObject(x) && !(x.pc && memberOf(state, x).dead) && gap(x, t) <= (sp.area || 1));
+    note(`${m.name} casts ${sp.name} on ${t.name}: ${d.text}, ${caught.map(x => x.name).join(", ")} in the blast.`, "event");
+    for (const x of caught) {
+      if (!onField(x)) continue;
+      const before = tally(x);
+      const r = resist(state, rng, x, sp.resist, dc, { vsType: sp.type });
+      note(`${x.name} (${cap(sp.resist)} ${r.text} against ${dc}): ${r.ok ? "clear" : "caught"}.`);
+      if (!r.ok) { secondaryDamage(state, rng, note, x, d.total, sp.type, sp.name, { magic: true }); if (!x.pc && onField(x)) morale(state, rng, note, "hurt", x); demonTrigger(state, rng, note, u, kills(x, before)); }
+    }
+    return;
+  }
+  if (sp.kind === "buff") {
+    addCond(state, note, t, sp.cond, 1, { by: u.id, lasting: true });
+    note(`${m.name} casts ${sp.name} on ${t.name}.`, "reward");
+    concentrate(state, note, u, { name: sp.name, kind: "condition", cond: sp.cond, target: t.id });
+    return;
+  }
+  if (sp.kind === "aura") {
+    // A contact aura (Magic Mastery, Auras): whoever hits the bearer in melee takes the form's mastery level.
+    u.shroud = { name: sp.name, type: sp.type, amount: m.casting.forms[sp.form] || 1 };
+    note(`${m.name} calls up ${sp.name}: a melee blow that lands on ${m.name} costs the attacker ${u.shroud.amount} ${sp.type}.`, "reward");
+    concentrate(state, note, u, { name: sp.name, kind: "aura", target: u.id });
+    return;
+  }
+  if (sp.kind === "cleanse") {
+    setCond(t, "tainted", Math.max(0, cond(t, "tainted") - 1));
+    note(`${m.name} casts ${sp.name} on ${t.name}: Tainted eases to ${cond(t, "tainted")}.`, "reward");
+    return;
+  }
   if (sp.kind === "condition") {
     const r = resist(state, rng, t, sp.resist, dc, { forCond: sp.cond });
     note(`${m.name} casts ${sp.name} on ${t.name}. ${t.name} resists with ${cap(sp.resist)} (${r.text} against ${dc}): ${r.ok ? "it holds firm" : "it gives"}.`);
     const entry = concentrate(state, note, u, { name: sp.name, kind: "condition", cond: sp.cond, target: r.ok ? null : t.id });
-    if (!r.ok) { addCond(state, note, t, sp.cond, 1, { by: u.id, lasting: true }); if (sp.cond === "demoralized") t.fearOf = u.id; }
+    if (!r.ok) {
+      addCond(state, note, t, sp.cond, 1, { by: u.id, lasting: true });
+      if (sp.cond === "demoralized") t.fearOf = u.id;
+      // A spell that holds (Earthbind, Ensnare): break free against the spell's DC, as from any hold.
+      if (sp.cond === "restricted") t.held = { by: u.id, dc, name: sp.name, ranged: true };
+    }
     else note(`${sp.name} stays in ${m.name}'s concentration: 1 AP on a later turn tries again.`);
     return entry;
   }
@@ -1343,6 +1383,8 @@ function endConcentration(state, note, u, e, why) {
   if (e.kind === "ward" && t) t.wards = (t.wards || []).filter(w => !(w.by === u.id && w.name === e.name));
   // A held condition starts standard deterioration (Conditions spells).
   if (e.kind === "condition" && t && cond(t, e.cond)) (t.decay ||= {})[e.cond] = { by: null, round: b.round };
+  if (e.kind === "aura") u.shroud = null;
+  if (e.kind === "condition" && t?.held?.by === u.id && t.held.name === e.name) t.held = null;
   if (e.kind === "turn") for (const id of e.targets || []) { const x = unitById(b, id); if (x) x.turnedBy = null; }
   if (e.kind === "imbue") u.imbue = null;
   note(`${u.name}'s ${e.name} ${why}.`, "event");
@@ -2027,6 +2069,8 @@ function runAttack(state, rng, note, op) {
   const hit = applyHit(state, rng, note, a, t, atk, def, info.type, op.ranged);
   if (!killedBefore) afterHit(state, rng, note, a, t, op, hit, info);
   if (a.pc) demonTrigger(state, rng, note, a, kills(t, before));
+  // A contact aura answers a melee blow that lands.
+  if (t.shroud && !op.ranged && onField(a) && !hit.defended && ((hit.durabilityDamage || 0) + (hit.healthDamage || 0) > 0)) secondaryDamage(state, rng, note, a, t.shroud.amount, t.shroud.type, `${t.name}'s ${t.shroud.name}`, { magic: true });
 }
 
 /** What lands after the damage: riders, Mob traits, flame, the pack, Challenge, Riposte, and counters. */

@@ -202,3 +202,60 @@ test("concentration: a second held spell takes a paid slot; paid costs 1 AP a ro
   assert.equal(h.ap, 2);
   assert.equal(h.conc.find(e => e.id === "b").slot, "passive");
 });
+
+test("the spell list comes from Foundry's pack, each spell playable or marked with why not", async () => {
+  const { SPELLS } = await import("../game/data/spells.js");
+  assert.equal(Object.keys(SPELLS).length, 104);
+  assert.equal(SPELLS["Fire Burst"].kind, "area");
+  assert.equal(SPELLS["Earthbind"].cond, "restricted");
+  assert.match(SPELLS["Beckon Fae"].unbuilt, /Charmed/);
+  for (const sp of Object.values(SPELLS)) assert.ok(sp.kind || sp.unbuilt);
+});
+
+test("a burst catches everyone within a square of its center, friend or foe", () => {
+  const s = battle(9, [{ name: "Bandit Cutthroat", count: 2 }]);
+  const [a, b] = s.battle.units.filter(u => !u.pc);
+  s.battle.units.filter(u => u.pc).forEach((u, i) => { u.x = 1; u.y = i; });
+  a.x = 8; a.y = 5; b.x = 9; b.y = 6;
+  const ham = unit(s, "hamon"); ham.x = 7; ham.y = 4;
+  const g = member(s, "gisla");
+  g.spells.push("Fire Burst"); g.mp = 18;
+  const u = turnOf(s, "gisla", { gisla: { spell: "Fire Burst" } });
+  assert.equal(u?.id, "gisla");
+  assert.equal(u.phase, "moderate");
+  const from = s.log.length;
+  runWithDice(s, (rng) => pcCast(s, rng, say(s), a.id));
+  const log = logOf(s, from);
+  assert.match(log, /casts Fire Burst on Bandit Cutthroat/);
+  assert.match(log, /Hamon \(Agility/);
+  assert.match(log, /Bandit Cutthroat 2 \(Agility|Bandit Cutthroat \(Agility/);
+});
+
+test("a Shroud answers melee blows that land on its bearer", () => {
+  let burned = false;
+  for (let seed = 1; seed <= 30 && !burned; seed++) {
+    const s = battle(seed, [{ name: "Bandit Cutthroat", count: 1 }]);
+    const foe = lineUp(s, 9);
+    const g = member(s, "gisla");
+    g.spells.push("Shroud of Embers");
+    const u = turnOf(s, "gisla", { gisla: { spell: "Shroud of Embers" } });
+    if (u?.id !== "gisla") continue;
+    assert.deepEqual(castTargets(s, u).map(x => x.id), ["gisla"], "a self spell lands on the caster alone");
+    runWithDice(s, (rng) => pcCast(s, rng, say(s), u.id));
+    assert.equal(u.shroud.type, "fire");
+    g.react = { defend: "never" };
+    for (const x of s.battle.units.filter(x => x.pc && x !== u)) x.x = 20;
+    foe.x = u.x + 1; foe.y = u.y; foe.hp = foe.hpMax = 99;
+    const from = s.log.length;
+    for (let r = 0; r < 2 && s.battle; r++) {
+      runWithDice(s, (rng) => beginRound(s, rng, say(s), {}));
+      for (let i = 0; i < 60 && s.battle?.stage === "phase"; i++) {
+        if (s.battle.prompt) runWithDice(s, (rng) => respond(s, rng, say(s), false));
+        else if (currentPC(s)) runWithDice(s, (rng) => pcEndTurn(s, rng, say(s)));
+        else break;
+      }
+    }
+    if (/Gisla's Shroud of Embers: Bandit Cutthroat takes/.test(logOf(s, from))) burned = true;
+  }
+  assert.ok(burned);
+});

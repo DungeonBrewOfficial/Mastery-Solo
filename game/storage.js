@@ -34,6 +34,7 @@ export function unpack(json) {
     if (p && m.mp === undefined) m.mp = p.magan;
     if (p) for (const k of ["spells", "gear", "shieldAbsorbs", "abilities", "immune", "casting", "companion", "theurgy"]) if (m[k] === undefined && p[k] !== undefined) m[k] = structuredClone(p[k]);
     if (m.companion && m.companion.hp === undefined) m.companion.hp = m.companion.health;
+    if (p?.casting?.recorded && m.casting && !m.casting.recorded) m.casting.recorded = structuredClone(p.casting.recorded);
   }
   // Saves from before supplies set out with what a new party has.
   if (s.party && !s.party.food) outfit(s);

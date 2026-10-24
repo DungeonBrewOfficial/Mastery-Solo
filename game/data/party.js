@@ -52,7 +52,8 @@ export const PREGENS = [
     weaponSkill: { bludgeons: 2, axes: 2 }, styles: {},
     skills: { healer: 2, presence: 2, wilderness: 2 },
     spells: ["Stoneskin", "Mend Flesh"], gear: ["Healer's Kit"], abilities: ["Hearten"],
-    casting: { attr: "wisdom", dc: 5, forms: { primal: 2, stone: 2, sea: 2, fire: 2 } },
+    // Corra's Stoneskin reaches by touch as well as self [Jon's ruling, her build].
+    casting: { attr: "wisdom", dc: 5, forms: { primal: 2, stone: 2, sea: 2, fire: 2 }, recorded: { "Stoneskin": { touch: true, reach: 1 } } },
     companion: { id: "clabber", name: "Clabber", kind: "puca", tier: 1, health: 16, speed: 8, form: "boar",
       attack: { name: "Tusks", type: "piercing" }, resistance: 6, immune: ["primal"], ability: "Spell Conduit",
       notes: "A Puca in boar form: Charge, Gore, Trample. Spell Conduit." },
