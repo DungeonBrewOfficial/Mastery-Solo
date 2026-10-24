@@ -22,7 +22,7 @@ export const CLASS_DC = { Serf: 3, Peasant: 4, Knight: 8, Burgher: 10, Magnate: 
 export const SHOP = [
   { group: "Food and water", items: { "Rations, Standard": "Serf", "Rations, Dry": "Serf", "Rations, Iron": "Serf", "Waterskin": "Serf" } },
   { group: "Kits", items: { "Adventurer's Pack": "Peasant", "Forager's Kit": "Peasant", "Healer's Kit": "Knight", "Smith's Kit": "Peasant" } },
-  { group: "Healing", items: { "Wound Kit": "Serf", "Injury Kit": "Peasant", "Trauma Kit": "Knight", "Physic Kit": "Peasant", "Surgeon's Pocket Set": "Knight" } },
+  { group: "Healing", items: { "Wound Kit": "Serf", "Injury Kit": "Peasant", "Trauma Kit": "Knight", "Physic Kit": "Peasant", "Surgeon's Pocket Set": "Knight", "Surgeon's Chest": "Burgher" } },
   { group: "Tools", items: { "Repair Kit": "Peasant", "Hammer": "Serf", "Iron Pot": "Serf" } },
   { group: "Clothing", items: { "Cold Clothing": "Peasant", "Extreme Cold Clothing": "Knight", "Heat Clothing": "Serf",
     "Cloak, Wool": "Serf", "Hood, Wool": "Serf", "Gloves, Wool": "Serf", "Boots, Hide": "Serf", "Cloak, Pile": "Peasant", "Hat, Fur": "Peasant",
