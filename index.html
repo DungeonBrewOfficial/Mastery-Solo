@@ -64,10 +64,20 @@
         <div class="roles">
           <label>Scout <select id="scout"></select></label>
           <label>Watchman <select id="watchman"></select></label>
+          <label title="Hunting and Foraging, all day on the road: Perception + Wilderness, less the pace's penalty">Forager <select id="forager"></select></label>
+          <label title="At camp: dry rations cooked in an iron pot make a hot meal, which adds to the night's rest">Cook <select id="cook"></select></label>
+          <label title="Heals after each fight with Wound Kits, and treats Injuries at camp with Injury Kits">Healer <select id="healer"></select></label>
+          <label title="At camp: repairs armor and shields with repair kits and a hammer">Smith <select id="smith"></select></label>
+          <label title="What the Forager looks for. Healing herbs need the Healer discipline.">Forage for <select id="forage"><option value="meals">meals</option><option value="herbs">healing herbs</option></select></label>
         </div>
         <label class="small"><input type="checkbox" id="quiet"> Move quietly (at Slow pace)</label>
         <div id="pelts" class="muted small"></div>
       </details>
+      <details class="panel" id="supplies-panel" open>
+        <summary id="supplies-head">Supplies</summary>
+        <div id="supplies" class="small"></div>
+      </details>
+      <div id="town" class="panel" hidden></div>
       <ol id="log" class="log"></ol>
     </aside>
   </main>

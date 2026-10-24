@@ -87,7 +87,13 @@ Rulings Jon has made for this design, newest last within each section. Each line
   - Concentration follows Foundry's slots: one free, two paid at 1 AP a round, and passive. A new effect takes the first open active slot. Each round's declarations place every held effect, and Imbue can't go passive.
   - Damage is magical by its type (`combat_revised.md:114-119`), so any fire, sacred, or other magical-type damage can kill Gisla at 0 health.
   - The prebuilt companions' details (Tallow's horns as crushing) are placeholders. Foundry's pure companion rules (`puca-rules.mjs`, `agathion-rules.mjs`, `companion-phase.mjs`) are vendored; its companion stat derivation (`companions.mjs`, `companionDerived`) reads Foundry actors, so its formulas get mirrored when companions advance (milestone 3).
-  - A party down to only a Hard to Kill character at 0 health counts as fallen. What should happen instead belongs with the difficulty settings.
+  - A party down to only Hard to Kill characters at 0 health: the foe leaves them [Jon, 2026-10-24, the default until difficulty settings]. Everyone else dies as in a wipe; they wake alone at Exhausted 3.
+- Milestone 3, stage 1, calls made while building (raised with Jon in chat):
+  - The pregens set out with an Adventurer's Pack apiece, paid from the party's coin.
+  - Food, water, kits, and tools are the party's, not each character's; encumbrance waits.
+  - The market's Social Class for each item is a first guess (`game/town.js`, SHOP), rolled once a day per settlement.
+  - An inn night is Common lodging and a Common supper (3½ sp a head).
+  - Without a kit, Triage stabilizes as the Combat chapter has it; with a Wound Kit it heals as the Healer discipline has it.
 
 **Creature tiers (a guess, 2026-10-24)**
 Jon is still building monsters. His current guess at the party levels each creature Tier serves, used until the tables test it:

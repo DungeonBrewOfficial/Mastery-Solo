@@ -7,6 +7,7 @@
  */
 
 import { PREGENS } from "./data/party.js";
+import { ensureStores, outfit } from "./supplies.js";
 
 const LOCAL_KEY = "mastery-solo-save-v2";
 const FLAGS = ["road", "river", "lake"];
@@ -33,6 +34,9 @@ export function unpack(json) {
     if (p) for (const k of ["spells", "gear", "shieldAbsorbs", "abilities", "immune", "casting", "companion", "theurgy"]) if (m[k] === undefined && p[k] !== undefined) m[k] = structuredClone(p[k]);
     if (m.companion && m.companion.hp === undefined) m.companion.hp = m.companion.health;
   }
+  // Saves from before supplies set out with what a new party has.
+  if (s.party && !s.party.food) outfit(s);
+  if (s.party) { ensureStores(s); s.party.roles = { forager: null, cook: null, healer: null, smith: null, ...s.party.roles }; }
   return s;
 }
 

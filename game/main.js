@@ -10,6 +10,9 @@ import { draw, drawBattle, battleLayout } from "./render.js";
 import { turnOptions, pcTurn, pcStopTurning, turning, imbueOptions, pcImbue, castOptions, castTargets, pcCast, reapplyOptions, pcReapply, concentrationOf, opportunities, REACTIONS, reactOf, reactionsFor, setReaction, attackModes, setMode, freeTargets, pcBreakFree, pcStand, challengeTargets, beginRound, retreat, runPlan, respond, currentPC, moveCost as stepCost, pcMove, pcAttack, pcEndTurn, triageTargets, pcTriage, canAttack, standing, onField, conditionsOf, memberFor, creatureFor, weaponOf, GUARDS, PHASES } from "./combat.js";
 import { BAND_LABELS } from "./vendor/foundry/module/helpers/weather-rules.mjs";
 import { openStorage, pack, unpack } from "./storage.js";
+import { count, meals, KEEPS, waterNeed, SKIN_GALLONS } from "./supplies.js";
+import { SHOP, openMarket, buy, priceOf, settlementHere, hasHealer, healerTreats } from "./town.js";
+import { GEAR } from "./data/gear.js";
 
 const $ = (id) => document.getElementById(id);
 const canvas = $("map");
@@ -49,6 +52,8 @@ function render() {
   $("camp").disabled = pending || busy;
   renderEvent();
   renderParty();
+  renderSupplies();
+  renderTown(busy || pending);
   $("travel").textContent = state.target ? "Travel a leg" : "Click the map to choose a destination";
 
   const log = $("log");
@@ -435,14 +440,88 @@ function renderParty() {
     }
     list.appendChild(li);
   }
-  for (const role of ["scout", "watchman"]) {
+  for (const role of ["scout", "watchman", "forager", "cook", "healer", "smith"]) {
     const sel = $(role);
-    if (!sel.options.length) for (const m of p.members) sel.add(new Option(m.name, m.id));
-    sel.value = p.roles[role];
+    sel.innerHTML = "";
+    if (!["scout", "watchman"].includes(role)) sel.add(new Option("No one", ""));
+    for (const m of p.members.filter(x => !x.dead)) sel.add(new Option(m.name, m.id));
+    sel.value = p.roles[role] || "";
   }
+  $("forage").value = p.forage || "meals";
   $("quiet").checked = !!p.quiet;
   if (p.pelts.length) $("pelts").textContent = `Pelts: ${p.pelts.map(x => `${x.quality} ${x.name.toLowerCase()} (${x.value} sp)`).join(", ")}`;
   else $("pelts").textContent = "";
+}
+
+/* ---------------- supplies and the market */
+
+const fmtSp = (n) => Number.isInteger(n) ? `${n} sp` : `${n.toFixed(2).replace(/0$/, "")} sp`;
+
+function renderSupplies() {
+  const p = state.party;
+  if (!p.food) return;
+  const days = Math.floor(meals(state) / Math.max(1, p.members.filter(m => !m.dead).length * 2) * 10) / 10;
+  $("supplies-head").textContent = `Supplies · ${meals(state)} meals (${days} days) · ${p.water} of ${p.skins * SKIN_GALLONS} gal water`;
+  const food = Object.entries(p.food.reduce((o, f) => { (o[f.name] ||= []).push(f); return o; }, {}))
+    .map(([n, fs]) => `${fs.reduce((a, f) => a + f.n, 0)} ${n.toLowerCase()} (spoil${fs.length > 1 ? " from" : "s"} day ${Math.min(...fs.map(f => f.spoils))})`);
+  const kit = Object.entries(p.stores).filter(([, n]) => n > 0).map(([n, k]) => `${k} ${n}`);
+  const need = waterNeed(state) * p.members.filter(m => !m.dead).length;
+  const worn = p.members.filter(m => !m.dead).map(m => `<li><strong>${m.name}</strong> <span class="muted">${m.worn?.length ? m.worn.join(", ") : "no weather clothing"}${m.armor ? `; ${m.armor.name}` : ""}</span></li>`).join("");
+  $("supplies").innerHTML = `<p>${food.join(" · ") || "No food."}</p>
+    <p>Water: ${p.water} gallons in ${p.skins} skins; the party drinks ${need} a day in this weather. Rivers, lakes, and settlements refill them.</p>
+    <p>${kit.join(" · ") || "No kits or tools."}</p>
+    <ul class="members">${worn}</ul>`;
+}
+
+function renderTown(busy) {
+  const box = $("town");
+  const s = settlementHere(state);
+  if (!s || busy || state.battle) { box.hidden = true; return; }
+  box.hidden = false;
+  const m = runWithDice(state, (rng) => openMarket(state, rng, say));
+  persist();
+  const label = s.home ? "home village" : s.size;
+  box.innerHTML = `<h2>The ${label}</h2><p class="small muted">Market dice 2d${m.die}, rolled once a day: what isn't here today may be tomorrow. ${fmtSp(state.party.coin)} in the purse.</p>`;
+  const who = document.createElement("label");
+  who.className = "small";
+  who.textContent = "Clothing for ";
+  const ws = document.createElement("select");
+  for (const x of state.party.members.filter(x => !x.dead)) ws.add(new Option(x.name, x.id));
+  ws.value = renderTown.wearer || ws.options[0]?.value;
+  ws.onchange = () => { renderTown.wearer = ws.value; };
+  who.append(ws);
+  box.append(who);
+  for (const g of SHOP) {
+    const det = document.createElement("details");
+    det.innerHTML = `<summary>${g.group}</summary>`;
+    const ul = document.createElement("ul");
+    ul.className = "shop";
+    for (const name of Object.keys(g.items)) {
+      const li = document.createElement("li");
+      const have = name in GEAR && GEAR[name].kind !== "kit" ? count(state, name) : 0;
+      li.innerHTML = `<span>${name} <span class="muted">${fmtSp(priceOf(name))}${have ? ` · have ${have}` : ""}</span></span>`;
+      const bs = document.createElement("span");
+      if (!m.stock[name]) bs.innerHTML = `<span class="muted small">not today</span>`;
+      else for (const n of /^Rations|Wound Kit/.test(name) ? [1, 10] : [1]) {
+        const b = button(n > 1 ? `×${n}` : "Buy", () => act(() => buy(state, say, name, n, renderTown.wearer || ws.value)));
+        b.className = "small-btn";
+        b.disabled = state.party.coin < priceOf(name) * n;
+        bs.append(" ", b);
+      }
+      li.append(bs);
+      ul.append(li);
+    }
+    det.append(ul);
+    box.append(det);
+  }
+  if (hasHealer(s.size)) {
+    const hurt = state.party.members.filter(x => !x.dead && x.injuries > 0);
+    const row = document.createElement("div");
+    row.className = "buttons";
+    row.innerHTML = `<p class="small">Healer: 8 sp an Injury.${hurt.length ? "" : " No one needs one."}</p>`;
+    for (const x of hurt) { const b = button(`Treat ${x.name} (${x.injuries})`, () => act(() => healerTreats(state, say, x.id))); b.disabled = state.party.coin < 8; row.append(b); }
+    box.append(row);
+  }
 }
 
 /** Each character's standing choice for each reaction: Ask, Always, Never. */
@@ -507,6 +586,8 @@ $("push").onclick = () => act(() => travelLeg(state, "push"));
 $("pace").onchange = (e) => act(() => setPace(state, e.target.value));
 $("scout").onchange = (e) => act(() => { state.party.roles.scout = e.target.value; });
 $("watchman").onchange = (e) => act(() => { state.party.roles.watchman = e.target.value; });
+for (const role of ["forager", "cook", "healer", "smith"]) $(role).onchange = (e) => act(() => { state.party.roles[role] = e.target.value || null; });
+$("forage").onchange = (e) => act(() => { state.party.forage = e.target.value; });
 $("quiet").onchange = (e) => act(() => { state.party.quiet = e.target.checked; });
 $("center").onclick = () => { view.cx = state.party.x + 0.5; view.cy = state.party.y + 0.5; render(); };
 $("zoom-in").onclick = () => { view.scale = Math.min(48, view.scale * 1.25); render(); };

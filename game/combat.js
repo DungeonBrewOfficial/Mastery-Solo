@@ -2776,10 +2776,9 @@ function checkEnd(state, rng, note) {
   if (!foes.length) return aftermath(state, rng, note, pcs);
   if (!pcs.length) { finish(state, rng, note, "lost"); return true; }
   // Hard to Kill at 0 health can't be finished by mundane blows, and can't win alone either.
-  // Until Jon rules on it, a party down to only that counts as fallen (a wipe).
+  // The foe leaves her [Jon, 2026-10-24]: a beast drags off what it can eat, raiders what they can carry.
   if (pcs.every(u => hardToKill(memberOf(state, u)) && memberOf(state, u).hp <= 0)) {
-    note(`${pcs.map(u => u.name).join(" and ")} stand${pcs.length > 1 ? "" : "s"} alone at 0 health, unkillable and unable to win. (How this ends is an open question; for now it counts as the party falling.)`, "todo");
-    finish(state, rng, note, "lost");
+    finish(state, rng, note, "left");
     return true;
   }
   return false;
@@ -2822,6 +2821,14 @@ function finish(state, rng, note, outcome) {
     for (const m of living) { m.dead = true; m.hp = 0; }
     note("The party falls. No one is left standing to carry the others away.", "event");
     state.over = { day: state.day, why: `Fell to ${e?.head ? e.head.toLowerCase() : "the wild"} on day ${state.day}.` };
+  }
+  if (outcome === "left") {
+    // Everyone else falls as in a wipe; the Hard to Kill wake alone, at Exhausted 3 as Deathless has it, with their Traumas.
+    const keep = living.filter(m => hardToKill(m));
+    for (const m of living.filter(x => !keep.includes(x))) { m.dead = true; m.hp = 0; }
+    for (const m of keep) { m.exhausted = 3; m.hp = 0; }
+    for (const u of b.units.filter(x => x.pc && keep.some(m => m.id === x.id))) setCond(u, "exhausted", 3);
+    note(`${e?.head || "The foe"} finds nothing it can finish in ${keep.map(m => m.name).join(" and ")} and leaves. ${living.length > keep.length ? "The others are dead. " : ""}${keep.map(m => m.name).join(" and ")} wake${keep.length > 1 ? "" : "s"} alone among the bodies, Exhausted.`, "event");
   }
   if (outcome === "won") {
     note("The field is yours.", "reward");
