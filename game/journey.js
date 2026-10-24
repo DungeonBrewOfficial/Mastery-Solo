@@ -18,7 +18,8 @@ import { ensureStores, morningSupplies, eveningSupplies, refill, exhaustFloor, o
 import { restDay, hardToKillDay, ensureTrauma } from "./health.js";
 import { rumorAtInn, rumorHere } from "./town.js";
 import { atSite, makeSite, enter, siteAct, afterFight, restClock, takeCache } from "./sites.js";
-import { leadsHere, search, leadText } from "./leads.js";
+import { leadsHere, search, leadText, arriveGuided } from "./leads.js";
+import { maybeHart } from "./hart.js";
 
 export const DAY_HOURS = 8;
 export const SEASONS = ["spring", "summer", "autumn", "winter"];
@@ -236,6 +237,9 @@ function move(state, rng, hours) {
     state.visitId = (state.visitId || 0) + 1; // a new visit: new recruits, a fresh look at the market
     reachSafety(state, rng);
   }
+  const guided = arriveGuided(state, (t, k) => note(state, t, k));
+  if (guided?.type === "cache") takeCache(state, rng, (t, k) => note(state, t, k), guided);
+  else if (guided) makeSite(state, rng, guided, (t, k) => note(state, t, k));
   const leads = leadsHere(state, (t, k) => note(state, t, k));
   if (leads.length) note(state, `You're where a lead points: ${leads.map(leadText).join(" and ")}. Spend a leg searching.`, "place");
   const place = state.world.places?.[`${p.x},${p.y}`];
@@ -294,7 +298,7 @@ function eventDie(state, rng) {
   const where = country === "deep" ? "Deep country" : country === "settled" ? "Settled country" : "the wild";
   note(state, `Event die ${n} in ${where}: ${result}.`, result === "Quiet" ? "" : "event");
   const say = (t, k) => note(state, t, k);
-  if (result === "Sign") startSign(state, rng, say);
+  if (result === "Sign") { if (!maybeHart(state, rng, say)) startSign(state, rng, say); }
   else if (result === "Discovery") discover(state, rng, say);
   else if (result === "Encounter") startEncounter(state, rng, say);
 }

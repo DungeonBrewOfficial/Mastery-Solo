@@ -115,14 +115,32 @@ export function search(state, rng, note) {
   const dc = (lead.kind === "lost" ? HARD_DC[band] : EVEN_DC[band]) + (deep ? 2 : 0);
   const t = trial(rng, [dieOfTier(tier(scout, "perception")), dieOfTier(skillOf(scout, "alertness"))], { bonus: helper ? 2 : 0 });
   if (!passes(t, dc)) { note(`${scout.name} searches for ${HIDDEN_TEXT[lead.kind]}${helper ? `, ${helper.name} helping` : ""}: Alertness ${t.text} against ${dc}. Not here, not yet.`); return null; }
+  return arrive(state, note, lead, `${scout.name} finds it${helper ? `, ${helper.name} helping` : ""} (Alertness ${t.text} against ${dc})`);
+}
+
+/** The place a lead points to is found where the party stands. */
+function arrive(state, note, lead, how) {
   lead.found = true;
-  // Taken where it's found: the square the party searched to.
   const { x, y } = state.party;
   const place = placeOn(state, x, y, { type: lead.kind === "hideout" ? "ruin" : lead.kind === "lost" ? "lost" : lead.kind, hidden: true, lost: lead.kind === "lost", hideout: lead.kind === "hideout" });
   const xp = lead.kind === "lost" ? 75 : 50;
   state.party.bankedXp += xp;
-  note(`${scout.name} finds it${helper ? `, ${helper.name} helping` : ""} (Alertness ${t.text} against ${dc}): ${HIDDEN_TEXT[lead.kind]}. ${lead.kind === "lost" ? "Lost" : "Hidden"} Location: ${xp} XP, banked.`, "event");
+  note(`${how}: ${HIDDEN_TEXT[lead.kind]}. ${lead.kind === "lost" ? "Lost" : "Hidden"} Location: ${xp} XP, banked.`, "event");
   return place;
+}
+
+/** A lead someone showed the way to (the White Hart): a hidden place (d6) or a lost one, found on arrival without searching. */
+export function guide(state, rng, note, kind, how) {
+  const k = kind ? null : rng.d(6);
+  const lead = { ...point(state, rng, state.party, rng.d(3)), kind: kind || HIDDEN[k], how, guided: true };
+  (state.world.leads ||= []).push(lead);
+  return lead;
+}
+
+/** Reaching a guided lead's tile finds it. → the place, or null. */
+export function arriveGuided(state, note) {
+  const lead = leadsHere(state).find(l => l.guided);
+  return lead ? arrive(state, note, lead, "You find the place the hart showed you") : null;
 }
 
 /** Leads drawn on the map: the tile's center, and whether it's for a lost place. */

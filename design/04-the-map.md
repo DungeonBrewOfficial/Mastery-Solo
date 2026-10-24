@@ -157,7 +157,7 @@ In a game with a GM, hidden and lost places are found through real exploration: 
 
 Read fragments belong to the dynasty, not the hero: a new hero can pick up where a dead one left off. Lost places are what a dynasty works toward.
 
-**The White Hart** [Jon, 2026-10-24, for milestone 4]. The Hart isn't really a fight; it leads people places. Seen at the edge of the deep wood, it can be followed instead of fought, as another way to a hidden or lost place, alongside clues and fragments. How following it works waits for the sites milestone.
+**The White Hart** [Jon, 2026-10-24, for milestone 4]. The Hart isn't really a fight; it leads people places. Seen at the edge of the deep wood, it can be followed instead of fought, as another way to a hidden or lost place, alongside clues and fragments. Built [2026-10-24]: see `BUILD.md`, milestone 4, and `game/hart.js`.
 
 Sites (lairs, caves, ruins, barrows, and lost places), and what guards them, are in `05-sites.md`. Their hoards are drafted in `03-treasure.md`.
 

@@ -4,6 +4,7 @@
  */
 import { stay, maxMagan, newGame, travelLeg, campNow, setTarget, setPace, seasonOf, DAY_HOURS, squaresPerHour, note, afterEvent, runWithDice, siteAction, searchLeg } from "./journey.js";
 import { leadsHere, leadText, fragmentsRead, unreadFragments } from "./leads.js";
+import { hartChoices, chooseHart } from "./hart.js";
 import { atSite, siteHere, siteChoices, areaLabel, inDark } from "./sites.js";
 import { choices, choose, signChoices, chooseSign, partyLevel, bandFor, ROMAN } from "./events.js";
 import { CREATURES } from "./data/creatures.js";
@@ -124,6 +125,15 @@ function renderEvent() {
     const row = document.createElement("div");
     row.className = "buttons";
     for (const ch of choices(state)) row.appendChild(button(ch.label, () => act(() => { runWithDice(state, (rng) => choose(state, rng, ch.id, say)); afterEvent(state); })));
+    box.appendChild(row);
+  } else if (state.sign?.hart) {
+    const s = state.sign;
+    box.hidden = false;
+    const charmed = s.charmed.map(id => state.party.members.find(m => m.id === id)?.name).filter(Boolean);
+    box.innerHTML = `<h2>The White Hart</h2><p>A hart of pure white at the edge of the deep wood. It walks away slowly, and looks back.</p>${charmed.length ? `<p class="warn">Charmed: ${charmed.join(", ")} will follow it.</p>` : ""}`;
+    const row = document.createElement("div");
+    row.className = "buttons";
+    for (const ch of hartChoices(state)) row.appendChild(button(ch.label, () => act(() => { runWithDice(state, (rng) => chooseHart(state, rng, ch.id, say)); afterEvent(state); })));
     box.appendChild(row);
   } else if (state.sign) {
     const s = state.sign;

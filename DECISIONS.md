@@ -138,6 +138,8 @@ Rulings Jon has made for this design, newest last within each section. Each line
   - A cache's purse is (band)d6 sp.
   - A refilled site keeps its drawn map: traps and locks already dealt with stay that way; Occupied areas fill from the new guardian's group. Its hoard is 20 sp a point of XP (half). Rolled once each month the site stands empty.
 
+- The White Hart [Jon, 2026-10-24, approving the suggestion; details N]: a rare Sign (d6 of 6 on any Sign in forest whose tile or a neighbor is Deep), so the encounter tables are unchanged. Following uses the band's Even DC, since it lets itself be followed; the Scout couldn't follow it at the stat block's DC 7. Where it leads: "sent by someone who wants you" goes to a lost place if any lore has been read; the other two stories go to a hidden place (the herders' land waits on the fae court). The charmed can't let it go until held back.
+
 **Creature tiers (a guess, 2026-10-24)**
 Jon is still building monsters. His current guess at the party levels each creature Tier serves, used until the tables test it:
 

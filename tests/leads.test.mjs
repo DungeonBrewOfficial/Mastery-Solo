@@ -149,3 +149,49 @@ test("a cleared site may have new occupants a month later, with half a hoard", (
   }
   assert.ok(refilled >= 3 && empty >= 8, `${refilled} refilled, ${empty} empty`);
 });
+
+import { maybeHart, hartChoices, chooseHart, atDeepWoodEdge } from "../game/hart.js";
+
+/** Stand the party in forest beside Deep country. */
+function deepWoodEdge(s) {
+  const [tx, ty] = [0, 0];
+  runWithDice(s, (rng) => generateTile(rng, s.world, 2, 0, { terrain: "forest" }));
+  s.world.tiles["1,0"].deep = true;
+  s.world.tiles["0,0"].terrain = "forest";
+  return [tx, ty];
+}
+
+test("the White Hart shows at the deep wood's edge, charms, and can be followed to a place found without searching", async () => {
+  let seen = 0, followed = 0, lost = 0;
+  for (let seed = 1; seed <= 80; seed++) {
+    const s = newGame(seed);
+    deepWoodEdge(s);
+    assert.ok(atDeepWoodEdge(s));
+    if (!runWithDice(s, (rng) => maybeHart(s, rng, say(s)))) continue;
+    seen++;
+    assert.ok(s.sign.hart && [0, 1, 2].includes(s.sign.truth));
+    const ids = hartChoices(s).map(c => c.id);
+    assert.ok(ids.includes("follow"));
+    assert.equal(ids.includes("leave"), !s.sign.charmed.length, "the charmed can't just let it go");
+    runWithDice(s, (rng) => chooseHart(s, rng, "follow", say(s)));
+    assert.ok(!s.sign?.hart);
+    const lead = (s.world.leads || []).find(l => l.guided);
+    if (!lead) { lost++; continue; }
+    followed++;
+    s.party.x = lead.tx * TILE + 3; s.party.y = lead.ty * TILE + 3;
+    if (!getTile(s.world, lead.tx, lead.ty)) runWithDice(s, (rng) => generateTile(rng, s.world, lead.tx, lead.ty, { terrain: "forest" }));
+    getTile(s.world, lead.tx, lead.ty).deep = true;
+    const { arriveGuided } = await import("../game/leads.js");
+    const place = arriveGuided(s, say(s));
+    assert.ok(place?.hidden, "found on arrival");
+    assert.ok(s.party.bankedXp >= 50);
+  }
+  assert.ok(seen >= 6, `seen ${seen} times in 80`);
+  assert.ok(followed >= 5, `${followed} followed, ${lost} lost`);
+});
+
+test("the Hart never shows away from the deep wood", () => {
+  const s = newGame(2);
+  s.world.tiles["0,0"].terrain = "plains";
+  for (let i = 0; i < 30; i++) assert.equal(runWithDice(s, (rng) => maybeHart(s, rng, say(s))), false);
+});
