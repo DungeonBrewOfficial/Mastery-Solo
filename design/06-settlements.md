@@ -15,9 +15,11 @@ Each is marked **[?]** where it comes up.
 1. **Recruits start at level 1.** Your XP rule makes a newcomer catch up fast, so I haven't offered experienced recruits. The alternative is that towns and cities have recruits a few levels below the party, at the cost of building a leveled character on the spot.
 2. **Who's available.** The number of recruits grows with settlement size, and the class roll makes demihumans less common than humans. The class weights are guesses, and a region could reasonably change them.
 3. **Hiring a smith.** Your price list has a blacksmith at 8 sp a day. I've given a hired smith a repair rate, and the party still pays for the kits.
-4. **Rumors.** An evening at an inn can turn up a rumor of a site somewhere on the blank map. It gives a run somewhere to aim for.
-5. **Libraries.** In a city, a library counts as a source of occult writings.
-6. **A hamlet's hospitality.** A hamlet has no inn. I've drafted lodging there as a Good Night's Rest if a household takes the party in, which is Mastery's "dwelling with no danger."
+4. ~~**Rumors.**~~ Yes [Jon, 2026-10-24].
+5. ~~**Libraries.**~~ A city's library can be a source of occult writings [Jon, 2026-10-24].
+6. ~~**A hamlet's hospitality.**~~ A household taking the party in is a Good Night's Rest [Jon, 2026-10-24].
+
+Jon on 1–3 (2026-10-24): should recruits cost something, with level 1 free or cheap and higher levels costing more? The d20 below gives the seven demihuman classes (Cursed, Dwarf, both Elves, Gnome, Halfling, Orc) 7 of 20 faces, which is 35%, not rare. And 24 Durability a kit feels high.
 
 ---
 

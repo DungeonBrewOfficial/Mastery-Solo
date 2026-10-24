@@ -88,6 +88,7 @@ Rulings Jon has made for this design, newest last within each section. Each line
   - Damage is magical by its type (`combat_revised.md:114-119`), so any fire, sacred, or other magical-type damage can kill Gisla at 0 health.
   - The prebuilt companions' details (Tallow's horns as crushing) are placeholders. Foundry's pure companion rules (`puca-rules.mjs`, `agathion-rules.mjs`, `companion-phase.mjs`) are vendored; its companion stat derivation (`companions.mjs`, `companionDerived`) reads Foundry actors, so its formulas get mirrored when companions advance (milestone 3).
   - A party down to only Hard to Kill characters at 0 health: the foe leaves them [Jon, 2026-10-24, the default until difficulty settings]. Everyone else dies as in a wipe; they wake alone at Exhausted 3.
+- Settlements [Jon, 2026-10-24]: an evening at an inn can turn up a rumor of a site through a Presence trial; a city's library can be a source of occult writings; in a hamlet, a household taking the party in is a Good Night's Rest. Open: what recruits cost (level 1 may be free or cheap, higher levels should cost), how the class roll weights demihumans (the d20 draft gave them 35%, not rare), and the hired smith's numbers.
 - Milestone 3, stage 1, calls made while building (raised with Jon in chat):
   - The pregens set out with an Adventurer's Pack apiece, paid from the party's coin.
   - Food, water, kits, and tools are the party's, not each character's; encumbrance waits.
