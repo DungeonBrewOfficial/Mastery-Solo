@@ -125,7 +125,7 @@ A run ends when the last of its heroes dies, or when the player retires them [Jo
 
 ## The Other Pages
 
-- **Encounters:** `02-encounters.md`. Woodland tables only so far; plains, hills, swamp, desert, and mountains still need theirs.
+- **Encounters:** `02-encounters.md`, with tables for all six terrains.
 - **Treasure:** `03-treasure.md`.
 - **Map generation:** `04-the-map.md`.
 - **Sites:** `05-sites.md`.

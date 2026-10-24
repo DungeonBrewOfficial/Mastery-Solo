@@ -12,7 +12,8 @@ Flagged here so they're easy to find. Each is marked **[?]** where it comes up b
 
 1. **Epic and Legendary creatures retreat to their lairs** at half health. You called this game-y. The case for it is under Breaking point; the alternative is that they fight on or flee for good.
 2. **The chase** stands as drafted until it's tested.
-3. **Deep country.** Your "punishment is going where you shouldn't" is now a rule in `01-the-turn.md`: the farther from roads and settlements, the harder the encounters and the better the finds. The distance that makes country Deep is a guess.
+3. **Deep country.** Your "punishment is going where you shouldn't" is now a rule in `01-the-turn.md`: the farther from roads and settlements, the harder the encounters and the better the finds. Deep is now defined by tiles in `04-the-map.md`.
+4. **The other five terrains (drafted 2026-10-24).** Plains, hills, mountains, swamp, and desert now have tables, built from the current bestiary. Swamp and desert are thin. They also add a **Patrol** temper, for guards and a lord's riders, who question the party and let it pass unless it gives them cause.
 
 ---
 
@@ -74,6 +75,7 @@ Every creature wants something, and violence follows from that [M, Monster Manua
 | **Prey** | **Any roll: it flees** on contact. Taking it is a hunt, abstracted under Wilderness (Hunting and Foraging) [M], and pays no XP [Jon, 2026-10-24]. |
 | **Restless dead** | **No roll.** It attacks anything living that comes into its ground, never breaks, and doesn't pursue beyond its ground. |
 | **Guardian** | **No roll.** It is hostile only to trespass or harm (for a Treow, axes and fire), and never pursues beyond its place. |
+| **Patrol** | **No roll.** Guards, a lord's riders, a merchant's hired men. They question the party and let it pass. Trouble comes only if the party starts it, or carries something it shouldn't: a poached deer, a dead man's livery, a lord's soldiers' armor [N]. |
 | **Strange** | **No roll.** Follow the Behavior in its stat block [M]. The Morphon courts are written there already. |
 
 ---
@@ -207,12 +209,288 @@ At party level 3, Tier 3 results (the Black Bear) are above band and arrive as S
 
 ---
 
+## Plains
+
+### Band I (levels 1–2)
+
+| 2d6 | Encounter | XP |
+|:---:|:---|:---:|
+| 2 | Two Zombies on an old battlefield [Restless dead] | 4 |
+| 3 | A Viper [Territorial] | 4 |
+| 4 | 1d2 + 1 Wild Dogs [Predator] | 4 |
+| 5 | A herd of 1d4 + 2 wild Rounceys [Prey] | — |
+| 6 | Two Bandit Cutthroats with a Cluster of Bandit Thugs [Raider] | 4 |
+| 7 | 1d4 Deer or antelope [Prey] | — |
+| 8 | A Bandit Leader with two Cutthroats and a Cluster of Thugs [Raider] | 6 |
+| 9 | A merchant's two hired Thugs, guarding a cart [Patrol] | 4 |
+| 10 | Two Large Hunting Dogs, run off from some lord's hunt [Predator] | 10 |
+| 11 | **Sign first:** three Orc Raiders [Raider] | 6 |
+| 12 | **Sign first:** a Wolf Beta with two Gammas and a Cluster of Runts [Predator] | 10 |
+
+### Band II (levels 3–5)
+
+| 2d6 | Encounter | XP |
+|:---:|:---|:---:|
+| 2 | **Strange:** d6, 1–3 a Magpie on a gibbet; 4–6 an Eidolon of the Hunt, at dusk or in fog only (otherwise, Sign) | 30 / 20 |
+| 3 | A Sergeant with a Cluster of Militia, riding the bounds [Patrol] | 10 |
+| 4 | 1d2 Boars [Territorial] | 6 |
+| 5 | A Wolf Beta with two Gammas and a Cluster of Runts [Predator] | 10 |
+| 6 | Three Orc Raiders [Raider] | 6 |
+| 7 | d6: 1–3 a herd of wild Rounceys [Prey]; 4–6 an Aurochs bull with his herd [Territorial] | — / 10 |
+| 8 | A Captain with two Warriors and a Cluster of Footsoldiers, a war band between masters [Raider] | 10 |
+| 9 | A Bandit Leader with two Cutthroats and a Brood of Thugs [Raider] | 6 |
+| 10 | A Knight-Servile with a Sergeant and a Cluster of Militia: a lord's riders [Patrol] | 20 |
+| 11 | d6: 1–3 a Lion [Predator]; 4–6 an Orc War Chief with four Raiders [Raider] | 20 / 30 |
+| 12 | **Apex, Sign first:** d6, 1–3 a Dire Wolf; 4–5 an Ettin; 6 the Amarok | 40–60 |
+
+At party level 3, Tier 3 results (the Aurochs, the Lion) are above band and arrive as Signs first.
+
+### Band III (levels 6–8)
+
+| 2d6 | Encounter | XP |
+|:---:|:---|:---:|
+| 2 | **Strange:** a Shadow-Man's court, at night only (otherwise, Sign) | 40 |
+| 3 | A Revenant Soldier with a Cluster of Skeletons, on an old battlefield [Restless dead] | 20 |
+| 4 | 1d3 Aurochs [Territorial] | 10 |
+| 5 | A Lion [Predator] | 20 |
+| 6 | A Wolf Alpha with a Sigma, a Beta, two Gammas, and a Brood of Runts [Predator] | 30 |
+| 7 | An Orc War Chief with four Raiders [Raider] | 30 |
+| 8 | A Warlord with two Veterans and a Brood of Footsoldiers: a free company [Raider] | 30 |
+| 9 | An Ogre [Raider] | 30 |
+| 10 | A Knight-Servile with a Veteran and a Brood of Militia: a lord's riders [Patrol] | 20 |
+| 11 | A Revenant Knight with two Revenant Soldiers [Restless dead] | 40 |
+| 12 | **Apex, Sign first:** d6, 1–2 an Ettin; 3–4 the Amarok; 5–6 a Bergrisar, come down from the mountains | 60 |
+
+---
+
+## Hills
+
+### Band I (levels 1–2)
+
+| 2d6 | Encounter | XP |
+|:---:|:---|:---:|
+| 2 | A Skeleton Warrior with a Cluster of Skeletons, near a barrow [Restless dead]. The barrow is a site. | 4 |
+| 3 | A Viper [Territorial] | 4 |
+| 4 | A Wolf Spider with a Cluster of Spider Swarm, an Ambusher [Predator] | 4 |
+| 5 | 1d2 + 1 Wild Dogs [Predator] | 4 |
+| 6 | Two Bandit Cutthroats with a Cluster of Bandit Thugs [Raider] | 4 |
+| 7 | 1d4 Deer [Prey] | — |
+| 8 | A Bandit Leader with two Cutthroats and a Cluster of Thugs [Raider] | 6 |
+| 9 | 1d3 + 1 Kallikantzaroi, out of a cave mouth [Raider] | 4 |
+| 10 | Two Large Hunting Dogs, run off from some lord's hunt [Predator] | 10 |
+| 11 | **Sign first:** a Mountain Lion [Predator] | 6 |
+| 12 | **Sign first:** a Wolf Beta with two Gammas and a Cluster of Runts [Predator] | 10 |
+
+### Band II (levels 3–5)
+
+| 2d6 | Encounter | XP |
+|:---:|:---|:---:|
+| 2 | **Strange:** d6, 1–3 a Magpie; 4–6 an Eidolon of the Hunt, at twilight only (otherwise, Sign) | 30 / 20 |
+| 3 | 1d2 + 1 Redcaps [Raider], near a ruin only (otherwise, a Sign that leads to the ruin) | 6 |
+| 4 | A Mountain Lion, an Ambusher [Predator] | 6 |
+| 5 | 1d2 Boars [Territorial] | 6 |
+| 6 | A Wolf Beta with two Gammas and a Cluster of Runts [Predator] | 10 |
+| 7 | Three Orc Raiders [Raider] | 6 |
+| 8 | Two Living Stones [Guardian] | 6 |
+| 9 | A Ranger Captain with two Woodsmen: outlaws [Raider] | 10 |
+| 10 | A Black Bear [Territorial] | 10 |
+| 11 | d6: 1–3 a Wolf Alpha's pack, as Band III's 6 [Predator]; 4–6 an Orc War Chief with four Raiders [Raider] | 30 |
+| 12 | **Apex, Sign first:** d6, 1–2 a Dire Wolf; 3–4 an Ettin; 5 a Cave Bear; 6 the Amarok | 40–60 |
+
+At party level 3, Tier 3 results (the Black Bear) are above band and arrive as Signs first.
+
+### Band III (levels 6–8)
+
+| 2d6 | Encounter | XP |
+|:---:|:---|:---:|
+| 2 | **Strange:** a Shadow-Man's court, at night only (otherwise, Sign) | 40 |
+| 3 | A Revenant Soldier with a Cluster of Skeletons, near a barrow [Restless dead] | 20 |
+| 4 | A Brown Bear [Territorial] | 30 |
+| 5 | A Wolf Alpha with a Sigma, a Beta, two Gammas, and a Brood of Runts [Predator] | 30 |
+| 6 | An Ogre [Raider] | 30 |
+| 7 | An Orc War Chief with four Raiders [Raider] | 30 |
+| 8 | An Earth Guardian [Guardian] | 30 |
+| 9 | A Warlord with two Veterans and a Brood of Footsoldiers: a free company [Raider] | 30 |
+| 10 | Two Ogres [Raider] | 30 |
+| 11 | A Revenant Knight with two Revenant Soldiers, at a barrow [Restless dead]. The barrow is a site. | 40 |
+| 12 | **Apex, Sign first:** d6, 1–2 an Ettin; 3–4 a Bergrisar; 5 a Cave Bear; 6 the Erymanthian Boar | 60–80 |
+
+---
+
+## Mountains
+
+### Band I (levels 1–2)
+
+Mountains are hard country for a new party: a third of this table is above band.
+
+| 2d6 | Encounter | XP |
+|:---:|:---|:---:|
+| 2 | A Skeleton Warrior with a Cluster of Skeletons, at a cairn [Restless dead] | 4 |
+| 3 | A Viper [Territorial] | 4 |
+| 4 | Two Large Raptors over their nest [Territorial] | 4 |
+| 5 | 1d3 + 1 Kallikantzaroi, out of a cave mouth [Raider] | 4 |
+| 6 | Two Bandit Cutthroats with a Cluster of Bandit Thugs, holding a pass [Raider] | 4 |
+| 7 | Wild goats or chamois [Prey] | — |
+| 8 | A Bandit Leader with two Cutthroats and a Cluster of Thugs [Raider] | 6 |
+| 9 | **Sign first:** a Mountain Lion [Predator] | 6 |
+| 10 | **Sign first:** two Living Stones [Guardian] | 6 |
+| 11 | **Sign first:** a Wolf Beta with two Gammas and a Cluster of Runts [Predator] | 10 |
+| 12 | **Sign first:** three Orc Raiders [Raider] | 6 |
+
+### Band II (levels 3–5)
+
+| 2d6 | Encounter | XP |
+|:---:|:---|:---:|
+| 2 | **Strange:** an Eidolon of the Hunt, in a pass at twilight only (otherwise, Sign) | 20 |
+| 3 | Two Eagles over their eyrie [Territorial] | 6 |
+| 4 | A Mountain Lion, an Ambusher [Predator] | 6 |
+| 5 | Two Living Stones [Guardian] | 6 |
+| 6 | A Wolf Beta with two Gammas and a Cluster of Runts [Predator] | 10 |
+| 7 | Three Orc Raiders [Raider] | 6 |
+| 8 | 1d2 + 1 Redcaps in a ruined tower [Raider] | 6 |
+| 9 | A Black Bear [Territorial] | 10 |
+| 10 | An Orc War Chief with four Raiders [Raider] | 30 |
+| 11 | A Wolf Alpha with a Sigma, a Beta, two Gammas, and a Brood of Runts [Predator] | 30 |
+| 12 | **Apex, Sign first:** d6, 1–2 an Ettin; 3–4 a Bergrisar; 5 a Cave Bear; 6 the Amarok | 60 |
+
+### Band III (levels 6–8)
+
+| 2d6 | Encounter | XP |
+|:---:|:---|:---:|
+| 2 | **Strange:** a Shadow-Man's court, at night only (otherwise, Sign) | 40 |
+| 3 | An Earth Guardian [Guardian] | 30 |
+| 4 | A Brown Bear [Territorial] | 30 |
+| 5 | An Ogre [Raider] | 30 |
+| 6 | A Wolf Alpha's pack [Predator] | 30 |
+| 7 | An Orc War Chief with four Raiders [Raider] | 30 |
+| 8 | An Earth Guardian with two Living Stones [Guardian] | 30 |
+| 9 | A Revenant Knight with two Revenant Soldiers, at a cairn [Restless dead] | 40 |
+| 10 | Two Ogres [Raider] | 30 |
+| 11 | **Sign first:** a Giant Short-Faced Bear [Predator] | 80 |
+| 12 | **Apex, Sign first:** d6, 1–2 a Bergrisar; 3–4 an Ettin; 5 a Giant Short-Faced Bear; 6 Otso | 60–100 |
+
+---
+
+## Swamp
+
+The thinnest terrain in the bestiary. Many entries borrow from woodland and the undead.
+
+### Band I (levels 1–2)
+
+| 2d6 | Encounter | XP |
+|:---:|:---|:---:|
+| 2 | A Skeleton Warrior with a Cluster of Skeletons, at a drowned barrow [Restless dead] | 4 |
+| 3 | A Death-Watch Cluster, ticking in the dead wood [Predator] | 2 |
+| 4 | A Viper [Territorial] | 4 |
+| 5 | A Wolf Spider with a Cluster of Spider Swarm, an Ambusher [Predator] | 4 |
+| 6 | Three Giant Rats with a Rat Swarm [Predator] | 4 |
+| 7 | Two Zombies, risen from the bog [Restless dead] | 4 |
+| 8 | Two Bandit Cutthroats with a Cluster of Thugs, hiding in the reeds [Raider] | 4 |
+| 9 | A Bandit Leader with two Cutthroats and a Cluster of Thugs [Raider] | 6 |
+| 10 | A Zombie with a Cluster of Rat Swarm feeding on it [Restless dead] | 4 |
+| 11 | **Sign first:** three Zombie Brutes [Restless dead] | 6 |
+| 12 | **Sign first:** a Constrictor [Predator] | 20 |
+
+### Band II (levels 3–5)
+
+| 2d6 | Encounter | XP |
+|:---:|:---|:---:|
+| 2 | **Strange:** an Eidolon of the Hunt, in fog only (otherwise, Sign) | 20 |
+| 3 | Three Zombie Brutes [Restless dead] | 6 |
+| 4 | A Constrictor [Predator] | 20 |
+| 5 | 1d2 Boars [Territorial] | 6 |
+| 6 | A Monstrous Widow, an Ambusher [Predator] | 20 |
+| 7 | A Revenant Soldier with a Cluster of Skeletons [Restless dead] | 20 |
+| 8 | A Ranger Captain with two Woodsmen: outlaws [Raider] | 10 |
+| 9 | Three Orc Raiders [Raider] | 6 |
+| 10 | 1d2 + 1 Redcaps near a drowned ruin [Raider] | 6 |
+| 11 | 1d2 Crocodiles, Ambushers in the water [Predator] | 10 |
+| 12 | **Apex, Sign first:** d6, 1–3 an Undine, in deep water; 4–6 a Dryad's grove on a hummock (a site) | 40–60 |
+
+At party level 3, Tier 3 results (the Crocodiles) are above band and arrive as Signs first.
+
+### Band III (levels 6–8)
+
+| 2d6 | Encounter | XP |
+|:---:|:---|:---:|
+| 2 | **Strange:** a Shadow-Man's court, at night only (otherwise, Sign) | 40 |
+| 3 | 1d3 Crocodiles [Predator] | 10 |
+| 4 | Two Constrictors [Predator] | 20 |
+| 5 | Two Monstrous Widows [Predator] | 20 |
+| 6 | Two Revenant Soldiers with a Brood of Skeletons [Restless dead] | 20 |
+| 7 | An Ogre [Raider] | 30 |
+| 8 | A Warlord with two Veterans and a Brood of Footsoldiers, deserters hiding out [Raider] | 30 |
+| 9 | An Orc War Chief with four Raiders [Raider] | 30 |
+| 10 | Four Zombie Brutes [Restless dead] | 6 |
+| 11 | A Revenant Knight with two Revenant Soldiers, at a drowned barrow [Restless dead] | 40 |
+| 12 | **Apex, Sign first:** an Undine | 60 |
+
+---
+
+## Desert
+
+Also thin. The fire Primordials give it a character of its own.
+
+### Band I (levels 1–2)
+
+| 2d6 | Encounter | XP |
+|:---:|:---|:---:|
+| 2 | A Skeleton Warrior with a Cluster of Skeletons, half buried in the sand [Restless dead] | 4 |
+| 3 | A Viper [Territorial] | 4 |
+| 4 | A Wolf Spider with a Cluster of Spider Swarm, an Ambusher [Predator] | 4 |
+| 5 | 1d2 + 1 Wild Dogs, jackals by another name [Predator] | 4 |
+| 6 | Two Bandit Cutthroats with a Cluster of Bandit Thugs [Raider] | 4 |
+| 7 | 1d4 antelope (Deer) [Prey] | — |
+| 8 | A Bandit Leader with two Cutthroats and a Cluster of Thugs [Raider] | 6 |
+| 9 | Two Large Raptors [Territorial] | 4 |
+| 10 | A caravan's two hired Thugs [Patrol] | 4 |
+| 11 | **Sign first:** a Fire Elemental [Guardian] | 6 |
+| 12 | **Sign first:** three Orc Raiders [Raider] | 6 |
+
+### Band II (levels 3–5)
+
+| 2d6 | Encounter | XP |
+|:---:|:---|:---:|
+| 2 | **Strange:** a Magpie | 30 |
+| 3 | A Fire Elemental [Guardian] | 6 |
+| 4 | Two Living Stones [Guardian] | 6 |
+| 5 | Three Orc Raiders [Raider] | 6 |
+| 6 | A Bandit Leader with two Cutthroats and a Brood of Thugs [Raider] | 6 |
+| 7 | A Captain with two Warriors and a Cluster of Footsoldiers [Raider] | 10 |
+| 8 | A Monstrous Widow, an Ambusher [Predator] | 20 |
+| 9 | A Revenant Soldier with a Cluster of Skeletons: part of a lost army [Restless dead] | 20 |
+| 10 | A Lion [Predator] | 20 |
+| 11 | An Orc War Chief with four Raiders [Raider] | 30 |
+| 12 | **Apex, Sign first:** d6, 1–3 an Inferno; 4–6 an Ettin | 60 |
+
+At party level 3, Tier 3 results (the Lion) are above band and arrive as Signs first.
+
+### Band III (levels 6–8)
+
+| 2d6 | Encounter | XP |
+|:---:|:---|:---:|
+| 2 | **Strange:** a Shadow-Man's court, at night only (otherwise, Sign) | 40 |
+| 3 | Two Fire Elementals with a Brood of Ember Sprites [Guardian] | 6 |
+| 4 | A Lion [Predator] | 20 |
+| 5 | An Earth Guardian [Guardian] | 30 |
+| 6 | A Warlord with two Veterans and a Brood of Footsoldiers [Raider] | 30 |
+| 7 | An Ogre [Raider] | 30 |
+| 8 | A Revenant Knight with two Revenant Soldiers: the lost army's officer [Restless dead] | 40 |
+| 9 | An Orc War Chief with four Raiders [Raider] | 30 |
+| 10 | An Earth Guardian with two Living Stones [Guardian] | 30 |
+| 11 | **Sign first:** an Inferno [Guardian] | 60 |
+| 12 | **Apex, Sign first:** d6, 1–3 an Inferno; 4–5 a Bergrisar; 6 an Ettin | 60 |
+
+---
+
 ## What the tables show
 
 Filling these from today's bestiary turned up gaps you may want for your monster work:
 
-- **Band I woodland is thin at the top.** At Tier 1 the only Leader is the Bandit Leader, and the only Champions are trained dogs and horses. A wild Tier 1 woodland head is missing.
-- **Band III leans on Tier 2 creatures in bigger groups.** Woodland Tier 3 has bears, aurochs, the Ogre, and the undead, and little else.
-- **Band IV and up can't be built yet.** Woodland has only two Tier 4 creatures, the Giant Short-Faced Bear and Otso, both apex.
-- **No dragons.** The Dragon tag exists, and so does Dragon Lore, but no stat block does yet. The apex rows use Legendaries in the meantime.
-- **Plains, swamp, desert, and mountains** each need the same pass. Swamp and desert look thinnest: the crocodile is the only swamp creature so far.
+- **Tier 1 is thin at the top everywhere.** The only Tier 1 Leader is the Bandit Leader, and the only Champions are trained dogs and horses. Every terrain's Band I table leans on bandits.
+- **Band III leans on Tier 2 creatures in bigger groups.** Tier 3 has bears, aurochs, the Lion, the Ogre, the Earth Guardian, and the undead.
+- **Swamp is the thinnest terrain.** It has the Constrictor, the Crocodile, and the Undine of its own; everything else is borrowed from woodland and the undead.
+- **Desert is next.** The fire Primordials, the Lion, and the Living Stones give it some character, but Band I is all borrowed.
+- **Band IV and up can't be built yet in any terrain.** Tier 4 has only the Giant Short-Faced Bear and Otso, both apex.
+- **No dragons.** The Dragon tag exists, and so does Dragon Lore, but no stat block does yet. The apex rows use Epics and Legendaries in the meantime. When dragons exist, the red box's colors by terrain [S] are waiting: black in swamp, green in forest, blue in desert, red in mountains.
+- **Folk on the road.** Merchants, pilgrims, and caravans would make Settled country feel lived in. For now, patrols and hired Thugs stand in.
