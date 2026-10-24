@@ -12,6 +12,8 @@ import { startSign, startEncounter, discover, checkLevels, alive, living } from 
 import { startBattle } from "./combat.js";
 import { tierOf, dieOfTier } from "./mastery.js";
 import { rowFor, weatherFrom, BAND_LABELS } from "./vendor/foundry/module/helpers/weather-rules.mjs";
+import { effectiveRest, recoveryFor, exhaustedAfter, classUpgrades, REST_LABELS } from "./vendor/foundry/module/helpers/rest-rules.mjs";
+import { ensureStores, morningSupplies, eveningSupplies, refill, exhaustFloor, outfit, treatInjuries, repairGear } from "./supplies.js";
 
 export const DAY_HOURS = 8;
 export const SEASONS = ["spring", "summer", "autumn", "winter"];
@@ -30,7 +32,7 @@ export function newGame(seed = Math.floor(Math.random() * 2 ** 31)) {
     party: {
       x: 3, y: 3, pace: "normal", carry: 0, quiet: false,
       members: PREGENS.map(p => { const m = { ...structuredClone(p), hp: p.health, mp: p.magan }; if (m.companion) m.companion.hp = m.companion.health; return m; }),
-      roles: { scout: "hamon", watchman: "gerberga" },
+      roles: { scout: "hamon", watchman: "gerberga", forager: "corra", cook: "gisla", healer: "corra", smith: null },
       coin: 450 + 160 + 193 + 284,
       pelts: [],
       bankedXp: 0
@@ -40,6 +42,8 @@ export function newGame(seed = Math.floor(Math.random() * 2 ** 31)) {
     weather: null, target: null, pending: null,
     log: []
   };
+  ensureStores(state);
+  outfit(state);
   note(state, `A new dynasty begins (seed ${seed}).`, "title");
   for (const line of world.log) note(state, line, "map");
   world.log = [];
@@ -91,9 +95,7 @@ function morning(state, rng) {
   if (w.windy) bits.push(`wind ${w.wind} mph`);
   if (w.wet) bits.push(w.precip || "wet");
   note(state, `Day ${state.day}, ${seasonOf(state.day)}. Weather (${w.roll}): ${bits.join(", ")}.`, "day");
-  const dc = weatherDC(w.band);
-  // TODO(party): roll each character's Endurance trial once characters exist (milestone 3).
-  if (dc) note(state, `Each character makes an Endurance trial for the weather, DC ${dc}.`, "todo");
+  morningSupplies(state, rng, (t, k) => note(state, t, k), weatherDC(w.band));
 }
 
 /* ------------------------------------------------------------------ */
@@ -119,6 +121,8 @@ export function travelLeg(state, choice = null) {
   if (state.encounter || state.sign || state.over) return state;
   if (state.pending?.type === "nightfall" && !choice) return state;
   if (!state.target && !state.pending) { note(state, "Choose where to go: click the map."); return state; }
+  const down = state.party.members.filter(m => !m.dead && m.collapsed);
+  if (down.length) { note(state, `${down.map(m => m.name).join(" and ")} can't go on. Make camp.`, "event"); return state; }
   withDice(state, (rng) => {
     if (!state.morningDone) morning(state, rng);
     let hours;
@@ -139,6 +143,10 @@ export function travelLeg(state, choice = null) {
     }
     move(state, rng, hours);
     state.hoursUsed += hours;
+    const h = state.party.hours;
+    h.total += hours;
+    if (state.party.pace === "fast") h.fast += hours;
+    if (state.party.pace === "marathon") h.marathon += hours;
     eventDie(state, rng);
     if (state.hoursUsed >= DAY_HOURS) {
       if (state.encounter || state.sign) state.campDue = true;
@@ -170,6 +178,7 @@ function move(state, rng, hours) {
     if (cost > mp) break;
     mp -= cost;
     p.x = next.x; p.y = next.y;
+    if (nearWater(state, p.x, p.y)) p.waterToday = true;
     moved++;
     path.shift();
     if (state.target && p.x === state.target.x && p.y === state.target.y) { state.target = null; break; }
@@ -180,6 +189,7 @@ function move(state, rng, hours) {
   const sq = squareAt(state.world, p.x, p.y);
   if (sq?.settlement) {
     note(state, `You reach a ${sq.settlement.home ? "home village" : sq.settlement.size}.`, "place");
+    refill(state, (t, k) => note(state, t, k), sq.settlement.home ? "home village" : sq.settlement.size);
     reachSafety(state);
   }
   const place = state.world.places?.[`${p.x},${p.y}`];
@@ -187,6 +197,15 @@ function move(state, rng, hours) {
     // TODO(sites): exploring sites is milestone 4.
     note(state, `You stand at the ${place.type}${place.creature ? ` of ${place.creature}` : ""}. Exploring sites comes in milestone 4.`, "todo");
   }
+}
+
+/** A river under foot or a lake beside you: water to drink and to fill the skins. */
+function nearWater(state, x, y) {
+  for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+    const sq = squareAt(state.world, x + dx, y + dy);
+    if (sq && (sq.lake || (sq.river && !dx && !dy))) return true;
+  }
+  return false;
 }
 
 /** Exploration XP is banked until the party reaches safety (design/01-the-turn.md, Coming Home). */
@@ -226,81 +245,108 @@ export function campNow(state) {
 }
 
 function camp(state, rng) {
+  const say = (t, k) => note(state, t, k);
+  ensureStores(state);
   const country = countryAt(state.world, state.party.x, state.party.y);
   const sq = squareAt(state.world, state.party.x, state.party.y);
-  if (sq?.settlement) {
-    // TODO(town): settlements are milestone 3, with lodging costs and the healer.
-    note(state, `You spend the night in the ${sq.settlement.home ? "home village" : sq.settlement.size}.`, "camp");
-    rest(state, rng, "good");
+  const p = state.party;
+  const awake = p.members.filter(m => !m.dead);
+  // An inn: Common lodging and supper for everyone (Equipment, Lodging and Services). At home a household takes you in.
+  const bill = sq?.settlement && !sq.settlement.home ? awake.length * (3 + 0.5) : 0;
+  if (sq?.settlement && p.coin >= bill) {
+    if (bill) { p.coin -= bill; note(state, `You take Common rooms and supper at the inn: ${bill} sp for ${awake.length}.`, "camp"); }
+    else note(state, "You spend the night at home.", "camp");
+    eveningSupplies(state, rng, say, { inn: "common" });
+    treatInjuries(state, rng, say);
+    repairGear(state, rng, say);
+    rest(state, rng, "goodNight");
   } else {
+    if (sq?.settlement) note(state, `You can't pay for the inn (${bill} sp), so you sleep rough outside the ${sq.settlement.size}.`, "camp");
+    const atWater = !!p.waterToday || nearWater(state, p.x, p.y) || !!sq?.settlement;
+    if (atWater) refill(state, say, sq?.settlement ? sq.settlement.size : "water");
+    eveningSupplies(state, rng, say, { atWater });
+    // The evening's camping roles (General Rules, Camping Roles): the Healer and the Smith at work.
+    treatInjuries(state, rng, say);
+    repairGear(state, rng, say);
     const n = rng.d(6);
     note(state, `You make camp. Night die ${n}${n === 6 ? ": something finds the camp." : ": the night passes."}`, n === 6 ? "event" : "camp");
     // Deep country is never safe: a Dungeon Rest. A night attack spoils the rest one step.
-    const safe = country !== "deep";
-    rest(state, rng, n === 6 ? (safe ? "dungeon" : "none") : safe ? "wilderness" : "dungeon");
+    rest(state, rng, country !== "deep" ? "wilderness" : "dungeon", { danger: country === "deep", interrupted: n === 6 });
+    for (const m of p.members) if (m.collapsed && !m.starving && !m.parched) { m.collapsed = false; note(state, `${m.name} is warmed by the fire and comes round.`, "camp"); }
     if (n === 6) {
       state.night = true;
-      startEncounter(state, rng, (t, k) => note(state, t, k), { night: true });
+      startEncounter(state, rng, say, { night: true });
       state.night = false;
       state.sign = null; // a Sign at night is only noises in the dark
     }
   }
-  if (state.pushed) note(state, `You traveled ${state.hoursUsed} hours today: Pushing the Pace trial, DC ${2 + Math.max(0, state.hoursUsed - DAY_HOURS)} plus pace.`, "todo");
+  if (!p.members.some(m => !m.dead)) {
+    note(state, "No one is left.", "event");
+    state.over = { day: state.day, why: `Lost to the road on day ${state.day}.` };
+  }
   state.day += 1;
   state.hoursUsed = 0;
   state.morningDone = false;
   state.pushed = false;
-  state.party.carry = 0;
+  p.carry = 0;
+  p.waterToday = false;
   state.campDue = false;
 }
 
-/**
- * A night's rest (General Rules, Resting). Druids treat a safe Wilderness
- * Rest as a Good Night's Rest.
- */
 /** Maximum magan: the pool, less an agathion's bound magan if it has died (Core Classes, Agathion, Bound Magan). */
 export const maxMagan = (m) => (m.magan || 0) - (m.companion?.dead ? (m.companion.boundMagan || 0) : 0);
-const RESTS = { none: "No Rest", dungeon: "Dungeon Rest", wilderness: "Wilderness Rest", good: "Good Night's Rest" };
-function rest(state, rng, kind) {
+
+/**
+ * A night's rest (General Rules, Resting), through Foundry's rest rules:
+ * the rest a character actually gets (Gnomes, Druids, Elves, Orcs, and
+ * Rangers treat a safe Wilderness Rest as a Good Night's; Infected drops it
+ * a stage a tier), what it restores, and Exhausted after it, never below what
+ * hunger and thirst hold. A hot meal adds the Endurance and casting tiers.
+ */
+function rest(state, rng, kind, { danger = false, interrupted = false } = {}) {
   const bits = [];
-  const ORDER = ["none", "dungeon", "wilderness", "good"];
+  const ORDER = ["nil", "dungeon", "wilderness", "goodNight", "civilized", "bed"];
+  const roll = (rec) => rec ? rec.dice.reduce((n, d) => n + Array.from({ length: d.c }, () => rng.d(d.s)).reduce((a, b) => a + b, 0), 0) + rec.flat : 0;
   for (const m of living(state)) {
-    let k = kind === "wilderness" && m.cls === "Druid" ? "good" : kind;
-    if (k !== "none") m.spent = {};
+    const r = effectiveRest({ type: kind, danger, upgrade: classUpgrades(m.cls), interrupted });
+    let stage = r.stage, rule = r.exhausted;
     // Infected: rest counts as one stage lower per tier (Conditions).
-    if (m.infected) k = m.infected >= 3 ? "none" : ORDER[Math.max(0, ORDER.indexOf(k) - m.infected)];
-    // Exhausted (General Rules, Resting): a Wilderness Rest eases it a tier but not below 1, a Good Night's a full tier; No Rest adds one.
-    if (m.exhausted || k === "none") {
-      const before = m.exhausted || 0;
-      m.exhausted = k === "none" ? Math.min(3, before + 1) : k === "wilderness" ? Math.max(Math.min(before, 1), before - 1) : k === "good" ? Math.max(0, before - 1) : before;
-      if (m.exhausted !== before) bits.push(`${m.name} Exhausted ${before} → ${m.exhausted}`);
-    }
-    // Magan comes back by the same rest: 1, 1d3, or the casting tier die (General Rules, Resting).
+    if (m.infected && stage !== "nil") { stage = ORDER[Math.max(0, ORDER.indexOf(stage) - m.infected)]; rule = stage === "nil" ? { advance: 1 } : effectiveRest({ type: stage }).exhausted; }
+    if (stage !== "nil") m.spent = {};
+    const before = m.exhausted || 0;
+    m.exhausted = Math.max(exhaustedAfter(before, rule), Math.min(before, exhaustFloor(m)));
+    if (m.exhausted !== before) bits.push(`${m.name} Exhausted ${before} → ${m.exhausted}`);
+    const hot = m.hotMeal && stage !== "nil";
+    m.hotMeal = false;
+    const eTier = tierOf(m.attributes.endurance);
+    // Magan comes back by the same rest, with the casting tier die.
     const maxMp = maxMagan(m);
-    if (m.casting && k !== "none" && (m.mp ?? 0) < maxMp) {
-      const gain = k === "dungeon" ? 1 : k === "wilderness" ? rng.d(3) : total(rng, `1d${dieOfTier(tierOf(m.attributes[m.casting.attr]))[1]}`);
+    if (m.casting && stage !== "nil" && (m.mp ?? 0) < maxMp) {
+      const cTier = tierOf(m.attributes[m.casting.attr]);
+      const gain = roll(recoveryFor(stage, { c: 1, s: dieOfTier(cTier)[1] }, m.level)) + (hot ? cTier : 0);
       const was = m.mp ?? 0;
       m.mp = Math.min(maxMp, was + gain);
       bits.push(`${m.name} ${was} → ${m.mp} magan`);
     }
     // A companion rests as a character, with its tier die for the Endurance die; a Puca treats a safe Wilderness Rest as a Good Night's.
     const pet = m.companion;
-    if (pet && !pet.dead && pet.hp < pet.health && k !== "none") {
-      const pk = k === "wilderness" && pet.kind === "puca" ? "good" : k;
-      if (!(pk === "dungeon" && pet.hp < 1)) {
+    if (pet && !pet.dead && pet.hp < pet.health && stage !== "nil") {
+      const pr = effectiveRest({ type: kind, danger, upgrade: pet.kind === "puca", interrupted });
+      if (pr.stage !== "nil" && !(pr.stage === "dungeon" && pet.hp < 1)) {
         const was = pet.hp;
-        pet.hp = Math.min(pet.health, pet.hp + (pk === "dungeon" ? 1 : pk === "wilderness" ? rng.d(3) : rng.d(dieOfTier(pet.tier)[1])));
+        pet.hp = Math.min(pet.health, pet.hp + roll(recoveryFor(pr.stage, { c: 1, s: dieOfTier(pet.tier)[1] }, m.level)));
         bits.push(`${pet.name} ${was} → ${pet.hp} health`);
       }
     }
-    if (m.hp >= m.health || k === "none" || (k === "dungeon" && m.hp < 1)) continue;
-    const gain = k === "dungeon" ? 1 : k === "wilderness" ? rng.d(3) : total(rng, `1d${dieOfTier(tierOf(m.attributes.endurance))[1]}`);
-    const before = m.hp;
+    if (m.hp >= m.health || stage === "nil" || (stage === "dungeon" && m.hp < 1)) continue;
+    const gain = roll(recoveryFor(stage, { c: 1, s: dieOfTier(eTier)[1] }, m.level)) + (hot ? eTier : 0);
+    const was = m.hp;
     m.hp = Math.min(m.health, m.hp + gain);
     if (m.hp > 0) m.down = false;
-    bits.push(`${m.name} ${before} → ${m.hp} health`);
+    bits.push(`${m.name} ${was} → ${m.hp} health`);
   }
-  if (bits.length) note(state, `${RESTS[kind]}: ${bits.join(", ")}.`, "camp");
+  const label = REST_LABELS[effectiveRest({ type: kind, danger, interrupted }).stage] || REST_LABELS[kind];
+  if (bits.length) note(state, `${label}: ${bits.join(", ")}.`, "camp");
 }
 
 /* ------------------------------------------------------------------ */

@@ -168,6 +168,7 @@ test("Infected makes rest a stage worse", () => {
   const s = newGame(9);
   const corra = s.party.members.find(m => m.id === "corra");
   corra.hp = 1; corra.infected = 3;
+  s.morningDone = true; corra.ate = 2; // fed already: only the rest is in question
   campNow(s);
   assert.equal(corra.hp, 1, "Diseased: no rest at all");
 });

@@ -106,7 +106,7 @@ test("Triage stops the dying timer", () => {
 
 function wonWithGislaBleeding(seed, strip) {
   const s = battle(seed, [{ name: "Wild Dog", count: 1 }]);
-  if (strip) for (const m of s.party.members) { m.gear = []; m.spells = []; }
+  if (strip) { for (const m of s.party.members) { m.gear = []; m.spells = []; } delete s.party.stores["Wound Kit"]; }
   const gisla = s.party.members.find(m => m.id === "gisla");
   gisla.hp = 0; gisla.dying = 3; gisla.down = true;
   const dog = s.battle.units.find(u => !u.pc);

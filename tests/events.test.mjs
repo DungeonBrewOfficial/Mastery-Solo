@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import { playBattle } from "./autoplay.mjs";
 import assert from "node:assert/strict";
-import { newGame, travelLeg, setTarget, afterEvent, runWithDice, note } from "../game/journey.js";
+import { newGame, travelLeg, setTarget, afterEvent, runWithDice, note, campNow } from "../game/journey.js";
 import { choices, choose, signChoices, chooseSign, aboveBand, partyLevel } from "../game/events.js";
 import { ENCOUNTERS } from "../game/data/encounters.js";
 import { CREATURES } from "../game/data/creatures.js";
@@ -56,6 +56,9 @@ test("a long journey resolves every event without getting stuck", () => {
       if (s.pending) { travelLeg(s, i % 2 ? "stop" : "push"); continue; }
       if (!s.target) setTarget(s, s.party.x + ((i * 7) % 23) - 11, s.party.y + ((i * 5) % 19) - 9);
       travelLeg(s);
+      // Someone collapsed (thirst, hunger, the weather): make camp.
+      if (/can't go on/.test(s.log.at(-1)?.text || "")) campNow(s);
+      if (s.over) break;
     }
     assert.ok(s.day > 5 || s.over, `seed ${seed} reached day ${s.day} and the run didn't end`);
     assert.ok(met > 0, `seed ${seed} had an encounter`);

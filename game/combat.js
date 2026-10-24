@@ -31,6 +31,7 @@ import { buildHealthPlan, armoredDurability } from "./vendor/foundry/module/help
 import { headsLost, groupTokenSize, bandFor as groupBand, mobDC } from "./vendor/foundry/module/helpers/minion-rules.mjs";
 import { abilitiesOf, unbuilt } from "./data/abilities.js";
 import { SPELLS, wardCovers } from "./data/spells.js";
+import { healAfterFight, healingMeans, take, count } from "./supplies.js";
 import { RULES } from "./data/rules-text.js";
 import { TRAUMA_TABLE } from "./vendor/foundry/module/data/trauma-table.mjs";
 import { resolveDamage } from "./vendor/foundry/extract/resolve-damage.mjs";
@@ -1544,7 +1545,7 @@ export function pcStand(state, rng, note) {
 
 /** Triage (Combat): 2 AP beside a dying ally stops the dying timer. */
 export function triageTargets(state, u) {
-  if (turning(u)) return [];
+  if (turning(u) || u.companion) return [];
   return state.battle.units.filter(t => t.pc && t !== u && onField(t) && gap(u, t) <= 1 && memberOf(state, t).dying != null && !memberOf(state, t).stable);
 }
 export function pcTriage(state, rng, note, targetId) {
@@ -1554,9 +1555,24 @@ export function pcTriage(state, rng, note, targetId) {
   if (!t) return;
   u.ap -= 2; u.moveLeft = 0; u.lastMove = false;
   loseSpell(state, note, u, "tending a wound instead");
-  const m = memberOf(state, t);
+  const m = memberOf(state, t), h = memberOf(state, u);
+  // Without a kit, the Combat chapter's Triage: stabilized, still unconscious at 0 health.
+  if (!take(state, "Wound Kit")) {
+    m.stable = true; m.dying = null;
+    note(`${u.name} stops ${m.name}'s bleeding (Triage, 2 AP, no kit). ${m.name} is stable, unconscious at 0 health.`, "reward");
+    return advance(state, rng, note);
+  }
+  // Untrained hands roll before using the kit (against 3); a failure wastes it.
+  if ((h.skills?.healer || 1) < 2) {
+    const r = trial(rng, [dieOfTier(1), dieOfTier(tierOf(h.attributes.intelligence))]);
+    if (!passes(r, 3)) { note(`${u.name} fumbles the Wound Kit (${r.text} against 3); ${m.name} still bleeds.`, "event"); return advance(state, rng, note); }
+  }
+  // Triage (Healer Discipline): the patient regains health equal to the Healer's mastery level.
+  const n = h.skills?.healer || 1;
   m.stable = true; m.dying = null;
-  note(`${u.name} stops ${m.name}'s bleeding (Triage, 2 AP). ${m.name} is stable, unconscious at 0 health.`, "reward");
+  m.hp = Math.min(m.health, m.hp + n);
+  if (m.hp > 0) { m.down = false; t.ap = 0; }
+  note(`${u.name} binds ${m.name}'s wounds (Triage, 2 AP, a Wound Kit): ${m.name} regains ${n} and comes to.`, "reward");
   advance(state, rng, note);
 }
 
@@ -2225,6 +2241,7 @@ function applyHit(state, rng, note, a, t, atk, def, type, ranged) {
 /** Health damage to a character: 0 health, the dying timer, Fighting On, Traumas (Combat, Death). */
 function hurtPC(state, rng, note, u, dmg, { magic = false } = {}) {
   const m = memberOf(state, u);
+  if (!u.companion && !(state.battle.wounded ||= []).includes(u.id)) state.battle.wounded.push(u.id);
   // Hard to Kill (Cursed): at 0 health, only magic can kill, on a 1 on the Endurance tier die.
   if (hardToKill(m) && m.hp <= 0 && magic) {
     const die = dieOfTier(tierOf(m.attributes.endurance))[1], n = rng.d(die);
@@ -2778,8 +2795,9 @@ function aftermath(state, rng, note, pcs) {
   const b = state.battle;
   const bleeding = b.units.filter(u => u.pc && onField(u) && memberOf(state, u).dying != null && !memberOf(state, u).stable);
   if (bleeding.length) {
-    const means = healingMeans(pcs.map(u => memberOf(state, u)));
+    const means = healingMeans(state, pcs.map(u => memberOf(state, u)));
     if (means) {
+      if (means.kit) take(state, "Wound Kit", bleeding.length);
       for (const u of bleeding) { const m = memberOf(state, u); m.stable = true; m.dying = null; }
       note(`${means.who} stops the bleeding with ${means.what}: ${bleeding.map(u => u.name).join(", ")} will live.`, "reward");
     } else if (pcs.length) {
@@ -2792,18 +2810,6 @@ function aftermath(state, rng, note, pcs) {
   }
   finish(state, rng, note, "won");
   return true;
-}
-
-const HEALING_SPELLS = ["Mend", "Mend Flesh"];
-/** Who can save the dying after a fight, and with what. */
-export function healingMeans(standingMembers) {
-  for (const m of standingMembers) {
-    // TODO(party): kits and current magan are tracked from milestone 3; for now carrying a kit or knowing the spell is enough.
-    if (m.gear?.includes("Healer's Kit")) return { who: m.name, what: "a Healer's Kit" };
-    const spell = (m.spells || []).find(sp => HEALING_SPELLS.includes(sp));
-    if (spell && (m.mp ?? m.magan) > 0) return { who: m.name, what: spell };
-  }
-  return null;
 }
 
 function finish(state, rng, note, outcome) {
@@ -2844,22 +2850,9 @@ function finish(state, rng, note, outcome) {
   state.battle = null;
 }
 
-/**
- * After a fight, the party's healer Heals each wounded character once
- * (Skill Mastery, Healer Discipline: Trade mastery die + Intelligence tier die).
- */
+/** After a fight, the party's healer Heals each character wounded in it once (supplies.js). */
 function tend(state, rng, note) {
-  const living = state.party.members.filter(m => !m.dead);
-  const healer = living.filter(m => m.hp > 0 && (m.skills?.healer || 0) >= 2).sort((x, y) => y.skills.healer - x.skills.healer)[0];
-  const hurt = living.filter(m => m.hp < m.health);
-  if (!healer || !hurt.length) return;
-  for (const m of hurt) {
-    const t = trial(rng, [dieOfTier(healer.skills.healer), dieOfTier(tierOf(healer.attributes.intelligence))]);
-    const before = m.hp;
-    m.hp = Math.min(m.health, m.hp + t.total);
-    note(`Heal (${healer.name}, ${t.text}): ${m.name}, ${before} → ${m.hp} health.`, "reward");
-  }
-  note("(Wound Kits aren't counted yet; that comes with milestone 3.)", "todo");
+  healAfterFight(state, rng, note, state.battle?.wounded || []);
 }
 
 /* ------------------------------------------------------------------ */
