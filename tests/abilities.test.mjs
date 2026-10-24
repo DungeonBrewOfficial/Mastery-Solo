@@ -356,3 +356,25 @@ test("the dice roller sums mixed terms", async () => {
   assert.equal(r.rolls.length, 2);
   assert.equal(r.total, r.rolls[0] + r.rolls[1]);
 });
+
+test("the Dryad's bonded tree: hurt it 7 between her turns and she stops regrowing", () => {
+  const s = battle(9, [{ name: "Dryad", count: 1 }], { temper: "Guardian" });
+  const tree = s.battle.units.find(u => u.object), dry = s.battle.units.find(u => u.cname === "Dryad");
+  assert.ok(tree && tree.w === 2 && tree.h === 2, "she fights beside her tree");
+  dry.hp = 10; tree.dmgSince = 8;
+  const from = s.log.length;
+  enemyRound(s);
+  assert.match(logOf(s, from), /can't regrow/);
+  assert.doesNotMatch(logOf(s, from), /regrows/);
+  assert.ok(s.battle, "the tree doesn't count as a foe, and she still stands");
+});
+
+test("each creature uses its own numbers for a shared ability", async () => {
+  const { abilitiesOf } = await import("../game/data/abilities.js");
+  const dc = (c, n) => abilitiesOf(CREATURES[c]).find(a => a.name === n).resist.dc;
+  assert.equal(dc("Woodsman", "Pinning Shot"), 4);
+  assert.equal(dc("Ranger Captain", "Pinning Shot"), 5);
+  assert.equal(dc("Mountain Lion", "Grab"), 4);
+  assert.equal(dc("Cave Bear", "Grab"), 9);
+  assert.match(CREATURES.Footsoldier.attacks.find(a => a.name === "Hornbow").range, /150\/300\/450/);
+});

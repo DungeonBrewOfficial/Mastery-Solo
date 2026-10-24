@@ -206,5 +206,42 @@ export const ABILITIES = {
   "Fear of Fire and Light": { kind: "passive", why: "the party carries no light or fire into a fight yet" }
 };
 
-export const abilitiesOf = (c) => (c?.abilities || []).map(n => ({ name: n, ...ABILITIES[n] })).filter(a => a.kind);
+/**
+ * Each creature's own numbers. The same ability carries different numbers on
+ * different creatures (Grab is DC 4 on a Mountain Lion and 9 on a Cave Bear;
+ * Rend rides a claw on a Kallikantzaros and a bite on a Giant War Dog), so
+ * the entries above give the mechanics, and this reads the DC, bonus, range,
+ * damage, and weapon from the creature's own text.
+ */
+function tune(spec, text) {
+  if (!text) return spec;
+  const t = { ...spec };
+  const dc = /\[(\d+)\]/.exec(text);
+  if (dc && t.resist && typeof t.resist.dc === "number") t.resist = { ...t.resist, dc: Number(dc[1]) };
+  if (dc && t.push) t.push = { ...t.push, resist: { ...t.push.resist, dc: Number(dc[1]) } };
+  const bonus = /bonus of \+(\d+)/i.exec(text);
+  if (bonus && t.kind === "riposte") t.bonus = Number(bonus[1]);
+  const reachFeet = /within (\d+) (?:feet|ft)/i.exec(text) || /\((\d+) ft\)/i.exec(text) || /Range(?:d)? (\d+) ft/i.exec(text);
+  if (reachFeet && "range" in t) t.range = Math.floor(Number(reachFeet[1]) / 5);
+  if (reachFeet && t.kind === "aura") t.radius = Math.floor(Number(reachFeet[1]) / 5);
+  const flat = /take(?:s)? (\d+) (\w+) damage/i.exec(text);
+  if (flat && (t.kind === "aura" || t.kind === "flame")) t.amount = Number(flat[1]);
+  const venom = /inflicts (\d+) (\w+) damage/i.exec(text);
+  if (venom && t.extra) t.extra = { amount: Number(venom[1]), type: venom[2].toLowerCase() };
+  const big = /fail by (\d+) or more advance \w+ by 2/i.exec(text);
+  if (big) t.bigFail = Number(big[1]);
+  if (t.kind === "smash") {
+    const m = /\b(d\d+) \+ (d\d+) \+ half STR score \((\d+)\)(?: \+ (\d+) \(\d+ ?sq\))?/i.exec(text);
+    if (m) { t.dice = [Number(m[1].slice(1)), Number(m[2].slice(1))]; t.bonus = Number(m[3]) + Number(m[4] || 0); }
+  }
+  // The attack it rides on: "On a hit with a bite attack", "makes a tusk attack", "a bite or claw attack".
+  const on = /(?:with an?|makes an?) ([a-z]+(?: or [a-z]+| [a-z]+)?) attack/i.exec(text);
+  if (on && t.attack && ["rider", "charge", "rush", "pileOn"].includes(t.kind)) {
+    const words = on[1].toLowerCase().split(" or ").map(w => w.replace(/s$/, ""));
+    t.attack = new RegExp(words.join("|"), "i");
+  }
+  return t;
+}
+
+export const abilitiesOf = (c) => (c?.abilities || []).map(n => ({ name: n, ...tune(ABILITIES[n] || {}, c.abilityText?.[n]) })).filter(a => a.kind);
 export const unbuilt = (c) => (c?.abilities || []).filter(n => !ABILITIES[n] || ABILITIES[n].kind === "needs").map(n => ABILITIES[n] ? `${n} (needs ${ABILITIES[n].why})` : n);

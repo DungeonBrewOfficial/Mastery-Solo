@@ -36,6 +36,24 @@ import { resolveDamage } from "./vendor/foundry/extract/resolve-damage.mjs";
 import { speedOf, creatureSpeed, creatureTrial, awardCombatXp, spoils, chase, breakAway, cannotRun } from "./events.js";
 
 export const GRID_W = 16, GRID_H = 12;
+
+/**
+ * The Dryad's bonded tree (Creatures - Fae, Dryad, The Bonded Tree): a 2×2
+ * object that cannot defend and is reduced only by resistance. It can't be
+ * destroyed in a fight ("an undertaking measured in hours or days"), but
+ * damage dealt to it between the Dryad's turns trips her thresholds.
+ */
+CREATURES["Bonded Tree"] ||= {
+  name: "Bonded Tree", tier: 2, rank: "adept", division: 7, classification: "fae", kingdom: "sidhe",
+  size: { width: 2, height: 2, reach: 15 }, locomotion: [],
+  attributes: Object.fromEntries(["strength", "agility", "physique", "endurance", "intelligence", "wisdom", "charisma", "perception"].map(k => [k, { score: 0, tier: 1 }])),
+  armored: false,
+  resistance: { cutting: 14, crushing: 14, cleaving: 7, piercing: 14, puncturing: 14, sea: 14, stone: 14, sky: 14, sacred: 14, profane: 14, fire: 7, void: 7, primal: 0 },
+  attacks: [{ name: "Branch Slam", phase: "slow", damageType: "crushing", attribute: "perception", style: "natural", dice: [12, 8], bonus: 0, range: "" }],
+  grips: [], armor: [], shield: null, abilities: [], abilityText: {}, senses: "", immuneDamage: ["primal"]
+};
+/** Things on the field that aren't foes to beat: they don't count for winning, morale, or numbers. */
+const isObject = (u) => !!u.object;
 export const PHASES = ["fast", "moderate", "slow"];
 export const GUARDS = {
   mutable: { label: "Mutable", text: "No change to attack or defense." },
@@ -221,7 +239,7 @@ function immuneTo(state, u, k) {
 }
 function immuneToDamage(state, u, type) {
   if (u.pc) return (memberOf(state, u).immune || []).includes(type);
-  return abilitiesOf(CREATURES[u.cname]).some(a => a.kind === "immune" && a.damage?.includes(type));
+  return (CREATURES[u.cname].immuneDamage || []).includes(type) || abilitiesOf(CREATURES[u.cname]).some(a => a.kind === "immune" && a.damage?.includes(type));
 }
 
 /**
@@ -298,18 +316,17 @@ function resist(state, rng, u, attr, dc, { edge = 0, hearten, forCond } = {}) {
   const t = u.pc
     ? trial(rng, [dieOfTier(tierOf(memberOf(state, u).attributes[attr])), dieOfTier(tierOf(memberOf(state, u).attributes[attr]))], { edge: e, bonus: md.bonus - md.pen + lift })
     : creatureTrial(rng, CREATURES[u.cname], attr, { edge: e, bonus: md.bonus - md.pen });
-  return { ok: passes(t, dc), text: t.text + (lift ? `, ${helper.name} heartens +${lift}` : "") };
+  return { ok: passes(t, dc), miss: dc - t.total, text: t.text + (lift ? `, ${helper.name} heartens +${lift}` : "") };
 }
 
 /* ------------------------------------------------------------------ */
 /* Creatures                                                            */
 
 const RANGE_RE = /(\d+)\s*\/\s*(\d+)\s*\/\s*(\d+)/;
-/** Range bands in squares; a missile with no numbers written (a hornbow) is given a short bow's 60/120/180 feet. */
+/** Range bands in squares, from the attack line (filled from the weapon's own entry when the stat block leaves it out). */
 const rangeOf = (a) => {
   const r = a?.range || "", m = RANGE_RE.exec(r);
-  if (m) return m.slice(1, 4).map(n => Math.floor(Number(n) / 5));
-  return /projectile|ranged|thrown|bow/i.test(r) || /bow/i.test(a?.name || "") ? [12, 24, 36] : null;
+  return m ? m.slice(1, 4).map(n => Math.floor(Number(n) / 5)) : null;
 };
 const avg = (a) => a.dice.reduce((n, s) => n + (s + 1) / 2, 0) + (a.bonus || 0);
 const meleeAttack = (c) => [...c.attacks].filter(a => !rangeOf(a)).sort((x, y) => avg(y) - avg(x))[0] || null;
@@ -408,7 +425,14 @@ export function startBattle(state, rng, note) {
       note(`${u.name}: Startle ${t.text}${u.impaired ? `, ${IMPAIRED[u.impaired]}` : ", keeps its head"}.`);
     }
   }
-  note(`The fight begins: ${b.units.filter(u => !u.pc).map(u => u.name).join(", ")}, ${e.distance === "Close" ? "close" : e.distance === "Far" ? "far" : "a little way"} off.`, "event");
+  // A Dryad fights beside her bonded tree.
+  if (b.units.some(u => !u.pc && abilitiesOf(CREATURES[u.cname]).some(a => a.kind === "regen"))) {
+    const tree = { id: "tree", pc: false, side: "enemy", cname: "Bonded Tree", object: true, name: "Bonded Tree", x: 0, y: 0, w: 2, h: 2,
+      hp: 9999, hpMax: 9999, heads: 0, armorDur: 0, armorMax: 0, ap: 0, phases: [], attack: 0, impaired: 0, demoralized: 0, doneIn: [], moveLeft: 0, lastMove: false, attacks: 0, marks: 0, dmgSince: 0, ...FRESH() };
+    place(b, tree, GRID_W - 3);
+    b.units.push(tree);
+  }
+  note(`The fight begins: ${b.units.filter(u => !u.pc && !isObject(u)).map(u => u.name).join(", ")}, ${e.distance === "Close" ? "close" : e.distance === "Far" ? "far" : "a little way"} off.`, "event");
   const missing = [...new Set(b.units.filter(u => !u.pc).flatMap(u => unbuilt(CREATURES[u.cname]).map(a => `${u.cname}'s ${a}`)))];
   if (missing.length) note(`Not built yet, so not used in this fight: ${missing.join(", ")}.`, "todo");
   startRound(state, rng, note);
@@ -438,6 +462,9 @@ function startRound(state, rng, note) {
       const m = memberOf(state, u);
       u.ap = m.down || u.impaired >= 3 ? 0 : cond(u, "exhausted") >= 3 ? 1 : 2;
       u.tookTurn = false;
+    } else if (u.object) {
+      // The tree acts only when the Dryad's threshold wakes it (set at her turn).
+      u.tookTurn = false; u.phases = []; u.ap = 0;
     } else {
       u.tookTurn = false;
       const c = CREATURES[u.cname];
@@ -565,9 +592,19 @@ function finishTurn(state, u, rng, note) {
 /** Things that happen as a creature starts its turn: Mob traits that work on presence (Death Tick). */
 function startOfTurn(state, rng, note, u) {
   const b = state.battle;
-  // Regrowth at the start of its own turn (Tree-Bound).
+  // Regrowth at the start of its own turn (Tree-Bound), unless the tree has been hurt enough since.
   const rg = has(u, "regen");
-  if (rg && u.hp < u.hpMax) {
+  const tree = rg && b.units.find(x => isObject(x));
+  if (tree && u.treeRound !== b.round) {
+    u.treeRound = b.round;
+    const d = tree.dmgSince, div = CREATURES[u.cname].division;
+    tree.dmgSince = 0;
+    u.tree1 = d >= div; u.tree2 = d >= 2 * div;
+    if (u.tree2) { tree.phases = ["slow"]; tree.ap = 2; note(`The bonded tree has taken ${d}: ${u.name} can't meld, her spells strike harder, she can't regrow, and the tree itself lashes out this round.`, "event"); }
+    else if (u.tree1) note(`The bonded tree has taken ${d}: ${u.name} can't regrow, and her spells strike harder.`, "event");
+    if (!u.tree2) { tree.phases = []; tree.ap = 0; }
+  }
+  if (rg && u.hp < u.hpMax && !u.tree1) {
     const n = roll(rng, u.meldBoost ? "2d6" : rg.amount).total;
     u.meldBoost = false;
     u.hp = Math.min(u.hpMax, u.hp + n);
@@ -1152,7 +1189,7 @@ function runMove(state, rng, note, op) {
 }
 
 /** Helpless creatures can't defend (Conditions: Paralyzed, Restrained, unconscious). */
-const helpless = (state, t) => t.impaired >= 3 || cond(t, "restricted") >= 3 || (t.pc && memberOf(state, t).down);
+const helpless = (state, t) => isObject(t) || t.impaired >= 3 || cond(t, "restricted") >= 3 || (t.pc && memberOf(state, t).down);
 
 const auraHolders = (state, u) => state.battle.units.filter(o => o.side !== u.side && !o.pc && onField(o))
   .flatMap(o => abilitiesOf(CREATURES[o.cname]).filter(a => a.kind === "aura").map(a => ({ o, a })));
@@ -1525,6 +1562,12 @@ function applyHit(state, rng, note, a, t, atk, def, type, ranged) {
     return r;
   }
   const c = CREATURES[t.cname];
+  if (isObject(t)) {
+    const got = Math.max(0, atk.total - (c.resistance?.[type] || 0));
+    t.dmgSince += got;
+    note(got ? `The bonded tree takes ${got} (${t.dmgSince} since the Dryad's last turn).` : "It doesn't get through the bark.", got ? "event" : "");
+    return { defended: false, durabilityDamage: 0, healthDamage: got };
+  }
   const res = (c.resistance?.[type] || 0) + (t.armorDur > 0 ? armorRes(c, type) : 0);
   const r = resolveDamage({ attackTotal: atk.total, damageType: type, armorResistance: res, durabilityCurrent: t.armorDur, healthCurrent: t.hp, activeDefense: !!def, defenseTotal: def?.total || 0 });
   if (r.defended) { note(`${t.name} turns it aside.`); return r; }
@@ -1625,7 +1668,7 @@ function die(state, note, u, how = "dies") {
 function morale(state, rng, note, why, hurt = null) {
   const b = state.battle;
   if (b.temper === "Restless dead") return;
-  const foes = b.units.filter(u => !u.pc && onField(u));
+  const foes = b.units.filter(u => !u.pc && onField(u) && !isObject(u));
   if (!foes.length) return;
   const heads = foes.filter(u => ["leader", "master"].includes(CREATURES[u.cname].rank));
   let rolling = [];
@@ -1653,6 +1696,14 @@ function morale(state, rng, note, why, hurt = null) {
 
 /* ------------------------------------------------------------------ */
 /* The enemy                                                            */
+
+/** Dominance on a damage expression: each die one step up the chart ("1d12+1d8" → "2d6+1d10"). */
+function stepUp(expr) {
+  return expr.replace(/(\d*)d(\d+)/g, (m, c, sd) => {
+    const [nc, ns] = shift([Number(c || 1), Number(sd)], 1);
+    return `${nc}d${ns}`;
+  });
+}
 
 /** Shove a creature straight away from another, square by square, until something stops it. */
 function pushAway(state, t, from, squares) {
@@ -1703,7 +1754,7 @@ function runEffect(state, rng, note, op) {
     const r = resist(state, rng, t, ab.resist.attr, ab.resist.dc, { forCond: ab.cond?.name });
     note(`${ab.name}: ${t.name} resists with ${ab.resist.attr[0].toUpperCase() + ab.resist.attr.slice(1)} (${r.text} against ${ab.resist.dc}), ${r.ok ? "and avoids it" : "and fails"}.`);
     if (r.ok) continue;
-    if (op.op === "bolt") secondaryDamage(state, rng, note, t, roll(rng, ab.damage).total, ab.type, `${a.name}'s ${ab.name}`);
+    if (op.op === "bolt") secondaryDamage(state, rng, note, t, roll(rng, a.tree1 ? stepUp(ab.damage) : ab.damage).total, ab.type, `${a.name}'s ${ab.name}${a.tree1 ? " (Dominance)" : ""}`);
     if (!onField(t)) continue;
     if (ab.cond) addCond(state, note, t, ab.cond.name, ab.cond.n, { by: a.id, lasting: ab.cond.name === "exhausted" });
     if (ab.attrition) { t.attrition.push({ ...ab.attrition }); note(`${t.name} suffers Attrition (${ab.attrition.label}) ${ab.attrition.amount}.`, "event"); }
@@ -1713,6 +1764,14 @@ function runEffect(state, rng, note, op) {
 function aiStep(state, rng, note, u) {
   const b = state.battle;
   const c = CREATURES[u.cname];
+  if (isObject(u)) {
+    const t = b.units.filter(x => x.pc && standing(state, x) && gap(u, x) <= 3).sort((x, y) => memberOf(state, x).hp - memberOf(state, y).hp)[0];
+    if (!t || u.ap < 2) return finishTurn(state, u, rng, note);
+    u.ap -= 2; u.attacks += 1;
+    note("The bonded tree swings a great branch.", "event");
+    b.queue.push({ op: "attack", by: u.id, target: t.id, ranged: false, lineReach: true });
+    return;
+  }
   const abs = abilitiesOf(c);
   const pcs = b.units.filter(t => t.pc && standing(state, t));
   if (u.ap <= 0 || !pcs.length) return finishTurn(state, u, rng, note);
@@ -1759,7 +1818,7 @@ function aiStep(state, rng, note, u) {
   }
   const hurt = u.hp < u.hpMax / 2;
   // Woodland Meld: badly hurt and pressed, it sinks into the ground and rises far off.
-  if (has(u, "meld") && hurt && near.length && u.ap >= 1 && !cond(u, "restricted")) {
+  if (has(u, "meld") && hurt && near.length && u.ap >= 1 && !cond(u, "restricted") && !u.tree2) {
     let spot = null;
     for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) {
       if (blockedFor(b, u, x, y)) continue;
@@ -1789,7 +1848,7 @@ function aiStep(state, rng, note, u) {
         note(`${t.name} resists with ${roar.resist.attr[0].toUpperCase() + roar.resist.attr.slice(1)} (${r.text} against ${roar.resist.dc}): ${r.ok ? "holds" : "fails"}.`);
         if (r.ok) continue;
         if (roar.prone) { t.prone = true; note(`${t.name} is knocked prone.`, "event"); }
-        else { addCond(state, note, t, roar.cond.name, roar.cond.n, { by: u.id }); if (roar.cond.name === "demoralized") t.fearOf = u.id; }
+        else { addCond(state, note, t, roar.cond.name, roar.bigFail && r.miss >= roar.bigFail ? 2 : roar.cond.n, { by: u.id }); if (roar.cond.name === "demoralized") t.fearOf = u.id; }
       }
       return;
     }
@@ -2033,7 +2092,7 @@ function attack(b, u, t, ranged) {
 function checkEnd(state, rng, note) {
   const b = state.battle;
   if (!b || b.outcome) return true;
-  const foes = b.units.filter(u => !u.pc && onField(u));
+  const foes = b.units.filter(u => !u.pc && onField(u) && !isObject(u));
   const pcs = b.units.filter(u => u.pc && standing(state, u));
   if (!foes.length) return aftermath(state, rng, note, pcs);
   if (!pcs.length) { finish(state, rng, note, "lost"); return true; }

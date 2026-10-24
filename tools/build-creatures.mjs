@@ -14,6 +14,22 @@ const src = join(resolve(process.argv[2] || join(here, "..", "..", "Mastery-Foun
 const RANK_OFFSET = { minion: 0, adept: 1, leader: 2, champion: 3, master: 4, epic: 5, legendary: 6 };
 const tierOf = (score) => 1 + Math.min(Math.floor((Number(score) || 0) / 5), 12);
 
+// Weapon items give the range a creature's attack line leaves out (a Footsoldier's "Projectile" Hornbow).
+const weapons = {};
+const wsrc = join(src, "..", "mastery-weapons");
+for (const f of readdirSync(wsrc)) {
+  const w = JSON.parse(readFileSync(join(wsrc, f), "utf8"));
+  const r = w.system?.rangeIncrements;
+  if (r && r.short) weapons[w.name.toLowerCase()] = `${r.short}/${r.moderate}/${r.far}`;
+}
+const rangeFor = (a) => {
+  const note = a.rangeNote || "";
+  if (!note || /\d+\s*\/\s*\d+/.test(note)) return note;
+  const r = weapons[(a.weapon || a.name || "").toLowerCase()];
+  return r ? `${note} ${r}` : note;
+};
+const plain = (html) => String(html || "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+
 const out = {};
 for (const f of readdirSync(src).sort()) {
   const d = JSON.parse(readFileSync(join(src, f), "utf8"));
@@ -33,11 +49,13 @@ for (const f of readdirSync(src).sort()) {
     attributes: attrs,
     armored: !!s.armored,
     resistance: s.resistance,
-    attacks: (s.attacks || []).filter(a => a.writtenDice?.length).map(a => ({ name: a.name, phase: a.phase, damageType: a.damageType, attribute: a.attribute, style: a.style, dice: a.writtenDice, bonus: a.bonusFlat || 0, range: a.rangeNote || "" })),
+    attacks: (s.attacks || []).filter(a => a.writtenDice?.length).map(a => ({ name: a.name, phase: a.phase, damageType: a.damageType, attribute: a.attribute, style: a.style, dice: a.writtenDice, bonus: a.bonusFlat || 0, range: rangeFor(a) })),
     grips: (s.grips || []).map(g => ({ label: g.label, attribute: g.attribute, style: g.style, dice: g.writtenDice })),
     armor: (d.items || []).filter(i => i.type === "armor" && i.system.equipped !== false).map(i => ({ name: i.name, resistance: i.system.resistance, durability: i.system.currentDurability ?? i.system.durabilityMax, max: i.system.durabilityMax })),
     shield: (d.items || []).filter(i => i.type === "shield").map(i => ({ name: i.name, durability: i.system.currentDurability ?? i.system.durabilityMax, max: i.system.durabilityMax }))[0] || null,
     abilities: (s.abilities || []).map(a => a.name),
+    // Each creature's own wording: its numbers (DCs, bonuses, ranges) can differ from another's ability of the same name.
+    abilityText: Object.fromEntries((s.abilities || []).map(a => [a.name, plain(a.description)])),
     senses: s.details?.senses || ""
   };
 }

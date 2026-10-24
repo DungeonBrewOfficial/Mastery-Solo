@@ -91,6 +91,12 @@ export const CREATURES = {
    "Sacred Blessing",
    "Warn"
   ],
+  "abilityText": {
+   "Yazata (Sacred)": "Yazata (Sacred) (Classification, no slot). Immune to Sacred damage. Impotence on trials vs Profane damage. Connected to Sacred magic. (Classification package.)",
+   "Incorporeal": "Incorporeal (Passive. Ability slot 1). Attacks that deal mundane damage have Inferiority against it (dice cannot explode). Magical damage, including the magical portion of an enchanted weapon's hit, lands normally. The agathodaimon has no physical body. It can pass through solid objects but cannot end its turn inside one.",
+   "Sacred Blessing": "Sacred Blessing (2 AP, Action. Ability slot 2). All allies within 15 feet advance Fortified by 1 tier. Lasts 1 round.",
+   "Warn": "Warn (1 AP, Reaction. Ability slot 3). When an enemy targets an ally within 30 feet, the spirit can alert them, granting +2 to their defense roll for that attack."
+  },
   "senses": ""
  },
  "Aurochs": {
@@ -180,6 +186,10 @@ export const CREATURES = {
    "Charge",
    "Gore"
   ],
+  "abilityText": {
+   "Charge": "Charge (2 AP, Movement + Attack. Ability slot 1). The aurochs moves at least 15 feet in a straight line and makes a horn attack with Dominance. Countered by Set Spear vs Charge.",
+   "Gore": "Gore (1 AP, Attack. Ability slot 2). On a hit with a horn attack, with Impotence, if damage is dealt the target must succeed on an END trial [5] or gain Attrition (Bleeding)."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Bandit Cutthroat": {
@@ -301,6 +311,9 @@ export const CREATURES = {
   "abilities": [
    "Low Cut"
   ],
+  "abilityText": {
+   "Low Cut": "Low Cut (1 AP, Attack. Ability slot 1). On a hit with a great knife attack, with Inferiority, the target must succeed on a STR trial [3] or advance Restricted by 1 tier."
+  },
   "senses": ""
  },
  "Bandit Leader": {
@@ -448,6 +461,10 @@ export const CREATURES = {
    "Riposte",
    "Rally"
   ],
+  "abilityText": {
+   "Riposte": "Riposte (1 AP, Reaction. Ability slot 1). When the bandit leader takes no damage from a melee attack, it can counter-attack with a bonus of +3 to the attack roll.",
+   "Rally": "Rally (2 AP, Action. Ability slot 2). The bandit leader shouts encouragement, All allied bandits within 30 feet advance Inspired by 1 tier. Lasts 1 round. Can be reapplied to stack tiers."
+  },
   "senses": ""
  },
  "Bandit Thug": {
@@ -545,6 +562,9 @@ export const CREATURES = {
   "abilities": [
    "Cudgel"
   ],
+  "abilityText": {
+   "Cudgel": "Cudgel (Mob, no slot). When the group deals damage, the target must succeed on a PER trial [Cluster 3 / Brood 5 / Swarm 7] or advance Impaired by 1 tier (max Tier 1)."
+  },
   "senses": ""
  },
  "Bergrisar": {
@@ -653,6 +673,14 @@ export const CREATURES = {
    "Avalanche",
    "Swipe"
   ],
+  "abilityText": {
+   "Behemoth (Stone)": "Behemoth (Stone) (Classification, no slot). Immune to Stone damage. Impotence on trials vs Sky damage. Connected to Stone magic. (Classification package.)",
+   "Stomp": "Stomp (2 AP, Action. Ability slot 1). The Bergrisar slams a foot down, fracturing the ground. All creatures within 20 feet must succeed on an AGI trial [9] or be knocked prone.",
+   "Boulder Throw": "Boulder Throw (1 AP, Attack. Ability slot 2). The Bergrisar makes a boulder attack with Impotence targeting all creatures in a 2×2 area at the impact point. Roll one attack and apply to all targets.",
+   "Reconstitute": "Reconstitute (1 AP, Action. Ability slot 3). While standing on stone or earth, the Bergrisar heals END TD (2d8) health.",
+   "Avalanche": "Avalanche (2 AP, Movement. Ability slot 4). The Bergrisar moves up to full speed in a straight line. This movement does not provoke attacks of opportunity. Each creature in its path must succeed on a STR trial [9] or advance Restricted by 1 tier.",
+   "Swipe": "Swipe (1 AP, Attack. Ability slot 5). The Bergrisar makes a fist attack targeting up to 2 creatures within reach. Roll one attack with Inferiority and apply to both targets."
+  },
   "senses": ""
  },
  "Black Bear": {
@@ -756,6 +784,11 @@ export const CREATURES = {
    "Charge (Claw)",
    "Grab"
   ],
+  "abilityText": {
+   "Charge (Bite)": "Charge (2 AP, Movement + Attack. Ability slot 1). The bear moves at least 15 feet in a straight line and makes a bite or claw attack with Dominance. Countered by Set Spear vs Charge.",
+   "Charge (Claw)": "Charge (2 AP, Movement + Attack. Ability slot 1). The bear moves at least 15 feet in a straight line and makes a bite or claw attack with Dominance. Countered by Set Spear vs Charge.",
+   "Grab": "Grab (1 AP, Action. Ability slot 2). The bear makes a claw attack. In lieu of an attack roll, the target must succeed on a STR trial [5] or advance Restricted by 1 tier. Restricted does not deteriorate while held. Once per turn, the target can spend 1 AP on a STR trial [5] to break free; on success, the hold drops by 1 tier. An adjacent ally can spend 1 AP on its own turn to make the same trial for it."
+  },
   "senses": "<p>Scent.</p>"
  },
  "Boar": {
@@ -845,6 +878,10 @@ export const CREATURES = {
    "Charge",
    "Gore"
   ],
+  "abilityText": {
+   "Charge": "Charge (2 AP, Movement + Attack. Ability slot 1). The boar moves at least 15 feet in a straight line and makes a tusk attack with Dominance. Countered by Set Spear vs Charge.",
+   "Gore": "Gore (1 AP, Attack. Ability slot 2). On a hit with a tusk attack, with Impotence, if damage is dealt the target must succeed on an END trial [4] or gain Attrition (Bleeding)."
+  },
   "senses": ""
  },
  "Brown Bear": {
@@ -949,6 +986,12 @@ export const CREATURES = {
    "Grab",
    "Territorial Roar"
   ],
+  "abilityText": {
+   "Charge (Bite)": "Charge (2 AP, Movement + Attack. Ability slot 1). The bear moves at least 15 feet in a straight line and makes a bite or claw attack with Dominance. Countered by Set Spear vs Charge.",
+   "Charge (Claw)": "Charge (2 AP, Movement + Attack. Ability slot 1). The bear moves at least 15 feet in a straight line and makes a bite or claw attack with Dominance. Countered by Set Spear vs Charge.",
+   "Grab": "Grab (1 AP, Action. Ability slot 2). The bear makes a claw attack. In lieu of an attack roll, the target must succeed on a STR trial [7] or advance Restricted by 1 tier. Restricted does not deteriorate while held. Once per turn, the target can spend 1 AP on a STR trial [7] to break free; on success, the hold drops by 1 tier. An adjacent ally can spend 1 AP on its own turn to make the same trial for it.",
+   "Territorial Roar": "Territorial Roar (2 AP, Action. Ability slot 3). The bear roars. All allied beasts within 30 feet advance Invigorated by 1 tier. Can be reapplied to stack tiers."
+  },
   "senses": "<p>Scent.</p>"
  },
  "Captain": {
@@ -1125,6 +1168,10 @@ export const CREATURES = {
    "Riposte",
    "Command Shout"
   ],
+  "abilityText": {
+   "Riposte": "Riposte (1 AP, Reaction. Ability slot 1). When the captain takes no damage from a melee attack, it can counter-attack with a bonus of +3 to the attack roll.",
+   "Command Shout": "Command Shout (2 AP, Action. Ability slot 2). The Captain shouts orders. All allied infantry within 30 feet advance Inspired by 1 tier. Lasts 1 round. Can be reapplied to stack tiers."
+  },
   "senses": ""
  },
  "Cave Bear": {
@@ -1231,6 +1278,12 @@ export const CREATURES = {
    "Grab",
    "Swipe"
   ],
+  "abilityText": {
+   "Charge (Bite)": "Charge (2 AP, Movement + Attack. Ability slot 1). The bear moves at least 15 feet in a straight line and makes a bite or claw attack with Dominance. Countered by Set Spear vs Charge.",
+   "Charge (Claw)": "Charge (2 AP, Movement + Attack. Ability slot 1). The bear moves at least 15 feet in a straight line and makes a bite or claw attack with Dominance. Countered by Set Spear vs Charge.",
+   "Grab": "Grab (1 AP, Action. Ability slot 2). The bear makes a claw attack. In lieu of an attack roll, the target must succeed on a STR trial [9] or advance Restricted by 1 tier. Restricted does not deteriorate while held. Once per turn, the target can spend 1 AP on a STR trial [9] to break free; on success, the hold drops by 1 tier. An adjacent ally can spend 1 AP on its own turn to make the same trial for it.",
+   "Swipe": "Swipe (1 AP, Attack. Ability slot 3). The bear makes a claw attack targeting up to 2 creatures within reach. Roll one attack with Inferiority and apply to both targets. Cutting."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Cherub": {
@@ -1323,6 +1376,13 @@ export const CREATURES = {
    "Smite",
    "Rebuke"
   ],
+  "abilityText": {
+   "Yazata (Sacred)": "Yazata (Sacred) (Classification, no slot). Immune to Sacred damage. Impotence on trials vs Profane damage. Connected to Sacred magic. (Classification package.)",
+   "Flaming Blade": "Flaming Blade (Ability slot 1). If the Cherub's Cutting damage deals damage to durability or health, the target takes 3 Fire damage (flat, CHA Tier). No explosions on the Fire portion.",
+   "Sacred Aura": "Sacred Aura (Ability slot 3). Creatures within 20 feet that enter the aura on their turn or end their turn within it take 3 Sacred damage (flat, no trial).",
+   "Smite": "Smite (2 AP, Attack. Ability slot 2). The Cherub adds its CHA die (d4) to the attack roll. Against Daeva/Undead, Superiority (explosion range extends by 1 on all dice). Full Smite attack: d10 + d6 + d4 Cutting, plus 3 flat Fire if it gets through.",
+   "Rebuke": "Rebuke (1 AP, Action. Ability slot 4). The Cherub speaks a word of divine authority. One creature within 30 feet must succeed on a WIS trial [7] or advance Demoralized by 1 tier. This trial is Sacred in nature."
+  },
   "senses": ""
  },
  "Constrictor": {
@@ -1409,6 +1469,9 @@ export const CREATURES = {
   "abilities": [
    "Constrict"
   ],
+  "abilityText": {
+   "Constrict": "Constrict (Ability slot 1). The constrictor has three options, each costing 1 AP: Constrict (1 AP, Action). The constrictor attempts to wrap around a target within reach. The target must succeed on a STR trial [6] or advance Restricted by 1 tier. Restricted does not deteriorate while held. Once per turn, the target can spend 1 AP on a STR trial [6] to break free; on success, the hold drops by 1 tier. An adjacent ally can spend 1 AP on its own turn to make the same trial for it.Squeeze (1 AP, Attack). Only usable on a target the constrictor has Restricted. d8 (DTD) + d10 (STR) + 2 (2sq) Crushing. (Attribute: STR)Bite (1 AP, Attack). Standard bite attack. d8 (DTD) + d6 (PHY) + 2 (2sq) Piercing. (Attribute: PHY)"
+  },
   "senses": ""
  },
  "Courser — Medium War Horse": {
@@ -1573,6 +1636,11 @@ export const CREATURES = {
    "Battle Trained",
    "Capriole"
   ],
+  "abilityText": {
+   "Leap": "Leap (2 AP, Movement + Attack. Ability slot 1). The horse moves up to its speed and leaps over one creature of equal or smaller size in its path, making a kick attack against that creature. The horse lands in an unoccupied space on the opposite side. This movement does not provoke a Reprisal Attack from the target.",
+   "Battle Trained": "Battle Trained (Passive. Ability slot 2). The horse is trained for combat and is not affected by the Skittish trait.",
+   "Capriole": "Capriole (1 AP, Attack. Ability slot 3). The horse leaps and kicks backward with both hind hooves, making one kick attack with Inferiority against each creature directly behind the horse within reach."
+  },
   "senses": "<p>Crepuscular sight.</p>"
  },
  "Courser": {
@@ -1661,6 +1729,9 @@ export const CREATURES = {
   "abilities": [
    "Leap"
   ],
+  "abilityText": {
+   "Leap": "Leap (2 AP, Movement + Attack. Ability slot 1). The horse moves up to its speed and leaps over one creature of equal or smaller size in its path, making a kick attack against that creature. The horse lands in an unoccupied space on the opposite side. This movement does not provoke a Reprisal Attack from the target."
+  },
   "senses": "<p>Crepuscular sight.</p>"
  },
  "Crocodile": {
@@ -1751,6 +1822,11 @@ export const CREATURES = {
    "Grab",
    "Death Roll"
   ],
+  "abilityText": {
+   "Ambusher": "Ambusher (Passive, no slot). When submerged or partially submerged, the crocodile is always ready to ambush prior to the beginning of a combat encounter unless otherwise determined by the GM. When it attacks a creature that has not noticed it, that creature makes a Startle trial [5]. A creature with Alertness (Danger Sense) first rolls a PER trial [5] as the ambush is sprung; on a success, it makes no Startle trial.",
+   "Grab": "Grab (1 AP, Action. Ability slot 1). The crocodile makes a bite attack. In lieu of an attack roll, the target must succeed on a STR trial [5] or advance Restricted by 1 tier. Restricted does not deteriorate while held. Once per turn, the target can spend 1 AP on a STR trial [5] to break free; on success, the hold drops by 1 tier. An adjacent ally can spend 1 AP on its own turn to make the same trial for it.",
+   "Death Roll": "Death Roll (1 AP, Attack. Ability slot 2). The crocodile makes a bite attack with Superiority against a Restricted target. d6 (DTD) + d8 (STR) + 2 (2sq) Crushing. On a hit that deals health damage, the target must succeed on an END trial [5] or gain Attrition (Bleeding)."
+  },
   "senses": "<p>Scent.</p>"
  },
  "Death-Watch": {
@@ -1839,6 +1915,9 @@ export const CREATURES = {
   "abilities": [
    "Death Tick"
   ],
+  "abilityText": {
+   "Death Tick": "Death Tick (Mob, no slot). A creature that starts its turn within 30 feet of the swarm and can hear it must succeed on a WIS trial [Cluster 3 / Brood 5 / Swarm 7] or advance Demoralized by 1 tier (max Tier 1)."
+  },
   "senses": "<p>Seismic sense 15 ft.</p>"
  },
  "Deer": {
@@ -1927,6 +2006,9 @@ export const CREATURES = {
   "abilities": [
    "Flight Response"
   ],
+  "abilityText": {
+   "Flight Response": "Flight Response (1 AP, Reaction. Ability slot 1). When the deer takes health damage, it can immediately move up to its speed. This movement does not provoke reactions."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Destrier — Heavy War Horse": {
@@ -2092,6 +2174,12 @@ export const CREATURES = {
    "Levade",
    "Capriole"
   ],
+  "abilityText": {
+   "Stagger": "Stagger (1 AP, Attack. Ability slot 1). The horse makes a kick attack with Impotence. On a hit, the target must succeed on a PER trial [7] or advance Impaired by 1 tier.",
+   "Battle Trained": "Battle Trained (Passive. Ability slot 2). The horse is trained for combat and is not affected by the Skittish trait.",
+   "Levade": "Levade (1 AP, Attack. Ability slot 3). The horse rears and strikes with both front hooves, making two kick attacks with Inferiority. Each attack may target the same or different creatures within reach.",
+   "Capriole": "Capriole (1 AP, Attack. Ability slot 4). The horse leaps and kicks backward with both hind hooves, making one kick attack with Inferiority against each creature directly behind the horse within reach."
+  },
   "senses": "<p>Crepuscular sight.</p>"
  },
  "Destrier": {
@@ -2180,6 +2268,9 @@ export const CREATURES = {
   "abilities": [
    "Stagger"
   ],
+  "abilityText": {
+   "Stagger": "Stagger (1 AP, Attack. Ability slot 1). The horse makes a kick attack with Impotence. On a hit, the target must succeed on a PER trial [3] or advance Impaired by 1 tier."
+  },
   "senses": "<p>Crepuscular sight.</p>"
  },
  "Draft Horse": {
@@ -2269,6 +2360,10 @@ export const CREATURES = {
    "Heavy Pull",
    "Sure-Footed"
   ],
+  "abilityText": {
+   "Heavy Pull": "Heavy Pull (1 AP, Movement. Ability slot 1). Once per encounter. The horse pulls up to double its normal pulling capacity for a distance up to its speed.",
+   "Sure-Footed": "Sure-Footed (Passive. Ability slot 2). The horse may use STR in place of AGI for trials to traverse Unstable terrain and to resist Prone."
+  },
   "senses": "<p>Crepuscular sight.</p>"
  },
  "Dryad": {
@@ -2359,6 +2454,13 @@ export const CREATURES = {
    "Ensnare",
    "Thornwall"
   ],
+  "abilityText": {
+   "Tree-Bound": "Tree-Bound. (Ability slot 1.) The Dryad regenerates 1d6 health at the start of each turn while within her grove. If reduced to 0 health, her spirit disperses and reforms at her bonded tree within days.",
+   "Woodland Meld": "Woodland Meld (1 AP, Action. Ability slot 2). The Dryad melds into natural terrain and emerges from another point within 120 ft. Her next start-of-turn regen becomes 2d6. Cannot use while Restricted.",
+   "Thorn Bolt": "Thorn Bolt (1 AP, Action [Moderate]. Ability slot 3. Range 60 ft). The target must succeed on an AGI trial [8] or take d12 + d8 primal damage.",
+   "Ensnare": "Ensnare (1 AP, Action [Moderate]. Ability slot 4. Range 60 ft). Roots seize a creature. The target must succeed on a STR trial [8] or advance Restricted by 1 tier. Restricted does not deteriorate while held. Once per turn, the target can spend 1 AP on a STR trial [8] to break free; on success, the hold drops by 1 tier. An adjacent ally can spend 1 AP on its own turn to make the same trial for it.",
+   "Thornwall": "Thornwall (1 AP, Action [Slow]. 1/encounter. Ability slot 5. Range 60 ft). The Dryad raises a wall of thorny growth up to 20 feet long and 5 feet tall. The wall has 90 durability. Creatures forcing through take 6 primal damage and must succeed on a STR trial [8] or advance Restricted by 1 tier."
+  },
   "senses": "<p>Perceives creatures in contact with the ground within her grove through the root network.</p>"
  },
  "Eagle": {
@@ -2448,6 +2550,10 @@ export const CREATURES = {
    "Dive",
    "Aerial Evasion"
   ],
+  "abilityText": {
+   "Dive": "Dive (2 AP, Movement + Attack. Ability slot 1). The eagle swoops through a target's space, making a talon attack during movement. Does not provoke attacks of opportunity.",
+   "Aerial Evasion": "Aerial Evasion (Passive. Ability slot 2). While the eagle is flying, ranged attacks against it add the eagle's Agility tier to the Aiming Trial DC."
+  },
   "senses": "<p>Keen Sight.</p>"
  },
  "Earth Guardian": {
@@ -2551,6 +2657,13 @@ export const CREATURES = {
    "Smash",
    "Tremor"
   ],
+  "abilityText": {
+   "Autochthon (Stone)": "Autochthon (Stone) (Classification, no slot). Immune to Stone damage. Impotence on trials vs Sky damage. Connected to Stone magic. (Classification package.)",
+   "Absorb Stone": "Absorb Stone (1 AP, Action. Ability slot 1). While standing on stone or earth, the earth guardian draws sustenance from its element, healing END TD (d8) health.",
+   "Hurl Boulder": "Hurl Boulder (1 AP, Attack. Ability slot 2). The earth guardian makes a boulder attack with Impotence targeting all creatures in a 2×1 area at the impact point. Roll one attack and apply to all targets.",
+   "Smash": "Smash (2 AP, Attack. Ability slot 3). The earth guardian makes a slam attack. d10 + d10 + half STR score (13) + 2 (2 sq) Crushing. Must act in Slow phase. While preparing, enemies attacking it gain Superiority.",
+   "Tremor": "Tremor (2 AP, Action. Ability slot 4). All creatures within 15 feet standing on stone or earth must succeed on an AGI trial [7] or be knocked prone."
+  },
   "senses": ""
  },
  "Eidolon of the Hunt": {
@@ -2641,6 +2754,11 @@ export const CREATURES = {
    "Relentless Chase",
    "Presence of the Ideal"
   ],
+  "abilityText": {
+   "Incorporeal": "Incorporeal (Passive. Ability slot 1). Attacks that deal mundane damage have Inferiority against it (dice cannot explode). Magical damage, including the magical portion of an enchanted weapon's hit, lands normally. The Eidolon is form without substance: physical weapons find partial purchase but cannot land a solid blow.",
+   "Relentless Chase": "Relentless Chase (2 AP, Movement + Attack. Ability slot 2). The Eidolon moves up to its full speed and makes a bite attack against a target it moves adjacent to. This movement does not provoke attacks of opportunity. If the target moved during its last turn, the attack has Superiority.",
+   "Presence of the Ideal": "Presence of the Ideal (Passive. Ability slot 3). Creatures that enter the aura (20 ft) must succeed on a WIS trial [6] or advance Demoralized by 1 tier. A creature that succeeds is immune to the aura for the rest of the encounter. While a creature remains in the aura, its Demoralized does not deteriorate, including tiers from other sources. Once per turn, it can spend 1 AP on a WIS trial [6] to break the aura's hold; on success, Demoralized deteriorates normally even while it remains inside. Leaving the aura also ends the hold, and a creature that re-enters makes a new trial. This trial is Void in nature."
+  },
   "senses": "<p>The Eidolon perceives the presence of living creatures within 60 ft regardless of concealment, invisibility, or darkness. Beyond 60 ft, it relies on normal senses. It is drawn to creatures affected by the Demoralized condition — it knows their location within 120 ft.</p>"
  },
  "Elk": {
@@ -2743,6 +2861,10 @@ export const CREATURES = {
    "Charge",
    "Gore"
   ],
+  "abilityText": {
+   "Charge": "Charge (2 AP, Movement + Attack. Ability slot 1). The elk moves at least 15 feet in a straight line and makes an antler attack with Dominance. Countered by Set Spear vs Charge.",
+   "Gore": "Gore (1 AP, Attack. Ability slot 2). On a hit with an antler attack, with Impotence, if damage is dealt the target must succeed on an END trial [4] or gain Attrition (Bleeding)."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Ember Sprite": {
@@ -2832,6 +2954,11 @@ export const CREATURES = {
    "Flame Touch",
    "Kindling"
   ],
+  "abilityText": {
+   "Autochthon (Fire)": "Autochthon (Fire) (Classification, no slot). Immune to Fire damage. Impotence on trials vs Sea damage. Connected to Fire magic. (Classification package.)",
+   "Flame Touch": "Flame Touch (Attack definition, no slot). The ember sprite is pure fire. Its attacks deal Fire damage, avoided by an AGI trial [Cluster 5 / Brood 7 / Swarm 9] instead of a standard defense action. Mob:",
+   "Kindling": "Kindling (Mob, no slot). When the swarm deals damage, the target suffers Attrition (Burning) 3."
+  },
   "senses": ""
  },
  "Erymanthian Boar": {
@@ -2926,6 +3053,13 @@ export const CREATURES = {
    "Quake",
    "Bellow"
   ],
+  "abilityText": {
+   "Charge": "Charge (2 AP, Movement + Attack. Ability slot 1). The boar moves at least 15 feet in a straight line and makes a tusk attack with Dominance. Countered by Set Spear vs Charge.",
+   "Gore": "Gore (1 AP, Attack. Ability slot 2). The boar makes a tusk attack with Impotence. If damage is dealt, the target must succeed on an END trial [10] or gain Attrition (Bleeding).",
+   "Trample": "Trample (2 AP, Movement + Attack. Ability slot 3). The boar moves in a straight line up to full speed and makes a tusk attack with Inferiority against up to 2 creatures in its path.",
+   "Quake": "Quake (2 AP, Action. Ability slot 4). The boar slams its full weight into the ground. All creatures within 15 ft must succeed on an AGI trial [10] or be knocked prone.",
+   "Bellow": "Bellow (1 AP, Action. Ability slot 5). All creatures within 30 ft must succeed on a WIS trial [10] or advance Demoralized by 1 tier."
+  },
   "senses": "<p>Scent.</p>"
  },
  "Ettin": {
@@ -3060,6 +3194,14 @@ export const CREATURES = {
    "Cunning Feint",
    "Swipe"
   ],
+  "abilityText": {
+   "Behemoth (Stone)": "Behemoth (Stone) (Classification, no slot). Immune to Stone damage. Impotence on trials vs Sky damage. Connected to Stone magic. (Classification package.)",
+   "Three Heads": "Three Heads (Ability slots 1-2). The Ettin cannot be flanked. It has awareness in all directions, gains +3 to Startle trials and Perception-based trials, and is immune to Charmed and Controlled.",
+   "Giant's Grip": "Giant's Grip (Passive. Ability slot 6). The Ettin wields Versatile weapons in one hand at their two-handed speed (Moderate), without the two-handed step. Its other hand stays free to hurl rocks.",
+   "Bash": "Bash (1 AP, Attack. Ability slot 3). The Ettin makes a club attack with Impotence. If damage is dealt, the target must succeed on a PER trial [9] or advance Impaired by 1 tier.",
+   "Cunning Feint": "Cunning Feint (1 AP, Action. Ability slot 4). One head distracts a target within 10 feet. The target must succeed on a PER trial [9] or the Ettin's next attack against that target this round gains Superiority.",
+   "Swipe": "Swipe (1 AP, Attack. Ability slot 5). The Ettin makes a club attack targeting up to 2 creatures within reach. Roll one attack with Inferiority and apply to both targets."
+  },
   "senses": ""
  },
  "Fetch": {
@@ -3147,6 +3289,10 @@ export const CREATURES = {
    "False Form",
    "Whisper"
   ],
+  "abilityText": {
+   "False Form": "False Form (Passive. Ability slot 1). The Fetch appears as a person known to those who see it. Different viewers may see different forms. This is not an illusion — there is no hidden true form beneath the surface. The Fetch IS the false image. It inhabits the identity completely and believes itself to be that person. False Form cannot be \"seen through\" with Perception or magical detection because there is nothing to see through — the false form is the creature's actual nature. The deception is discovered through interaction, not observation: Physical contact — the Fetch feels wrong, like touching cold water shaped into a personDamage — the form flickers and distorts, revealing a featureless silhouette beneath before it reassemblesSustained conversation — the words come a half-beat late, memories don't quite align, knowledge that should be there is missing or wrongEating or drinking — the food doesn't quite disappear, the cup is still full Once a character discovers the Fetch is false, other Charmed characters nearby do not automatically realize this. They must be convinced or have the Charm broken independently.",
+   "Whisper": "Whisper (1 AP, Range 30 ft. Ability slot 2). The Fetch speaks in the voice of the person it resembles. The words are subtly wrong — truths that shouldn't be known, promises that don't quite fit, memories with the details shifted. The target must succeed on a WIS trial [4] or advance Charmed by 1 tier. The Fetch can sustain Charmed on up to 12 creatures (CHA score). Outside of combat, Charmed from Whisper persists for up to 24 hours. The Fetch maintains its network through daily interaction — a conversation here, a shared meal there — refreshing the 24-hour clock on each person. If the Fetch misses someone for a day, the Charm lapses and they begin noticing something is wrong. In combat, Whisper functions as a standard 1 AP ability at 30 ft range. The Fetch uses it to try to stop the fight — \"Don't you recognize me? We're friends. Put down your weapons.\" — advancing Charmed on those who fail the trial."
+  },
   "senses": "<p>Normal senses. The Fetch perceives the world the way the person it mimics would — sight, sound, touch. It sees well enough to interact convincingly.</p>"
  },
  "Fire Elemental": {
@@ -3237,6 +3383,11 @@ export const CREATURES = {
    "Fire Aura",
    "Living Flame"
   ],
+  "abilityText": {
+   "Autochthon (Fire)": "Autochthon (Fire) (Classification, no slot). Immune to Fire damage. Impotence on trials vs Sea damage. Connected to Fire magic. (Classification package.)",
+   "Fire Aura": "Fire Aura (Ability slot 1). Creatures within 5 feet that enter the aura on their turn or end their turn within it take 2 Fire damage (flat, END Tier, no trial).",
+   "Living Flame": "Living Flame (Ability slot 2). If the fire elemental's Crushing damage deals damage to durability or health, the target takes 2 Fire damage (flat, END Tier). No explosions on the Fire portion."
+  },
   "senses": ""
  },
  "Footsoldier": {
@@ -3313,7 +3464,7 @@ export const CREATURES = {
      2
     ],
     "bonus": 0,
-    "range": "Projectile"
+    "range": "Projectile 150/300/450"
    },
    {
     "name": "Great Knife",
@@ -3334,6 +3485,9 @@ export const CREATURES = {
   "abilities": [
    "Blood Up"
   ],
+  "abilityText": {
+   "Blood Up": "Blood Up (Mob, no slot). When the group deals damage, it advances Invigorated by 1 tier."
+  },
   "senses": ""
  },
  "Giant Dog": {
@@ -3422,6 +3576,9 @@ export const CREATURES = {
   "abilities": [
    "Knockdown"
   ],
+  "abilityText": {
+   "Knockdown": "Knockdown (1 AP, Attack. Ability slot 1). On a hit with a bite attack, with Inferiority, if damage is dealt, the target must succeed on a STR trial [3] or be knocked prone."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Giant Guard Dog": {
@@ -3561,6 +3718,11 @@ export const CREATURES = {
    "Deter",
    "Steadfast"
   ],
+  "abilityText": {
+   "Knockdown": "Knockdown (1 AP, Attack. Ability slot 1). On a hit with a bite attack, with Inferiority, if damage is dealt, the target must succeed on a STR trial [5] or be knocked prone.",
+   "Deter": "Deter (1 AP, Reaction. Ability slot 2). When a hostile creature moves within 5 feet of the dog, the creature must succeed on a WIS trial [5] or end its movement.",
+   "Steadfast": "Steadfast (Passive. Ability slot 3). While adjacent to an allied creature, Dominance on trials to resist forced movement."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Giant Rat": {
@@ -3649,6 +3811,9 @@ export const CREATURES = {
   "abilities": [
    "Diseased Bite"
   ],
+  "abilityText": {
+   "Diseased Bite": "Diseased Bite (1 AP, Attack. Ability slot 1). On a hit with a bite attack, with Impotence, if health damage is dealt, the target must succeed on an END trial [3] or advance Infected by 1 tier."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Giant Short-Faced Bear": {
@@ -3758,6 +3923,13 @@ export const CREATURES = {
    "Maul",
    "Swipe"
   ],
+  "abilityText": {
+   "Charge (Bite)": "Charge (2 AP, Movement + Attack. Ability slot 1). The bear moves at least 15 feet in a straight line and makes a bite or claw attack with Dominance. Countered by Set Spear vs Charge.",
+   "Charge (Claw)": "Charge (2 AP, Movement + Attack. Ability slot 1). The bear moves at least 15 feet in a straight line and makes a bite or claw attack with Dominance. Countered by Set Spear vs Charge.",
+   "Grab": "Grab (1 AP, Action. Ability slot 2). The bear makes a claw attack. In lieu of an attack roll, the target must succeed on a STR trial [10] or advance Restricted by 1 tier. Restricted does not deteriorate while held. Once per turn, the target can spend 1 AP on a STR trial [10] to break free; on success, the hold drops by 1 tier. An adjacent ally can spend 1 AP on its own turn to make the same trial for it.",
+   "Maul": "Maul (1 AP, Attack. Ability slot 3). The bear makes a bite attack with Dominance against a Restricted target.",
+   "Swipe": "Swipe (1 AP, Attack. Ability slot 4). The bear makes a claw attack targeting up to 2 creatures within reach. Roll one attack with Inferiority and apply to both targets. Cutting."
+  },
   "senses": "<p>Scent.</p>"
  },
  "Giant War Dog": {
@@ -3897,6 +4069,11 @@ export const CREATURES = {
    "Charge",
    "Rend"
   ],
+  "abilityText": {
+   "Knockdown": "Knockdown (1 AP, Attack. Ability slot 1). On a hit with a bite attack, with Inferiority, if damage is dealt, the target must succeed on a STR trial [5] or be knocked prone.",
+   "Charge": "Charge (2 AP, Movement + Attack. Ability slot 2). The dog moves at least 15 feet in a straight line and makes a bite attack with Dominance. Countered by Set Spear vs Charge.",
+   "Rend": "Rend (1 AP, Attack. Ability slot 3). On a hit with a bite attack, with Impotence, if damage is dealt the target must succeed on an END trial [5] or gain Attrition (Bleeding)."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Grimalkin": {
@@ -3990,6 +4167,13 @@ export const CREATURES = {
    "What You Know",
    "Drink"
   ],
+  "abilityText": {
+   "Morphon (Sora)": "Morphon (Sora) (Classification, no slot). Immune to Void damage. Impotence on trials vs Primal damage. Connected to Void magic.",
+   "Through the Wall": "Through the Wall (Passive. Ability slot 1). The Grimalkin moves through walls, doors, and floors as if they were open space. As a 1 AP action, she can lead one willing creature she is touching through a barrier with her.",
+   "Within the Walls": "Within the Walls (Passive. Ability slot 2). The Grimalkin can end her movement inside a wall, door, or floor. While inside, she cannot be targeted, and she can do nothing but move. When she uses an ability or attacks, she must first emerge, and she cannot re-enter a wall until the start of her next turn.",
+   "What You Know": "What You Know (1 AP, Action. Ability slot 3. Range 30 ft). A creature that can hear the Grimalkin must succeed on an INT trial [7] or advance Disoriented by 1 tier. A creature that has ever traded with her, by answering her questions or her riddles, has Impotence on this trial.",
+   "Drink": "Drink (1 AP, Action. Ability slot 4). The Grimalkin leans close to a Disoriented creature within reach and draws in its breath, and the thoughts that ride on it. The creature must succeed on an INT trial [7] or take d10 (DTD) + d10 (INT) Void damage. Exploding."
+  },
   "senses": "<p>Crepuscular sight.</p>"
  },
  "Guard": {
@@ -4106,7 +4290,7 @@ export const CREATURES = {
      4
     ],
     "bonus": 0,
-    "range": "Heavy Thrown + Shield"
+    "range": "Heavy Thrown + Shield 20/40/60"
    },
    {
     "name": "Spear",
@@ -4119,7 +4303,7 @@ export const CREATURES = {
      6
     ],
     "bonus": 0,
-    "range": "Heavy Thrown"
+    "range": "Heavy Thrown 20/40/60"
    }
   ],
   "grips": [
@@ -4209,6 +4393,9 @@ export const CREATURES = {
   "abilities": [
    "Set Spear"
   ],
+  "abilityText": {
+   "Set Spear": "Set Spear (1 AP, Reaction. Ability slot 1). When a creature uses movement to enter the guard's reach, the guard makes a spear attack. If the guard deals damage, the creature's movement ends. If the creature is using the Charge maneuver, the attack gains Superiority. If the attack deals damage to a charging creature, the charge is interrupted and the creature cannot complete its attack."
+  },
   "senses": ""
  },
  "Heavy War Dog": {
@@ -4348,6 +4535,11 @@ export const CREATURES = {
    "Steadfast",
    "Charge"
   ],
+  "abilityText": {
+   "Pack": "Pack (1 AP, Reaction. Ability slot 1). When an allied dog hits a creature within 5 feet, this dog can make a bite attack against the same target.",
+   "Steadfast": "Steadfast (Passive. Ability slot 2). While adjacent to an allied creature, Dominance on trials to resist forced movement.",
+   "Charge": "Charge (2 AP, Movement + Attack. Ability slot 3). The dog moves at least 15 feet in a straight line and makes a bite attack with Dominance. Countered by Set Spear vs Charge."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Hunting Eagle": {
@@ -4439,6 +4631,12 @@ export const CREATURES = {
    "Aerial Evasion",
    "Bind"
   ],
+  "abilityText": {
+   "Dive": "Dive (2 AP, Movement + Attack. Ability slot 1). The eagle swoops through a target's space, making a talon attack during movement. Does not provoke attacks of opportunity.",
+   "Mark": "Mark (1 AP, Action. Ability slot 2). The eagle circles above one creature it can see within 120 ft. Until the end of the eagle's next turn, that creature gains no benefit from Concealed against the eagle's allies, and those allies have Dominance on PER trials to locate it. The eagle can spend 1 AP on later turns to keep circling.",
+   "Aerial Evasion": "Aerial Evasion (Passive. Ability slot 3). While the eagle is flying, ranged attacks against it add the eagle's Agility tier to the Aiming Trial DC.",
+   "Bind": "Bind (1 AP, Attack. Ability slot 4). On a hit with a talon attack, with Impotence, against a creature of ½ square or smaller, the target must succeed on a STR trial [6] or advance Restricted by 1 tier. Restricted does not deteriorate while held, and the eagle cannot fly while binding. Once per turn, the target can spend 1 AP on a STR trial [6] to break free; on success, the hold drops by 1 tier. An adjacent ally can spend 1 AP on its own turn to make the same trial for it."
+  },
   "senses": "<p>Keen Sight.</p>"
  },
  "Inferno": {
@@ -4532,6 +4730,15 @@ export const CREATURES = {
    "Consume",
    "Flare"
   ],
+  "abilityText": {
+   "Autochthon (Fire)": "Autochthon (Fire) (Classification, no slot). Immune to Fire damage. Impotence on trials vs Sea damage. Connected to Fire magic. (Classification package.)",
+   "Fire Aura": "Fire Aura (Ability slot 1). Creatures within 40 feet that enter the aura on their turn or end their turn within it take 5 Fire damage (flat, END Tier, no trial).",
+   "Living Flame": "Living Flame (Ability slot 2). If the Inferno's Crushing damage deals damage to durability or health, the target takes 5 Fire damage (flat, END Tier). No explosions on the Fire portion.",
+   "Absorb Flame": "Absorb Flame (Ability slot 3). When the Inferno takes Fire damage, it heals health equal to the damage dealt instead of taking damage.",
+   "Wildfire": "Wildfire (2 AP, Movement. Ability slot 4). The Inferno moves up to full speed in a straight line. This movement does not provoke attacks of opportunity. Each creature in its path must succeed on an AGI trial [9] or gain Attrition (Burning) [5].",
+   "Consume": "Consume (2 AP, Ranged 40 ft. Ability slot 5). The target must succeed on an AGI trial [9] or take 2d6 (DTD) + d8 (END) Fire damage and advance Exhausted by 1 tier.",
+   "Flare": "Flare (1 AP, Reaction. Ability slot 6). When the Inferno takes Sea damage, it releases a burst of steam. All creatures within 10 feet must succeed on a PER trial [9] or advance Concealed (Obscured) by 1 tier for 1 round."
+  },
   "senses": ""
  },
  "Jackdaw": {
@@ -4619,6 +4826,9 @@ export const CREATURES = {
   "abilities": [
    "Mimicry"
   ],
+  "abilityText": {
+   "Mimicry": "Mimicry (Mob, no slot). A creature that starts its turn within 30 feet of the flock and can hear it must succeed on an INT trial [Cluster 3 / Brood 5 / Swarm 7] or advance Disoriented by 1 tier (max Tier 1)."
+  },
   "senses": ""
  },
  "Kallikantzaros": {
@@ -4721,6 +4931,12 @@ export const CREATURES = {
    "Rend",
    "Swarm Frenzy"
   ],
+  "abilityText": {
+   "Fear of Fire and Light": "Fear of Fire and Light (Passive, no slot). The Kallikantzaros must succeed on a WIS trial [3] to willingly approach within 10 feet of open flame or light. If it takes Fire damage, it advances Demoralized by 1 tier, treating the source of fire as the source of its fear.",
+   "Solstice Bound": "Solstice Bound (Passive, no slot). The Kallikantzaros can only surface during the darkest weeks of the year (roughly 2-3 weeks around the winter solstice). Outside this window, it remains underground.",
+   "Rend": "Rend (1 AP, Attack. Ability slot 1). On a hit with a claw attack, with Impotence, if damage is dealt the target must succeed on an END trial [3] or gain Attrition (Bleeding).",
+   "Swarm Frenzy": "Swarm Frenzy (1 AP, Reaction. Ability slot 2). When an allied Kallikantzaros within 5 feet hits a creature, this Kallikantzaros can make a claw attack against the same target."
+  },
   "senses": "<p>Scotopic sight (20 ft dark / 200 ft ambient).</p>"
  },
  "Knight-Servile": {
@@ -4929,6 +5145,12 @@ export const CREATURES = {
    "Shield Punch",
    "Half-Sword"
   ],
+  "abilityText": {
+   "Riposte": "Riposte (1 AP, Reaction. Ability slot 1). When the knight takes no damage from a melee attack, it can counter-attack with a bonus of +4 to the attack roll.",
+   "Intercept": "Intercept (1 AP, Reaction. Ability slot 2). When an enemy attacks an ally within 5 feet of the knight, the knight becomes the target of the attack instead. Gains Dominance on the defense roll.",
+   "Shield Punch": "Shield Punch (1 AP, Attack. W&S style. Ability slot 3). The knight makes a shield attack: d6 + d3 Crushing (its shield-grip attack dice). On hit, if the knight deals damage, the target must succeed on a PER trial [6] or advance Impaired by 1 tier.",
+   "Half-Sword": "Half-Sword (2 AP, Attack. Swords style. Ability slot 4). Requires a free hand (cannot be used while wielding shield). The target must succeed on a PHY or AGI trial [6] (target's choice). On failure, the knight rolls its PHY die with Dominance. This damage bypasses armor."
+  },
   "senses": ""
  },
  "Large Dog": {
@@ -5018,6 +5240,10 @@ export const CREATURES = {
    "Pack",
    "Steadfast"
   ],
+  "abilityText": {
+   "Pack": "Pack (1 AP, Reaction. Ability slot 1). When an allied dog hits a creature within 5 feet, this dog can make a bite attack against the same target.",
+   "Steadfast": "Steadfast (Passive. Ability slot 2). While adjacent to an allied creature, Dominance on trials to resist forced movement."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Large Hunting Bird": {
@@ -5109,6 +5335,12 @@ export const CREATURES = {
    "Aerial Evasion",
    "Bind"
   ],
+  "abilityText": {
+   "Stoop": "Stoop (2 AP, Movement + Attack. Ability slot 1). The bird moves up to full speed in a straight line from above and makes a talon attack with Dominance. Must start at least 15 ft above the target.",
+   "Mark": "Mark (1 AP, Action. Ability slot 2). The bird circles above one creature it can see within 120 ft. Until the end of the bird's next turn, that creature gains no benefit from Concealed against the bird's allies, and those allies have Dominance on PER trials to locate it. The bird can spend 1 AP on later turns to keep circling.",
+   "Aerial Evasion": "Aerial Evasion (Passive. Ability slot 3). While the bird is flying, ranged attacks against it add the bird's Agility tier to the Aiming Trial DC.",
+   "Bind": "Bind (1 AP, Attack. Ability slot 4). On a hit with a talon attack, with Impotence, against a creature of ½ square or smaller, the target must succeed on a STR trial [5] or advance Restricted by 1 tier. Restricted does not deteriorate while held, and the bird cannot fly while binding. Once per turn, the target can spend 1 AP on a STR trial [5] to break free; on success, the hold drops by 1 tier. An adjacent ally can spend 1 AP on its own turn to make the same trial for it."
+  },
   "senses": "<p>Keen Sight.</p>"
  },
  "Large Hunting Dog": {
@@ -5199,6 +5431,11 @@ export const CREATURES = {
    "Steadfast",
    "Clamp"
   ],
+  "abilityText": {
+   "Pack": "Pack (1 AP, Reaction. Ability slot 1). When an allied dog hits a creature within 5 feet, this dog can make a bite attack against the same target.",
+   "Steadfast": "Steadfast (Passive. Ability slot 2). While adjacent to an allied creature, Dominance on trials to resist forced movement.",
+   "Clamp": "Clamp (1 AP, Attack. Ability slot 3). On a hit with a bite attack, the target must succeed on a STR trial [5] or advance Restricted by 1 tier."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Large Raptor": {
@@ -5288,6 +5525,10 @@ export const CREATURES = {
    "Stoop",
    "Aerial Evasion"
   ],
+  "abilityText": {
+   "Stoop": "Stoop (2 AP, Movement + Attack. Ability slot 1). The raptor moves up to full speed in a straight line from above and makes a talon attack with Dominance. Must start at least 15 ft above the target.",
+   "Aerial Evasion": "Aerial Evasion (Passive. Ability slot 2). While the raptor is flying, ranged attacks against it add the raptor's Agility tier to the Aiming Trial DC."
+  },
   "senses": "<p>Keen Sight.</p>"
  },
  "Lion": {
@@ -5392,6 +5633,12 @@ export const CREATURES = {
    "Pride Roar",
    "Grab"
   ],
+  "abilityText": {
+   "Charge (Bite)": "Charge (2 AP, Movement + Attack. Ability slot 1). The cat moves at least 15 feet in a straight line and makes a bite or claw attack with Dominance. Countered by Set Spear vs Charge.",
+   "Charge (Claw)": "Charge (2 AP, Movement + Attack. Ability slot 1). The cat moves at least 15 feet in a straight line and makes a bite or claw attack with Dominance. Countered by Set Spear vs Charge.",
+   "Pride Roar": "Pride Roar (2 AP, Action. Ability slot 2). All allied beasts within 30 ft advance Invigorated by 1 tier. Can be reapplied to stack tiers.",
+   "Grab": "Grab (1 AP, Action. Ability slot 3). The cat makes a claw attack. In lieu of an attack roll, the target must succeed on a STR trial [6] or advance Restricted by 1 tier. Restricted does not deteriorate while held. Once per turn, the target can spend 1 AP on a STR trial [6] to break free; on success, the hold drops by 1 tier. An adjacent ally can spend 1 AP on its own turn to make the same trial for it."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Living Stone": {
@@ -5493,6 +5740,11 @@ export const CREATURES = {
    "Hurl Rock",
    "Smash"
   ],
+  "abilityText": {
+   "Autochthon (Stone)": "Autochthon (Stone) (Classification, no slot). Immune to Stone damage. Impotence on trials vs Sky damage. Connected to Stone magic. (Classification package.)",
+   "Hurl Rock": "Hurl Rock (1 AP, Attack. Ability slot 1). The living stone makes a hurl rock attack with Inferiority. On a hit, the target advances Impaired by 1 tier.",
+   "Smash": "Smash (2 AP, Attack. Ability slot 2). The living stone makes a slam attack. d4 + d6 + half STR score (7) Crushing. Must act in Slow phase. While preparing, enemies attacking it gain Superiority."
+  },
   "senses": ""
  },
  "Magpie": {
@@ -5585,6 +5837,13 @@ export const CREATURES = {
    "Call the Flock",
    "Every Name at Once"
   ],
+  "abilityText": {
+   "Morphon (Sora)": "Morphon (Sora) (Classification, no slot). Immune to Void damage. Impotence on trials vs Primal damage. Connected to Void magic.",
+   "Name-Taker": "Name-Taker (Passive. Ability slot 1). When a creature speaks its own name to the Magpie while the Magpie holds an object belonging to that creature, the Magpie locks the name in the object. While its name is locked away, the creature has Amnesia (Insanity table). Returning the object to its owner restores the name and ends the Amnesia. Objects in the Magpie's nest are in its possession. Names of creatures not connected to Void hold no shine for it; it cannot take them.",
+   "Speak the Name": "Speak the Name (1 AP, Action. Ability slot 2. Range 60 ft). A creature whose name the Magpie holds, and that can hear it, is Compelled (Controlled, Tier 1) with no trial. Most often the Magpie sends it away. If the creature is already Controlled, it must instead succeed on a CHA trial [7], with Impotence, or advance Controlled by 1 tier.",
+   "Call the Flock": "Call the Flock (2 AP, Action. Ability slot 3. Range 60 ft). Allied corvids within range advance Invigorated by 1 tier. Lasts 1 round. Can be reapplied to stack tiers.",
+   "Every Name at Once": "Every Name at Once (2 AP, Action. 1/encounter. Ability slot 4). The Magpie speaks every name it holds. Each named creature within 60 feet that can hear it is affected as by Speak the Name."
+  },
   "senses": ""
  },
  "Medium Dog": {
@@ -5674,6 +5933,10 @@ export const CREATURES = {
    "Nimble",
    "Pack"
   ],
+  "abilityText": {
+   "Nimble": "Nimble (Passive. Ability slot 1). The dog can move through spaces occupied by allied creatures.",
+   "Pack": "Pack (1 AP, Reaction. Ability slot 2). When an allied dog hits a creature within 5 feet, this dog can make a bite attack against the same target."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Medium Guard Dog": {
@@ -5813,6 +6076,11 @@ export const CREATURES = {
    "Pack",
    "Deter"
   ],
+  "abilityText": {
+   "Nimble": "Nimble (Passive. Ability slot 1). The dog can move through spaces occupied by allied creatures.",
+   "Pack": "Pack (1 AP, Reaction. Ability slot 2). When an allied dog hits a creature within 5 feet, this dog can make a bite attack against the same target.",
+   "Deter": "Deter (1 AP, Reaction. Ability slot 3). When a hostile creature moves within 5 feet of the dog, the creature must succeed on a WIS trial [5] or end its movement."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Medium Hunting Dog": {
@@ -5903,6 +6171,11 @@ export const CREATURES = {
    "Pack",
    "Clamp"
   ],
+  "abilityText": {
+   "Nimble": "Nimble (Passive. Ability slot 1). The dog can move through spaces occupied by allied creatures.",
+   "Pack": "Pack (1 AP, Reaction. Ability slot 2). When an allied dog hits a creature within 5 feet, this dog can make a bite attack against the same target.",
+   "Clamp": "Clamp (1 AP, Attack. Ability slot 3). On a hit with a bite attack, the target must succeed on a STR trial [5] or advance Restricted by 1 tier."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Middling Hunting Bird": {
@@ -5993,6 +6266,11 @@ export const CREATURES = {
    "Mark",
    "Aerial Evasion"
   ],
+  "abilityText": {
+   "Stoop": "Stoop (2 AP, Movement + Attack. Ability slot 1). The bird moves up to full speed in a straight line from above and makes a talon attack with Dominance. Must start at least 15 ft above the target.",
+   "Mark": "Mark (1 AP, Action. Ability slot 2). The bird circles above one creature it can see within 120 ft. Until the end of the bird's next turn, that creature gains no benefit from Concealed against the bird's allies, and those allies have Dominance on PER trials to locate it. The bird can spend 1 AP on later turns to keep circling.",
+   "Aerial Evasion": "Aerial Evasion (Passive. Ability slot 3). While the bird is flying, ranged attacks against it add the bird's Agility tier to the Aiming Trial DC."
+  },
   "senses": "<p>Keen Sight.</p>"
  },
  "Middling Raptor": {
@@ -6082,6 +6360,10 @@ export const CREATURES = {
    "Stoop",
    "Aerial Evasion"
   ],
+  "abilityText": {
+   "Stoop": "Stoop (2 AP, Movement + Attack. Ability slot 1). The raptor moves up to full speed in a straight line from above and makes a talon attack with Dominance. Must start at least 15 ft above the target.",
+   "Aerial Evasion": "Aerial Evasion (Passive. Ability slot 2). While the raptor is flying, ranged attacks against it add the raptor's Agility tier to the Aiming Trial DC."
+  },
   "senses": "<p>Keen Sight.</p>"
  },
  "Militia": {
@@ -6167,6 +6449,9 @@ export const CREATURES = {
   "abilities": [
    "Pitchforks and Hooks"
   ],
+  "abilityText": {
+   "Pitchforks and Hooks": "Pitchforks and Hooks (Mob, no slot). When the group deals damage, the target must succeed on a STR trial [Cluster 4 / Brood 6 / Swarm 8] or advance Restricted by 1 tier (max Tier 2)."
+  },
   "senses": ""
  },
  "Monstrous Widow": {
@@ -6260,6 +6545,13 @@ export const CREATURES = {
    "Web",
    "Feed"
   ],
+  "abilityText": {
+   "Ambusher": "Ambusher (Passive, no slot). In its element, the spider is always ready to ambush prior to the beginning of a combat encounter unless otherwise determined by the GM. When it attacks a creature that has not noticed it, that creature makes a Startle trial [6]. A creature with Alertness (Danger Sense) first rolls a PER trial [6] as the ambush is sprung; on a success, it makes no Startle trial.",
+   "Web Walker": "Web Walker (Passive. Ability slot 4). The widow ignores movement restrictions caused by webs.",
+   "Venomous Bite": "Venomous Bite (1 AP, Attack. Ability slot 1). On a hit with a bite attack, with Impotence, if damage is dealt, the venom inflicts 4 Primal damage (END Tier). The target must succeed on an END trial [6] or advance Tainted by 1 tier.",
+   "Web": "Web (1 AP, Action. Ability slot 2). The spider shoots a web at a target within 30 feet. The target must succeed on a STR trial [6] or advance Restricted by 1 tier. Restricted does not deteriorate while held. Once per turn, the target can spend 1 AP on a STR trial [6] to break free; on success, the hold drops by 1 tier. An adjacent ally can spend 1 AP on its own turn to make the same trial for it.",
+   "Feed": "Feed (1 AP, Action. Ability slot 3). Only usable on a Helpless target. d8 (DTD) + d6 (END) Primal damage. The target must succeed on an END trial [6] or advance Tainted by 1 tier."
+  },
   "senses": "<p>Seismic sense 60 ft.</p>"
  },
  "Mountain Lion": {
@@ -6364,6 +6656,12 @@ export const CREATURES = {
    "Charge (Claw)",
    "Grab"
   ],
+  "abilityText": {
+   "Ambusher": "Ambusher (Passive, no slot). In its element, the cat is always ready to ambush prior to the beginning of a combat encounter unless otherwise determined by the GM. When it attacks a creature that has not noticed it, that creature makes a Startle trial [4]. A creature with Alertness (Danger Sense) first rolls a PER trial [4] as the ambush is sprung; on a success, it makes no Startle trial.",
+   "Charge (Bite)": "Charge (2 AP, Movement + Attack. Ability slot 1). The cat moves at least 15 feet in a straight line and makes a bite or claw attack with Dominance. Countered by Set Spear vs Charge.",
+   "Charge (Claw)": "Charge (2 AP, Movement + Attack. Ability slot 1). The cat moves at least 15 feet in a straight line and makes a bite or claw attack with Dominance. Countered by Set Spear vs Charge.",
+   "Grab": "Grab (1 AP, Action. Ability slot 2). The cat makes a claw attack. In lieu of an attack roll, the target must succeed on a STR trial [4] or advance Restricted by 1 tier. Restricted does not deteriorate while held. Once per turn, the target can spend 1 AP on a STR trial [4] to break free; on success, the hold drops by 1 tier. An adjacent ally can spend 1 AP on its own turn to make the same trial for it."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Ogre": {
@@ -6525,6 +6823,12 @@ export const CREATURES = {
    "Bite",
    "Hurl"
   ],
+  "abilityText": {
+   "Behemoth (Stone)": "Behemoth (Stone) (Classification, no slot). Immune to Stone damage. Impotence on trials vs Sky damage. Connected to Stone magic. (Classification package.)",
+   "Grab": "Grab (1 AP, Action. Ability slot 1). The ogre attempts to grab a creature within reach. The target must succeed on a STR trial [7] or advance Restricted by 1 tier. Restricted does not deteriorate while held. Once per turn, the target can spend 1 AP on a STR trial [7] to break free; on success, the hold drops by 1 tier. An adjacent ally can spend 1 AP on its own turn to make the same trial for it. While grabbing, the ogre cannot make club attacks (one hand occupied).",
+   "Bite": "Bite (1 AP, Attack. Ability slot 2). The ogre makes a bite attack with Dominance against a Restricted target.",
+   "Hurl": "Hurl (1 AP, Attack. Ability slot 3). The ogre makes a fist attack with Inferiority, throwing a rock or creature (requires T2+ Restricted) up to 30 feet. Roll one attack and apply to both the thrown creature and the target at the impact point. On a hit, the target advances Restricted by 1 tier."
+  },
   "senses": ""
  },
  "Ophiuchus": {
@@ -6612,6 +6916,11 @@ export const CREATURES = {
    "Starlight Bite",
    "False Cure"
   ],
+  "abilityText": {
+   "Morphon (Sora)": "Morphon (Sora) (Classification, no slot). Immune to Void damage. Impotence on trials vs Primal damage. Connected to Void magic.",
+   "Starlight Bite": "Starlight Bite (Attack definition, no slot). The serpents are form without full substance. Their attacks deal Void damage, avoided by an AGI trial [Cluster 5 / Brood 7 / Swarm 9] instead of a standard defense action. Mob:",
+   "False Cure": "False Cure (Mob, no slot). When the mass deals damage, the target must succeed on an END trial [Cluster 5 / Brood 7 / Swarm 9] or advance Infected by 1 tier. Incubation: each dawn, the target makes an END trial [5]. On success, Infected drops by 1 tier; on failure, it advances by 1 tier."
+  },
   "senses": ""
  },
  "Orc Raider": {
@@ -6805,6 +7114,9 @@ export const CREATURES = {
   "abilities": [
    "Hook"
   ],
+  "abilityText": {
+   "Hook": "Hook (1 AP, Attack. Ability slot 1). On a hit with an axe attack, with Impotence, the target must succeed on a PHY trial [4] or swap positions with the orc."
+  },
   "senses": "<p>Scotopic sight (20 ft dark / 200 ft ambient).</p>"
  },
  "Orc War Chief": {
@@ -7000,6 +7312,12 @@ export const CREATURES = {
    "Charge",
    "Double Damage"
   ],
+  "abilityText": {
+   "Grief Fury": "Grief Fury (Ability slot 1). When an allied orc within 30 feet is killed, the orc advances Invigorated by 1 tier (max Tier 3). Degrades by 1 tier per round if not re-triggered. The orc has Dominance on trials to resist conditions that would counter Grief Fury.",
+   "Breaker": "Breaker (Ability slot 2). When the orc makes an attack where at least one damage die explodes, it can add its STR score (16) to the damage total. Immediately advances Exhausted by 3 tiers, which degrades by 1 tier per round.",
+   "Charge": "Charge (2 AP, Movement + Attack. Ability slot 3). The orc moves at least 15 feet in a straight line and makes a labrys attack with Dominance. Countered by Set Spear vs Charge.",
+   "Double Damage": "Double Damage (1 AP, Reaction. Ability slot 4). Before an enemy's melee attack roll targeting the orc, the orc allows the attack to automatically hit with Superiority. After taking damage, the orc immediately makes a labrys attack with Superiority and Dominance."
+  },
   "senses": "<p>Scotopic sight (20 ft dark / 200 ft ambient).</p>"
  },
  "Otso": {
@@ -7110,6 +7428,14 @@ export const CREATURES = {
    "Roar of the King",
    "Swipe"
   ],
+  "abilityText": {
+   "Charge (Bite)": "Charge (2 AP, Movement + Attack. Ability slot 1). The bear moves at least 15 feet in a straight line and makes a bite or claw attack with Dominance. Countered by Set Spear vs Charge.",
+   "Charge (Claw)": "Charge (2 AP, Movement + Attack. Ability slot 1). The bear moves at least 15 feet in a straight line and makes a bite or claw attack with Dominance. Countered by Set Spear vs Charge.",
+   "Grab": "Grab (1 AP, Action. Ability slot 2). The bear makes a claw attack. In lieu of an attack roll, the target must succeed on a STR trial [11] or advance Restricted by 1 tier. Restricted does not deteriorate while held. Once per turn, the target can spend 1 AP on a STR trial [11] to break free; on success, the hold drops by 1 tier. An adjacent ally can spend 1 AP on its own turn to make the same trial for it.",
+   "Maul": "Maul (1 AP, Attack. Ability slot 3). The bear makes a bite attack with Dominance against a Restricted target.",
+   "Roar of the King": "Roar of the King (2 AP, Action. Ability slot 4). All creatures within 50 ft must succeed on a WIS trial [11] or advance Demoralized by 1 tier. Creatures that fail by 5 or more advance Demoralized by 2 tiers instead. Beasts and animals that fail flee immediately and cannot willingly approach the Otso for 1 minute.",
+   "Swipe": "Swipe (1 AP, Attack. Ability slot 5). The bear makes a claw attack targeting up to 2 creatures within reach. Roll one attack with Inferiority and apply to both targets. Cutting."
+  },
   "senses": "<p>Scent. The Otso is aware of every living creature within 120 ft regardless of concealment.</p>"
  },
  "Ox": {
@@ -7198,6 +7524,9 @@ export const CREATURES = {
   "abilities": [
    "Charge"
   ],
+  "abilityText": {
+   "Charge": "Charge (2 AP, Movement + Attack. Ability slot 1). The ox moves at least 15 feet in a straight line and makes a horn attack with Dominance. Countered by Set Spear vs Charge."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Palfrey — Riding Horse": {
@@ -7286,6 +7615,9 @@ export const CREATURES = {
   "abilities": [
    "Enduring Pace"
   ],
+  "abilityText": {
+   "Enduring Pace": "Enduring Pace (Passive. Ability slot 1). The horse can travel at Fast pace (×1.5) without advancing Exhausted."
+  },
   "senses": "<p>Crepuscular sight.</p>"
  },
  "Palfrey": {
@@ -7372,6 +7704,7 @@ export const CREATURES = {
   "armor": [],
   "shield": null,
   "abilities": [],
+  "abilityText": {},
   "senses": "<p>Crepuscular sight.</p>"
  },
  "Pony / Donkey": {
@@ -7461,6 +7794,10 @@ export const CREATURES = {
    "Sure-Footed",
    "Stubborn"
   ],
+  "abilityText": {
+   "Sure-Footed": "Sure-Footed (Passive. Ability slot 1). The creature treats Rugged terrain as normal terrain.",
+   "Stubborn": "Stubborn (Passive. Ability slot 2). The creature has Dominance on trials to resist the Controlled condition."
+  },
   "senses": "<p>Crepuscular sight.</p>"
  },
  "Ranger Captain": {
@@ -7620,6 +7957,10 @@ export const CREATURES = {
    "Pinning Shot",
    "Mark Quarry"
   ],
+  "abilityText": {
+   "Pinning Shot": "Pinning Shot (1 AP, Attack. Ability slot 1). On a hit with a bow attack, with Inferiority, if damage is dealt, the target must succeed on a STR trial [5] or advance Restricted by 1 tier. Multiple successful Pinning Shots stack the condition.",
+   "Mark Quarry": "Mark Quarry (2 AP, Action. Ability slot 2). The ranger captain designates a target within line of sight. All allied hunters and beasts within 60 feet advance Inspired by 1 tier against that target only. Lasts 1 round. Can be reapplied to stack tiers."
+  },
   "senses": "<p>Scent (via hunting dog companion, not inherent).</p>"
  },
  "Rat Swarm": {
@@ -7707,6 +8048,9 @@ export const CREATURES = {
   "abilities": [
    "Gnawing"
   ],
+  "abilityText": {
+   "Gnawing": "Gnawing (Mob, no slot). When the swarm deals damage, the target suffers Attrition (Bleeding) 1. Senses: Scent, crepuscular sight."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Redcap": {
@@ -7817,6 +8161,10 @@ export const CREATURES = {
    "Unnatural Strength",
    "Iron-Shod"
   ],
+  "abilityText": {
+   "Unnatural Strength": "Unnatural Strength. (Ability slot 1.) The Redcap cannot be grappled by creatures with STR lower than its own STR score (13). Attempts to physically restrain it automatically fail.",
+   "Iron-Shod": "Iron-Shod. (Ability slot 2.) The Redcap's heavy iron boots grant it +2 to trials against Restricted and Prone. It cannot be knocked down by effects that would topple a creature of its size."
+  },
   "senses": "<p>Crepuscular sight.</p>"
  },
  "Revenant Knight": {
@@ -7979,6 +8327,13 @@ export const CREATURES = {
    "Command the Fallen",
    "Swipe"
   ],
+  "abilityText": {
+   "Gestalt (Undead)": "Gestalt (Undead) (Classification, no slot). Does not breathe, eat, or sleep. Immune to Profane damage. Impotence on trials vs Sacred damage. Connected to Profane magic.",
+   "Undead Resilience": "Undead Resilience (Ability slot 1). Immune to Tainted, Infected, and Exhausted. No living biology — cannot be poisoned, diseased, or fatigued.",
+   "Aura of Dread": "Aura of Dread (Passive. Ability slot 2). Living creatures that enter the aura (30 ft) must succeed on a WIS trial [8] or advance Demoralized by 1 tier. A creature that succeeds is immune to the aura for the rest of the encounter. While a creature remains in the aura, its Demoralized does not deteriorate, including tiers from other sources. Once per turn, it can spend 1 AP on a WIS trial [8] to break the aura's hold; on success, Demoralized deteriorates normally even while it remains inside. Leaving the aura also ends the hold, and a creature that re-enters makes a new trial. This trial is Profane in nature.",
+   "Command the Fallen": "Command the Fallen (2 AP, Action. Ability slot 3. 1/encounter). All allied undead within 30 feet advance Invigorated by 1 tier. Persists until end of encounter.",
+   "Swipe": "Swipe (1 AP, Attack. Ability slot 4). The revenant makes a claymore attack targeting up to 2 creatures within reach. Roll one attack with Inferiority and apply to both targets. Cleaving."
+  },
   "senses": ""
  },
  "Revenant Soldier": {
@@ -8189,6 +8544,13 @@ export const CREATURES = {
    "Press",
    "Riposte"
   ],
+  "abilityText": {
+   "Gestalt (Undead)": "Gestalt (Undead) (Classification, no slot). Does not breathe, eat, or sleep. Immune to Profane damage. Impotence on trials vs Sacred damage. Connected to Profane magic.",
+   "Undead Resilience": "Undead Resilience (Ability slot 1). Immune to Tainted, Infected, and Exhausted. No living biology — cannot be poisoned, diseased, or fatigued.",
+   "Unyielding Advance": "Unyielding Advance (1 AP, Movement. Ability slot 2). The revenant moves up to its speed. This movement does not provoke attacks of opportunity. The revenant cannot be slowed, stopped, or redirected by non-magical means during this movement.",
+   "Press": "Press (1 AP, Reaction. Ability slot 3). When the revenant's melee attack is defended and deals no damage, it immediately makes two longsword attacks with Inferiority against the same target.",
+   "Riposte": "Riposte (1 AP, Reaction. Ability slot 4). When the revenant takes no damage from a melee attack, it can counter-attack with a bonus of +4 to the attack roll."
+  },
   "senses": ""
  },
  "Rouncey — Light War Horse": {
@@ -8342,6 +8704,12 @@ export const CREATURES = {
    "Levade — First Kick",
    "Levade — Second Kick"
   ],
+  "abilityText": {
+   "Hardy": "Hardy (Passive. Ability slot 1). The horse has Dominance on trials to resist Exhausted and Infected conditions.",
+   "Battle Trained": "Battle Trained (Passive. Ability slot 2). The horse is trained for combat and is not affected by the Skittish trait.",
+   "Levade — First Kick": "Levade (1 AP, Attack. Ability slot 3). The horse rears and strikes with both front hooves, making two kick attacks with Inferiority. Each attack may target the same or different creatures within reach.",
+   "Levade — Second Kick": "Levade (1 AP, Attack. Ability slot 3). The horse rears and strikes with both front hooves, making two kick attacks with Inferiority. Each attack may target the same or different creatures within reach."
+  },
   "senses": "<p>Crepuscular sight.</p>"
  },
  "Rouncey": {
@@ -8430,6 +8798,9 @@ export const CREATURES = {
   "abilities": [
    "Hardy"
   ],
+  "abilityText": {
+   "Hardy": "Hardy (Passive. Ability slot 1). The horse has Dominance on trials to resist Exhausted and Infected conditions."
+  },
   "senses": "<p>Crepuscular sight.</p>"
  },
  "Sergeant": {
@@ -8624,6 +8995,10 @@ export const CREATURES = {
    "Riposte",
    "Command"
   ],
+  "abilityText": {
+   "Riposte": "Riposte (1 AP, Reaction. Ability slot 1). When the sergeant takes no damage from a melee attack, it can counter-attack with a bonus of +3 to the attack roll.",
+   "Command": "Command (2 AP, Action. Ability slot 2). The sergeant shouts orders, All allied soldiers within 30 feet advance Inspired by 1 tier. Lasts 1 round. Can be reapplied to stack tiers."
+  },
   "senses": ""
  },
  "Shadow-Man": {
@@ -8715,6 +9090,14 @@ export const CREATURES = {
    "The Stare",
    "Gather the Dark"
   ],
+  "abilityText": {
+   "Morphon (Sora)": "Morphon (Sora) (Classification, no slot). Immune to Void damage. Impotence on trials vs Primal damage. Connected to Void magic.",
+   "Peripheral": "Peripheral (Passive. Ability slot 1). The Shadow-Man is always Concealed (Tier 2): it cannot be directly targeted. Its abilities do not remove Concealed. A creature can spend 1 AP searching for it (PER trial [8]). On a success, the Shadow-Man is Concealed (Tier 1) to that creature until the start of that creature's next turn, and the Shadow-Man cannot use Gaze on it.",
+   "Gaze": "Gaze (1 AP, Action. Ability slot 2. Range 30 ft). A creature that can see, other than one Peripheral bars it from targeting, must succeed on a PER trial [8] or advance Impaired by 1 tier. A creature that did not move on its last turn has Impotence on this trial.",
+   "Shadow-Step": "Shadow-Step (1 AP, Movement or Reaction. Ability slot 3). While standing in shadow, the Shadow-Man steps into it and out of another shadow within 60 feet, including a shadow cast by a creature, and is Concealed (Tier 2) again. It can do this as its movement, or as a reaction when targeted by an attack, in which case the attack fails. It can Shadow-Step while Restricted, which ends the Restricted.",
+   "The Stare": "The Stare (1 AP, Action. Ability slot 4). Only against a Paralyzed creature within 5 feet. The Shadow-Man drops its Concealment and holds the creature's gaze. While it stares, the creature's Impaired does not deteriorate. At the start of each of its turns, it may spend 1 AP to hold the Stare, and the creature takes d12 (DTD) + d8 (WIS) Void damage. Exploding. The Stare ends if the Shadow-Man moves, uses Shadow-Step, or chooses to end it. A creature that takes damage from the Stare is marked permanently. While a marked creature can see the Shadow-Man, it is Demoralized at Tier 1 (Shaken) toward it.",
+   "Gather the Dark": "Gather the Dark (2 AP, Action. 1/encounter. Ability slot 5). Allies within 60 feet that are in shadow advance Concealed by 1 tier until the end of the encounter, as an obscuring source: attacking does not end it, and it grants no attack benefits."
+  },
   "senses": "<p>Scotopic sight.</p>"
  },
  "Skeleton Warrior": {
@@ -8863,6 +9246,10 @@ export const CREATURES = {
    "Gestalt (Undead)",
    "Undead Resilience"
   ],
+  "abilityText": {
+   "Gestalt (Undead)": "Gestalt (Undead) (Classification, no slot). Does not breathe, eat, or sleep. Immune to Profane damage. Impotence on trials vs Sacred damage. Connected to Profane magic.",
+   "Undead Resilience": "Undead Resilience (Ability slot 1). Immune to Tainted, Infected, and Exhausted. No living biology — cannot be poisoned, diseased, or fatigued."
+  },
   "senses": ""
  },
  "Skeleton": {
@@ -8949,6 +9336,10 @@ export const CREATURES = {
    "Gestalt (Undead)",
    "Grave Rust"
   ],
+  "abilityText": {
+   "Gestalt (Undead)": "Gestalt (Undead) (Classification, no slot). Does not breathe, eat, or sleep. Immune to Profane damage. Impotence on trials vs Sacred damage. Connected to Profane magic. (Classification package only — Minions have 0 ability slots.) | Group | Heads | Health | Attack | Defense | Mob DC | |:---|:---:|:---:|:---:|:---:|:---:| | Cluster | 6 | 6 | 6d2 | 6d2 + 1 | None | | Brood | 12 | 12 | 12d2 | 12d2 + 1 | None | | Swarm | 16 | 16 | 16d2 | 16d2 + 1 | None | Mob:",
+   "Grave Rust": "Grave Rust (Mob, no slot). When the group deals damage, the target suffers Attrition (Decaying) 1."
+  },
   "senses": ""
  },
  "Small Hunting Bird": {
@@ -9039,6 +9430,11 @@ export const CREATURES = {
    "Mark",
    "Aerial Evasion"
   ],
+  "abilityText": {
+   "Stoop": "Stoop (2 AP, Movement + Attack. Ability slot 1). The bird moves up to full speed in a straight line from above and makes a talon attack with Dominance. Must start at least 15 ft above the target.",
+   "Mark": "Mark (1 AP, Action. Ability slot 2). The bird circles above one creature it can see within 120 ft. Until the end of the bird's next turn, that creature gains no benefit from Concealed against the bird's allies, and those allies have Dominance on PER trials to locate it. The bird can spend 1 AP on later turns to keep circling.",
+   "Aerial Evasion": "Aerial Evasion (Passive. Ability slot 3). While the bird is flying, ranged attacks against it add the bird's Agility tier to the Aiming Trial DC."
+  },
   "senses": "<p>Keen Sight.</p>"
  },
  "Small Raptor": {
@@ -9128,6 +9524,10 @@ export const CREATURES = {
    "Stoop",
    "Aerial Evasion"
   ],
+  "abilityText": {
+   "Stoop": "Stoop (2 AP, Movement + Attack. Ability slot 1). The raptor moves up to full speed in a straight line from above and makes a talon attack with Dominance. Must start at least 15 ft above the target.",
+   "Aerial Evasion": "Aerial Evasion (Passive. Ability slot 2). While the raptor is flying, ranged attacks against it add the raptor's Agility tier to the Aiming Trial DC."
+  },
   "senses": "<p>Keen Sight.</p>"
  },
  "Spider Swarm": {
@@ -9216,6 +9616,9 @@ export const CREATURES = {
   "abilities": [
    "Venomous Swarm"
   ],
+  "abilityText": {
+   "Venomous Swarm": "Venomous Swarm (Mob, no slot). When the swarm deals damage, the target must succeed on an END trial [Cluster 3 / Brood 5 / Swarm 7] or advance Tainted by 1 tier (max Tier 1). Senses: Seismic sense 30 ft."
+  },
   "senses": "<p>Seismic sense 30 ft.</p>"
  },
  "Thug": {
@@ -9327,6 +9730,9 @@ export const CREATURES = {
   "abilities": [
    "Riposte"
   ],
+  "abilityText": {
+   "Riposte": "Riposte (1 AP, Reaction. Ability slot 1). When the thug takes no damage from a melee attack, it can counter-attack with a bonus of +2 to the attack roll."
+  },
   "senses": ""
  },
  "Tiger": {
@@ -9432,6 +9838,13 @@ export const CREATURES = {
    "Grab",
    "Kill"
   ],
+  "abilityText": {
+   "Ambusher": "Ambusher (Passive, no slot). In its element, the cat is always ready to ambush prior to the beginning of a combat encounter unless otherwise determined by the GM. When it attacks a creature that has not noticed it, that creature makes a Startle trial [7]. A creature with Alertness (Danger Sense) first rolls a PER trial [7] as the ambush is sprung; on a success, it makes no Startle trial.",
+   "Charge (Bite)": "Charge (2 AP, Movement + Attack. Ability slot 1). The cat moves at least 15 feet in a straight line and makes a bite or claw attack with Dominance. Countered by Set Spear vs Charge.",
+   "Charge (Claw)": "Charge (2 AP, Movement + Attack. Ability slot 1). The cat moves at least 15 feet in a straight line and makes a bite or claw attack with Dominance. Countered by Set Spear vs Charge.",
+   "Grab": "Grab (1 AP, Action. Ability slot 2). The cat makes a claw attack. In lieu of an attack roll, the target must succeed on a STR trial [7] or advance Restricted by 1 tier. Restricted does not deteriorate while held. Once per turn, the target can spend 1 AP on a STR trial [7] to break free; on success, the hold drops by 1 tier. An adjacent ally can spend 1 AP on its own turn to make the same trial for it.",
+   "Kill": "Kill (2 AP, Attack. Ability slot 3). The cat makes a bite attack with Superiority against a Restricted target. On a hit that deals health damage, the target must succeed on an END trial [7] or gain Attrition (Bleeding)."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Treow": {
@@ -9520,6 +9933,11 @@ export const CREATURES = {
    "Root Snare",
    "Timber"
   ],
+  "abilityText": {
+   "Deep Roots": "Deep Roots. (Ability slot 1.) The Treow has Superiority on all trials to resist being moved or displaced.",
+   "Root Snare": "Root Snare (1 AP, Action. Ability slot 2.) The target must succeed on a STR trial [6] or advance Restricted by 1 tier. Advances on repeated application. No damage. Restricted does not deteriorate while held. Once per turn, the target can spend 1 AP on a STR trial [6] to break free; on success, the hold drops by 1 tier. An adjacent ally can spend 1 AP on its own turn to make the same trial for it. While a target is Pinned by Root Snare, the Treow's attacks against it have Superiority.",
+   "Timber": "Timber (2 AP, Attack. Ability slot 3.) The Treow makes a branch slam attack targeting all creatures in a 10-foot line. Roll one attack and apply to all targets. On a hit, targets must succeed on a STR trial [6] or be pushed 10 feet."
+  },
   "senses": "<p>Perceives creatures in contact with the ground within 60 ft through its root network, regardless of visibility.</p>"
  },
  "Undine": {
@@ -9616,6 +10034,16 @@ export const CREATURES = {
    "Drown",
    "Mist Veil"
   ],
+  "abilityText": {
+   "Autochthon (Sea)": "Autochthon (Sea) (Classification, no slot). Immune to Sea damage. Impotence on trials vs Fire damage. Connected to Sea magic. (Classification package.)",
+   "Aquatic": "Aquatic (Passive. Ability slot 7). In water, the Undine has Dominance on all attack and defense rolls. On land, it functions normally.",
+   "Siren's Call": "Siren's Call (Ability slot 1). Sapient creatures that can hear the Undine and enter the aura (40 ft) must succeed on a WIS trial [9] or advance Charmed by 1 tier. A creature that succeeds is immune to the aura for the rest of the encounter. While a creature remains in the aura, its Charmed does not deteriorate, including tiers from other sources. Once per turn, it can spend 1 AP on a WIS trial [9] to break the aura's hold; on success, Charmed deteriorates normally even while it remains inside. Leaving the aura also ends the hold, and a creature that re-enters makes a new trial.",
+   "Absorb Water": "Absorb Water (Ability slot 5). When the Undine takes Sea damage, it heals health equal to the damage dealt instead of taking damage.",
+   "Lure": "Lure (1 AP, Action. Ability slot 2. Range 60 ft). The Undine beckons a single creature. The target must succeed on a WIS trial [9] or use its full movement on its next turn to move toward the Undine by the most direct route. If the target is already Charmed, advance Charmed by 1 tier.",
+   "Riptide": "Riptide (2 AP, Action. Ability slot 3. Range 30 ft). All creatures within 30 feet must succeed on a STR trial [9] or be pulled 15 feet toward the nearest body of water (or toward the Undine if already in water).",
+   "Drown": "Drown (2 AP, Action. Ability slot 4. Range 15 ft. Requires target in water). The target must succeed on an END trial [9] or advance Exhausted by 1 tier. Charmed from Siren's Call prevents the target from leaving water voluntarily.",
+   "Mist Veil": "Mist Veil (1 AP, Reaction. Ability slot 6). When the Undine takes Fire damage, it releases a burst of steam. All creatures within 10 feet must succeed on a PER trial [9] or advance Concealed (Obscured) by 1 tier for 1 round."
+  },
   "senses": ""
  },
  "Veteran": {
@@ -9797,6 +10225,11 @@ export const CREATURES = {
    "Trip",
    "Riposte"
   ],
+  "abilityText": {
+   "Set Spear": "Set Spear (1 AP, Reaction. Ability slot 1). When a creature uses movement to enter the veteran's reach, the veteran makes a pike attack. If the veteran deals damage, the creature's movement ends. If the creature is using the Charge maneuver, the attack gains Superiority. If the attack deals damage to a charging creature, the charge is interrupted and the creature cannot complete its attack.",
+   "Trip": "Trip (1 AP, Attack. Ability slot 2). The veteran targets a creature within reach. The target must succeed on a STR or AGI trial [6] (target's choice) or be knocked prone.",
+   "Riposte": "Riposte (1 AP, Reaction. Ability slot 3). When the veteran takes no damage from a melee attack, it can counter-attack with a bonus of +4 to the attack roll."
+  },
   "senses": ""
  },
  "Viper": {
@@ -9883,6 +10316,9 @@ export const CREATURES = {
   "abilities": [
    "Venomous Bite"
   ],
+  "abilityText": {
+   "Venomous Bite": "Venomous Bite (1 AP, Attack. Ability slot 1). On a hit with a bite attack, with Impotence, if damage is dealt, the venom inflicts 1 Primal damage (END Tier). The target must succeed on an END trial [3] or advance Tainted by 1 tier."
+  },
   "senses": "<p>Seismic sense 15 ft.</p>"
  },
  "War Boar": {
@@ -9973,6 +10409,11 @@ export const CREATURES = {
    "Gore",
    "Trample"
   ],
+  "abilityText": {
+   "Charge": "Charge (2 AP, Movement + Attack. Ability slot 1). The boar moves at least 15 feet in a straight line and makes a tusk attack with Dominance. Countered by Set Spear vs Charge.",
+   "Gore": "Gore (1 AP, Attack. Ability slot 2). On a hit with a tusk attack, with Impotence, if damage is dealt the target must succeed on an END trial [6] or gain Attrition (Bleeding).",
+   "Trample": "Trample (2 AP, Movement + Attack. Ability slot 3). The boar moves in a straight line up to full speed and makes a tusk attack with Inferiority against up to 2 targets in its path."
+  },
   "senses": ""
  },
  "Warlord": {
@@ -10163,6 +10604,12 @@ export const CREATURES = {
    "Command Shout",
    "Deflect"
   ],
+  "abilityText": {
+   "Riposte": "Riposte (1 AP, Reaction. Ability slot 1). When the warlord takes no damage from a melee attack, it can counter-attack with a bonus of +5 to the attack roll.",
+   "Empty Fade": "Empty Fade (1 AP, Reaction. Ability slot 2). When an enemy approaches to make a melee attack, the Warlord feints retreat. The attacker must succeed on a PER trial [7] or attack with Impotence while the Warlord defends normally. If the attack misses, the Warlord counter-attacks with a bonus of +3. If the attack hits, the attacker gains a bonus equal to their attack attribute tier to damage.",
+   "Command Shout": "Command Shout (2 AP, Action. 1/encounter. Ability slot 3). The Warlord shouts orders. All allied infantry within 30 feet advance Inspired by 1 tier. Persists until end of encounter.",
+   "Deflect": "Deflect (2 AP, declared at start of round. Ability slot 4). The Warlord cannot attack this round. Can defend against up to 3 attacks instead of the normal 2. The remaining 1 AP can be used for reactions or movement."
+  },
   "senses": ""
  },
  "Warrior": {
@@ -10324,6 +10771,9 @@ export const CREATURES = {
   "abilities": [
    "False"
   ],
+  "abilityText": {
+   "False": "False (1 AP, Reaction. Ability slot 1). When the warrior moves out of a threatened space and is attacked, it gains +1 to its defense roll. If the attack misses, the warrior can make a melee attack with Superiority before completing its movement."
+  },
   "senses": ""
  },
  "Wild Dog": {
@@ -10412,6 +10862,9 @@ export const CREATURES = {
   "abilities": [
    "Pack"
   ],
+  "abilityText": {
+   "Pack": "Pack (1 AP, Reaction. Ability slot 1). When an allied dog hits a creature within 5 feet, this dog can make a bite attack against the same target."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Wolf, Alpha": {
@@ -10503,6 +10956,12 @@ export const CREATURES = {
    "Rally Howl",
    "Roar"
   ],
+  "abilityText": {
+   "Hamstring": "Hamstring (1 AP, Attack. Ability slot 1). On a hit with a bite attack from behind or flanking, forfeiting the flanking bonus, the target must succeed on a STR trial [7] or advance Restricted by 1 tier.",
+   "Pack": "Pack (1 AP, Reaction. Ability slot 2). When an allied wolf hits a creature within 5 feet, this wolf can make a bite attack against the same target.",
+   "Rally Howl": "Rally Howl (2 AP, Action. 1/encounter. Ability slot 3). The wolf howls. All allied wolves within 30 feet advance Invigorated by 3 tiers. Degrades by 1 tier per round.",
+   "Roar": "Roar (2 AP, Action. Ability slot 4). All creatures within 30 feet must succeed on a WIS trial [7] or advance Demoralized by 1 tier."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Wolf, Amarok": {
@@ -10597,6 +11056,14 @@ export const CREATURES = {
    "Rend",
    "Roar"
   ],
+  "abilityText": {
+   "Hamstring": "Hamstring (1 AP, Attack. Ability slot 1). On a hit with a bite attack from behind or flanking, forfeiting the flanking bonus, the target must succeed on a STR trial [9] or advance Restricted by 1 tier.",
+   "Charge": "Charge (2 AP, Movement + Attack. Ability slot 2). The wolf moves at least 15 feet in a straight line and makes a bite attack with Dominance. Countered by Set Spear vs Charge.",
+   "Disarm": "Disarm (1 AP, Attack. Ability slot 3). On a hit with a bite attack, in lieu of damage, the target must succeed on a STR or PHY trial [9]. On failure, the target's weapon falls behind them out of reach.",
+   "Shed": "Shed (1 AP, Reaction. Ability slot 4). When an enemy targets the wolf with a melee attack and the wolf successfully defends, it can move the attacker 5 feet to an unoccupied space within range. Cannot use against creatures larger than it.",
+   "Rend": "Rend (1 AP, Attack. Ability slot 5). On a hit with a bite attack, with Impotence, if damage is dealt the target must succeed on an END trial [9] or gain Attrition (Bleeding).",
+   "Roar": "Roar (2 AP, Action. Ability slot 6). All creatures within 50 feet must succeed on a WIS trial [9] or advance Demoralized by 1 tier. Creatures that fail by 5 or more advance Demoralized by 2 tiers instead."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Wolf, Beta": {
@@ -10687,6 +11154,11 @@ export const CREATURES = {
    "Pack",
    "Rally Howl"
   ],
+  "abilityText": {
+   "Hamstring": "Hamstring (1 AP, Attack. Ability slot 1). On a hit with a bite attack from behind or flanking, forfeiting the flanking bonus, the target must succeed on a STR trial [5] or advance Restricted by 1 tier.",
+   "Pack": "Pack (1 AP, Reaction. Ability slot 2). When an allied wolf hits a creature within 5 feet, this wolf can make a bite attack against the same target.",
+   "Rally Howl": "Rally Howl (2 AP, Action. Ability slot 3). The wolf howls. All allied wolves within 30 feet advance Invigorated by 1 tier. Can be reapplied to stack tiers."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Wolf, Dire": {
@@ -10778,6 +11250,12 @@ export const CREATURES = {
    "Shed",
    "Vicious Bite"
   ],
+  "abilityText": {
+   "Hamstring": "Hamstring (1 AP, Attack. Ability slot 1). On a hit with a bite attack from behind or flanking, forfeiting the flanking bonus, the target must succeed on a STR trial [8] or advance Restricted by 1 tier.",
+   "Charge": "Charge (2 AP, Movement + Attack. Ability slot 2). The wolf moves at least 15 feet in a straight line and makes a bite attack with Dominance. Countered by Set Spear vs Charge.",
+   "Shed": "Shed (1 AP, Reaction. Ability slot 3). When an enemy targets the wolf with a melee attack and the wolf successfully defends, it can move the attacker 5 feet to an unoccupied space within range. Cannot use against creatures larger than it.",
+   "Vicious Bite": "Vicious Bite (2 AP, Attack. Ability slot 4). The wolf makes a bite attack: d12 + 2d8 + 2 Piercing, exploding."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Wolf, Gamma": {
@@ -10867,6 +11345,10 @@ export const CREATURES = {
    "Hamstring",
    "Pack"
   ],
+  "abilityText": {
+   "Hamstring": "Hamstring (1 AP, Attack. Ability slot 1). On a hit with a bite attack from behind or flanking, forfeiting the flanking bonus, the target must succeed on a STR trial [4] or advance Restricted by 1 tier.",
+   "Pack": "Pack (1 AP, Reaction. Ability slot 2). When an allied wolf hits a creature within 5 feet, this wolf can make a bite attack against the same target."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Wolf, Runt": {
@@ -10954,6 +11436,9 @@ export const CREATURES = {
   "abilities": [
    "Harry"
   ],
+  "abilityText": {
+   "Harry": "Harry (Mob, no slot). When the pack deals damage, the target suffers Attrition (Bleeding) 2."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Wolf, Sigma": {
@@ -11044,6 +11529,11 @@ export const CREATURES = {
    "Pack",
    "Roar"
   ],
+  "abilityText": {
+   "Hamstring": "Hamstring (1 AP, Attack. Ability slot 1). On a hit with a bite attack from behind or flanking, forfeiting the flanking bonus, the target must succeed on a STR trial [6] or advance Restricted by 1 tier.",
+   "Pack": "Pack (1 AP, Reaction. Ability slot 2). When an allied wolf hits a creature within 5 feet, this wolf can make a bite attack against the same target.",
+   "Roar": "Roar (2 AP, Action. Ability slot 3). All creatures within 20 feet must succeed on a WIS trial [6] or advance Demoralized by 1 tier."
+  },
   "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Wolf Spider": {
@@ -11134,6 +11624,10 @@ export const CREATURES = {
    "Ambusher",
    "Venomous Bite"
   ],
+  "abilityText": {
+   "Ambusher": "Ambusher (Passive, no slot). In its element, the spider is always ready to ambush prior to the beginning of a combat encounter unless otherwise determined by the GM. When it attacks a creature that has not noticed it, that creature makes a Startle trial [3]. A creature with Alertness (Danger Sense) first rolls a PER trial [3] as the ambush is sprung; on a success, it makes no Startle trial.",
+   "Venomous Bite": "Venomous Bite (1 AP, Attack. Ability slot 1). On a hit with a bite attack, with Impotence, if damage is dealt, the venom inflicts 1 Primal damage (END Tier). The target must succeed on a PER trial [3] or advance Impaired by 1 tier."
+  },
   "senses": "<p>Seismic sense 15 ft.</p>"
  },
  "Woodsman": {
@@ -11292,6 +11786,9 @@ export const CREATURES = {
   "abilities": [
    "Pinning Shot"
   ],
+  "abilityText": {
+   "Pinning Shot": "Pinning Shot (1 AP, Attack. Ability slot 1). On a hit with a bow attack, with Inferiority, if damage is dealt, the target must succeed on a STR trial [4] or advance Restricted by 1 tier. Multiple successful Pinning Shots stack the condition."
+  },
   "senses": "<p>Scent (tracking trained dogs often accompany woodsmen).</p>"
  },
  "Zombie Brute": {
@@ -11379,6 +11876,10 @@ export const CREATURES = {
    "Gestalt (Undead)",
    "Undead Resilience"
   ],
+  "abilityText": {
+   "Gestalt (Undead)": "Gestalt (Undead) (Classification, no slot). Does not breathe, eat, or sleep. Immune to Profane damage. Impotence on trials vs Sacred damage. Connected to Profane magic.",
+   "Undead Resilience": "Undead Resilience (Ability slot 1). Immune to Tainted, Infected, and Exhausted. No living biology — cannot be poisoned, diseased, or fatigued. Behavior: The zombie brute does not defend. It spends both AP on slam attacks every round. No ranged attacks — kiting is the intended counterplay."
+  },
   "senses": ""
  },
  "Zombie": {
@@ -11466,6 +11967,10 @@ export const CREATURES = {
    "Gestalt (Undead)",
    "Undead Resilience"
   ],
+  "abilityText": {
+   "Gestalt (Undead)": "Gestalt (Undead) (Classification, no slot). Does not breathe, eat, or sleep. Immune to Profane damage. Impotence on trials vs Sacred damage. Connected to Profane magic.",
+   "Undead Resilience": "Undead Resilience (Ability slot 1). Immune to Tainted, Infected, and Exhausted. No living biology — cannot be poisoned, diseased, or fatigued. Behavior: The zombie does not defend. It spends both AP on slam attacks every round. No ranged attacks — kiting is the intended counterplay."
+  },
   "senses": ""
  }
 };

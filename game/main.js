@@ -161,6 +161,7 @@ function unitLine(u) {
     return `<strong>${m.name}</strong> <span>${m.hp}/${m.health} hp</span> <span class="muted">${u.ap} AP · ${w ? w.name : "unarmed"} · ${GUARDS[u.guard].label}</span>${condHtml(conds)}${gear ? `<br><span class="muted small">${gear}</span>` : ""}`;
   }
   const c = creatureFor(u);
+  if (u.object) return `<strong>${u.name}</strong> <span class="muted">can't defend; ${u.dmgSince} damage since the Dryad's last turn (7 stops her regrowth, 14 her melding)</span>`;
   return `<strong>${u.name}</strong> <span>${u.minion ? `${u.heads} of ${u.headsMax}` : describeHealth(u)}</span> <span class="muted">${c.rank}${u.armorMax ? ` · armor ${u.armorDur > 0 ? "holding" : "broken"}` : ""}</span>${condHtml(conds)}`;
 }
 
