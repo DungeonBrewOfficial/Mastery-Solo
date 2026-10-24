@@ -59,7 +59,7 @@ Jon is still building monsters. His current guess at the party levels each creat
 
 ## Open
 
-- The break roll's DC, and whether Epic and Legendary creatures retreat to their lairs at half health. See `design/02-encounters.md`, Breaking point.
+- The break roll's attribute (Wisdom or Endurance), and whether Epic and Legendary creatures retreat to their lairs at half health. See `design/02-encounters.md`, Breaking point.
 - The chase, until it's tested.
 - How far from roads and settlements Deep country starts. See `design/01-the-turn.md`.
 - Metals. The five-metal ladder (Iron, Steel, Silver, Gold, Mithril) needs a purpose. Candidates so far: Durability grades on armor and shields, or the substrate for permanent enchantment (which waits on Mastery's magic items).

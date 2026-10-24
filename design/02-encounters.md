@@ -10,7 +10,7 @@ This file covers what happens when the event die (see `01-the-turn.md`) comes up
 
 Flagged here so they're easy to find. Each is marked **[?]** where it comes up below. Settled questions move to `DECISIONS.md`.
 
-1. **Breaking points (redrafted 2026-10-24).** Leaders and Masters hold a group together; when they fall, or when half the group is down, the rest roll to break. I've made the roll a Wisdom trial, since Wisdom is what resists fear in Mastery. Is DC 5 the right starting point?
+1. **The break roll's attribute (redrafted 2026-10-24).** The head's death no longer forces a roll; losses do, and numbers give Dominance or Impotence. Still open: whether the roll uses Wisdom, as Mastery resists fear, or Endurance, which separates soldiers from bandits. The odds are tabled under Breaking point.
 2. **Epic and Legendary creatures retreat to their lairs** at half health. You called this game-y. The case for it is under Breaking point; the alternative is that they fight on or flee for good.
 3. **The chase** stands as drafted until it's tested.
 4. **Deep country.** Your "punishment is going where you shouldn't" is now a rule in `01-the-turn.md`: the farther from roads and settlements, the harder the encounters and the better the finds. The distance that makes country Deep is a guess.
@@ -94,9 +94,23 @@ With contact and disposition settled, the party chooses [N]:
 
 The red box had morale [S, via the reconstruction record, §4]. Mastery has Motivation instead: a creature fights for what it wants and stops when the price gets too high [M]. Solo play needs that stopping point written down.
 
-**Heads hold the group** [Jon, 2026-10-24]. While a Leader or Master stands, its group doesn't roll to break.
+**Heads hold the group** [Jon, 2026-10-24]. While a Leader or Master stands, its group doesn't roll to break, however badly the fight goes.
 
-**The break roll** [N, ?1]. A group rolls when its Leader or Master falls, and when half its number is down, whichever comes first; a group with no Leader or Master rolls only at half. A lone creature rolls at half its health. The roll is a Wisdom trial against DC 5, made by the strongest creature left standing, with its trial dice [M, Monster Manual, Trials]. Wisdom is the attribute that resists fear [M, Mastery Core Classes, What Your Attributes Do]. A minion group rolls 1d2 + its Tier die, so a Tier 1 minion group without its head always runs and a Tier 2 group nearly always does, while a Champion usually holds.
+**Losses trigger the roll; the head's death doesn't** [N, redrafted 2026-10-24]. Killing the head removes that protection, but it doesn't force a roll by itself, so a party can't win a fight just by sniping the captain. A group rolls when half its number is down and no Leader or Master is standing. If the head falls after half the group is already down, the group rolls then. A lone creature rolls at half its health. Count minion heads one by one.
+
+**Numbers matter** [N]. Compare the creatures still standing with the characters still standing. A group that outnumbers the party rolls with Dominance; a group the party outnumbers rolls with Impotence; an even count rolls as normal.
+
+**The roll** [N, ?1]. The strongest creature left standing makes a trial with its trial dice [M, Monster Manual, Trials] against DC 5. Which attribute it uses is open:
+
+| | Wisdom (resists fear, as Mastery has it) | Endurance (grit) |
+|:---|:---:|:---:|
+| Bandit Cutthroat (T1 Adept): holds on | d3 + d2: 17% | d3 + d3: 33% |
+| Warrior (T2 Armored Adept): holds on | d3 + d2: 17% | d3 + d4: 50% |
+| Veteran (T2 Armored Champion): holds on | d6 + d2: 58% | d6 + d6: 83% |
+| Warrior, outnumbering the party (Dominance) | d4 + d3: 50% | d4 + d6: 75% |
+| Warrior, outnumbered (Impotence) | d2 + 1: 0% | d2 + d3: 17% |
+
+Every infantry stat block from Warrior to Veteran has Wisdom at Tier 1, so under Wisdom, trained soldiers break exactly as easily as bandits. Endurance separates them.
 
 **Restless dead** never roll. **Guardians** roll only at a quarter of their health, and never leave their place.
 
