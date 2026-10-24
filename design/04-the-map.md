@@ -131,11 +131,11 @@ When the event die comes up **Discovery**, roll a d12 [N]. Every place reached f
 | 7 | **A ruin.** A tower, a hall, a fort, a chapel, gone to ruin. A site. |
 | 8 | **A barrow.** An old grave mound or tomb. The dead may be restless. A site. |
 | 9 | **A homestead or hamlet** off any road, if the tile has no settlement. Otherwise, a ruin. |
-| 10 | **A hidden place.** Roll again on 4–8: it's hidden. The Scout or Investigator must find it with an Alertness trial against 7; on a failure, it's only a Sign of something here, and the party can come back with time to search. Found, it's a Hidden Location (50 XP), and its hoard is a Hidden Hoard [M]. |
-| 11 | **A lost place.** In Wild or Deep country only; in Settled country, a ruin. The ruin of something older than anyone remembers. A Lore (Ancient Lore) trial against 7 tells what it was [M, Skill Mastery, Lore]. It's a Lost Location (75 XP), and a site. |
+| 10 | **A hidden place.** Roll again on 4–8: it's hidden. The Scout or Investigator must find it with an Alertness trial against the band's Hard DC (see `05-sites.md`, Default DCs); on a failure, it's only a Sign of something here, and the party can come back with time to search. Found, it's a Hidden Location (50 XP), and its hoard is a Hidden Hoard [M]. |
+| 11 | **A lost place.** In Wild or Deep country only; in Settled country, a ruin. The ruin of something older than anyone remembers. A Lore (Ancient Lore) trial against the band's Hard DC tells what it was [M, Skill Mastery, Lore]. It's a Lost Location (75 XP), and a site. |
 | 12 | **Roll twice** and take both. |
 
-Sites (lairs, caves, ruins, barrows, and lost places) are covered in the sites file, to come, along with what guards them. Their hoards are drafted in `03-treasure.md`.
+Sites (lairs, caves, ruins, barrows, and lost places), and what guards them, are in `05-sites.md`. Their hoards are drafted in `03-treasure.md`.
 
 ### Spell sources
 

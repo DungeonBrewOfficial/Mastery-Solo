@@ -73,7 +73,7 @@ Roll a d6 on the square where you stopped [S: "one die to determine what happene
 |:---|:---|:---|
 | **Settled** | On a road, or within 2 squares of a settlement | An Encounter only on a 6; a 5 is Quiet. |
 | **Wild** | Everywhere else | As the table above. |
-| **Deep** | A tile with no road or settlement, and none in any of the eight tiles around it (see `04-the-map.md`) | Encounters roll on the next band up. Discoveries are richer (see the sites file, to come). |
+| **Deep** | A tile with no road or settlement, and none in any of the eight tiles around it (see `04-the-map.md`) | Encounters roll on the next band up. Sites are bigger, guarded from the next band up, and their hoards are doubled (see `05-sites.md` and `03-treasure.md`). |
 
 Above-band results in Deep country still arrive as Signs first, so the rule about warnings holds. What changes is how often the warnings come and what's waiting behind them. The road home is always the safer way, and the shortcut through the deep wood always pays better and costs more. [?] The definition of Deep is proposed in `04-the-map.md`.
 
@@ -128,6 +128,6 @@ A run ends when the last of its heroes dies, or when the player retires them [Jo
 These pages are referred to above and not yet written:
 
 - **Encounters:** started in `02-encounters.md` (woodland only so far).
-- **Sites:** a small paper generator for lairs, ruins, and dungeons. Their treasure is drafted in `03-treasure.md`.
+- **Sites:** drafted in `05-sites.md`.
 - **Settlements:** what each size of settlement offers, and recruiting.
 - **Map generation:** drafted in `04-the-map.md`.

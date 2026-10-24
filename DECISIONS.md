@@ -71,4 +71,5 @@ Jon is still building monsters. His current guess at the party levels each creat
 - The chase, until it's tested.
 - The map questions at the top of `design/04-the-map.md`: tiles, region size, hills, Deep country by tile, road and settlement density, spell sources, and river crossings.
 - The hoard multiplier (40 sp per point of the guardian's XP value), waiting on play.
+- The site questions at the top of `design/05-sites.md`: areas instead of grid maps, site sizes, default DCs by band, the clock inside, the guardian's group spread through the site, cleared sites refilling, magic treasure, and lost-place guardians.
 - Metals. The five-metal ladder (Iron, Steel, Silver, Gold, Mithril) needs a purpose. Candidates so far: Durability grades on armor and shields, or the substrate for permanent enchantment (which waits on Mastery's magic items).
