@@ -45,6 +45,7 @@ Rulings Jon has made for this design, newest last within each section. Each line
 - Hunting with the Wilderness skill is abstracted and pays no XP. Only a real encounter, a fight, pays combat XP. (2026-10-24)
 - Deep sites stacking a bigger guardian and a doubled hoard is fine: a party that takes the risk and survives earns the loot, and it makes them greedier next time. (2026-10-24)
 - Hidden and Lost Locations shouldn't be stumbled on. They're found through real exploration, so they need to be seeded differently from ordinary discoveries. (2026-10-24)
+- Deep country can start as close as two tiles from home wherever no road runs. It's meant to be dangerous, and going too deep too early is a mistake the game should punish. (2026-10-24)
 - The clue chain works: clues lead to hidden places, three fragments of lost lore to a lost place. The clues are found in hard-to-reach places (sites), and hidden and lost places are always in Deep country. (2026-10-24)
 - The measure of danger is greed: break points where the party decides to go on or turn back, and punishment for going off the beaten path. (2026-10-24)
 
@@ -81,5 +82,4 @@ Jon is still building monsters. His current guess at the party levels each creat
 - The hoard multiplier (40 sp per point of the guardian's XP value), waiting on play.
 - The site questions at the top of `design/05-sites.md`: areas instead of grid maps, site sizes, default DCs by band, the clock inside, the guardian's group spread through the site, cleared sites refilling, magic treasure, and lost-place guardians.
 - The settlement questions at the top of `design/06-settlements.md`: recruit level, who's available, hiring a smith, rumors, libraries, and a hamlet's hospitality.
-- From the first dry run: whether the known lands around home should always be at least Wild, rather than Deep. See `playtests/2026-10-24-dry-run.md`.
 - Metals. The five-metal ladder (Iron, Steel, Silver, Gold, Mithril) needs a purpose. Candidates so far: Durability grades on armor and shields, or the substrate for permanent enchantment (which waits on Mastery's magic items).
