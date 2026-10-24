@@ -7,7 +7,7 @@ import { choices, choose, signChoices, chooseSign, partyLevel, bandFor, ROMAN } 
 import { CREATURES } from "./data/creatures.js";
 import { squareAt, countryAt, findPath, moveCost, TERRAINS, SETTLEMENTS } from "./world.js";
 import { draw, drawBattle, battleLayout } from "./render.js";
-import { opportunities, REACTIONS, reactOf, reactionsFor, setReaction, attackModes, setMode, freeTargets, pcBreakFree, pcStand, challengeTargets, beginRound, retreat, runPlan, respond, currentPC, moveCost as stepCost, pcMove, pcAttack, pcEndTurn, triageTargets, pcTriage, canAttack, standing, onField, conditionsOf, memberFor, creatureFor, weaponOf, GUARDS, PHASES } from "./combat.js";
+import { castOptions, castTargets, pcCast, reapplyOptions, pcReapply, concentrationOf, opportunities, REACTIONS, reactOf, reactionsFor, setReaction, attackModes, setMode, freeTargets, pcBreakFree, pcStand, challengeTargets, beginRound, retreat, runPlan, respond, currentPC, moveCost as stepCost, pcMove, pcAttack, pcEndTurn, triageTargets, pcTriage, canAttack, standing, onField, conditionsOf, memberFor, creatureFor, weaponOf, GUARDS, PHASES } from "./combat.js";
 import { BAND_LABELS } from "./vendor/foundry/module/helpers/weather-rules.mjs";
 import { openStorage, pack, unpack } from "./storage.js";
 
@@ -108,6 +108,11 @@ function renderEvent() {
 /* ---------------- battle */
 
 let picks = {};
+/** Begin the round with the declarations; spells and Hellfire are declared afresh each round. */
+function declareRound(rng) {
+  beginRound(state, rng, say, picks);
+  for (const p of Object.values(picks)) { delete p.spell; delete p.hellfire; delete p.free; }
+}
 let planningRun = false, carry = {};
 const say = (t, k) => note(state, t, k);
 const PROMPT_LABELS = { defend: ["Defend", "Take it"], counter: ["Counterattack", "Hold back"], reprisal: ["Strike", "Let them go"] };
@@ -149,7 +154,7 @@ function paint() {
   else draw(canvas, state, view);
 }
 
-const GOOD = /^(Rallied|Emboldened|Fearless|Energized|Empowered|Tireless|challenging)/;
+const GOOD = /^(Rallied|Emboldened|Fearless|Energized|Empowered|Tireless|challenging|casting|holding|Stoneskin|Sacred Ward)/;
 const condHtml = (conds) => conds.length ? ` ${conds.map(c => `<span class="${GOOD.test(c) ? "good" : "warn"}">${c}</span>`).join(", ")}` : "";
 const describeHealth = (u) => u.hp >= u.hpMax ? "unhurt" : u.hp > u.hpMax / 2 ? "hurt" : u.hp > u.hpMax / 4 ? "bloodied" : "near death";
 
@@ -250,6 +255,25 @@ function renderBattle(box) {
         cs.onchange = () => { picks[x.id].challenge = cs.value || null; };
         line.append(cs);
       }
+      const spells = castOptions(state, x);
+      if (spells.length) {
+        const ss = document.createElement("select");
+        ss.title = "A declared spell draws its magan now and sets your phase by its cost: 1-3 Fast, 4-6 Moderate, 7-11 Slow. Release it on your turn for 1 AP.";
+        ss.add(new Option(`No spell (${m.mp ?? 0} magan)`, ""));
+        for (const o of spells) ss.add(new Option(`${o.label}: ${o.cost} magan, ${o.phase}${o.miscast ? `, miscast ${o.miscast}` : ""}${o.cost > (m.mp ?? 0) ? " (overcast: Exhausted)" : ""}`, o.key));
+        ss.value = picks[x.id].spell || "";
+        ss.onchange = () => { picks[x.id].spell = ss.value || null; };
+        line.append(ss);
+      }
+      const held = concentrationOf(x);
+      if (held.length > 1) {
+        const fs = document.createElement("select");
+        fs.title = "One spell rides in your free concentration slot. The rest are passive: any damage to your health or armor breaks them.";
+        for (const e of held) fs.add(new Option(`Free slot: ${e.name}`, e.id));
+        fs.value = picks[x.id].free || held.find(e => e.slot === "free")?.id || held[0].id;
+        fs.onchange = () => { picks[x.id].free = fs.value; };
+        line.append(fs);
+      }
       if (m.shield) {
         const lab = document.createElement("label");
         lab.className = "small";
@@ -263,7 +287,7 @@ function renderBattle(box) {
       form.appendChild(line);
     }
     box.appendChild(form);
-    const go = button("Begin the round (Enter)", () => battleAct((rng) => beginRound(state, rng, say, picks)));
+    const go = button("Begin the round (Enter)", () => battleAct(declareRound));
     go.className = "primary";
     row.appendChild(go);
     const dying = b.units.some(v => v.pc && onField(v) && memberFor(state, v).dying != null && !memberFor(state, v).stable);
@@ -303,6 +327,16 @@ function renderBattle(box) {
       }
       box.appendChild(mr);
     }
+    if (u.casting) {
+      const ts = castTargets(state, u);
+      if (!ts.length) box.insertAdjacentHTML("beforeend", `<p class="small warn">${u.casting.label}: no one in reach${u.ap < 1 ? " (no AP)" : ""}.</p>`);
+      for (const t of ts) {
+        const cb = button(`${u.casting.label} → ${t.id === u.id ? "yourself" : t.name} (1 AP)`, () => battleAct((rng) => pcCast(state, rng, say, t.id)));
+        cb.className = "primary";
+        row.appendChild(cb);
+      }
+    }
+    for (const o of reapplyOptions(state, u)) for (const t of o.targets) row.appendChild(button(`${o.e.name} again → ${t.name} (1 AP)`, () => battleAct((rng) => pcReapply(state, rng, say, o.e.id, t.id))));
     if (u.prone) row.appendChild(button("Get up (1 AP)", () => battleAct((rng) => pcStand(state, rng, say))));
     for (const t of freeTargets(state, u)) {
       const fb = button(t === u ? `Break free (1 AP)` : `Help ${t.name} break free (1 AP)`, () => battleAct((rng) => pcBreakFree(state, rng, say, t.id)));
@@ -510,7 +544,7 @@ window.addEventListener("keydown", (ev) => {
     const b = state.battle;
     if (b.prompt && (ev.key === "y" || ev.key === "n")) battleAct((rng) => respond(state, rng, say, ev.key === "y"));
     else if (b.prompt?.helper && ev.key === "h") battleAct((rng) => respond(state, rng, say, "hearten"));
-    else if (b.stage === "declare" && ev.key === "Enter") battleAct((rng) => beginRound(state, rng, say, picks));
+    else if (b.stage === "declare" && ev.key === "Enter") battleAct(declareRound);
     else if (currentPC(state) && ev.key === "e") battleAct((rng) => pcEndTurn(state, rng, say));
     return;
   }

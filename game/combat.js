@@ -30,6 +30,7 @@ import { MASTERY, dtdForTierRank, sizeRowForSquares } from "./vendor/foundry/mod
 import { buildHealthPlan, armoredDurability } from "./vendor/foundry/module/helpers/npc-health.mjs";
 import { headsLost, groupTokenSize, bandFor as groupBand, mobDC } from "./vendor/foundry/module/helpers/minion-rules.mjs";
 import { abilitiesOf, unbuilt } from "./data/abilities.js";
+import { SPELLS, wardCovers } from "./data/spells.js";
 import { RULES } from "./data/rules-text.js";
 import { TRAUMA_TABLE } from "./vendor/foundry/module/data/trauma-table.mjs";
 import { resolveDamage } from "./vendor/foundry/extract/resolve-damage.mjs";
@@ -237,6 +238,7 @@ export const COND_LABELS = {
   inspired: { 1: "Rallied", 2: "Emboldened", 3: "Fearless" },
   invigorated: { 1: "Energized", 2: "Empowered", 3: "Tireless" }
 };
+const MUNDANE = ["cutting", "cleaving", "crushing", "piercing", "puncturing"];
 const PHYSICAL = ["strength", "agility", "physique", "endurance"];
 /** Conditions that deteriorate on their own; Impaired's Startle tiers follow the Startle rule instead, and Demoralized holds while its source is in sight. */
 const DECAYS = ["impaired", "restricted", "tainted", "inspired", "invigorated", "quarry"];
@@ -483,6 +485,9 @@ function startRound(state, rng, note) {
     // Impaired from anything else wears off like any other condition.
     if (b.round > 1 && u.startle > 0) { u.startle -= 1; u.impaired = Math.max(0, u.impaired - 1); }
     u.doneIn = []; u.moveLeft = 0; u.lastMove = false; u.attacks = 0; u.helpedBy = [];
+    u.lostThisRound = 0;
+    // A ward cast for one round is gone when the next begins.
+    if (u.wards) u.wards = u.wards.filter(w => w.round == null || w.round === b.round);
     if (u.pc) {
       const m = memberOf(state, u);
       u.ap = m.down || u.impaired >= 3 ? 0 : cond(u, "exhausted") >= 3 ? 1 : 2;
@@ -554,8 +559,12 @@ export function beginRound(state, rng, note, picks = {}) {
       if (u.ap > 0) u.ap -= 1;
       note(`${m.name} ${old ? `drops the ${old.name.toLowerCase()} and ` : ""}draws the ${weaponOf(m, u).name.toLowerCase()} (1 AP).`);
     }
+    if (p.free) setFreeSlot(u, p.free);
+    u.casting = null;
+    if (p.spell) declareSpell(state, note, u, p.spell);
     const w = weaponOf(m, u);
-    const speeds = u.companion ? [u.declared?.hellfire ? "fast" : "moderate"] : [w?.speed || "fast", slowest].filter(Boolean);
+    // A declared spell sets the phase by its speed (Magic Mastery, Spell Speed); a weapon drawn this round can still slow it.
+    const speeds = u.companion ? [u.declared?.hellfire ? "fast" : "moderate"] : [u.casting ? u.casting.phase : w?.speed || "fast", slowest].filter(Boolean);
     u.phase = u.impaired === 1 || u.impaired === 2 ? "slow" : PHASES[Math.max(...speeds.map(s => PHASES.indexOf(s)))];
   }
   const d = rng.d(6);
@@ -614,6 +623,7 @@ function nextActor(state, rng, note) {
 
 function finishTurn(state, u, rng, note) {
   const b = state.battle;
+  if (u.casting) loseSpell(state, note, u, "the turn ended without releasing it");
   endOfTurn(state, rng, note, u);
   u.doneIn.push(PHASES[b.phaseIdx]);
   u.moveLeft = 0; u.lastMove = false;
@@ -705,10 +715,12 @@ function secondaryDamage(state, rng, note, t, amount, type, label, { direct = fa
   if (t.pc) {
     const m = memberOf(state, t);
     if (m.dead) return;
-    const res = noResist || !type || !m.armor || m.armor.durability <= 0 ? 0 : (m.armor.resistance[type] || 0);
+    const res = noResist || !type ? 0 : t.companion ? (MUNDANE.includes(type) ? m.resistance : 0) : !m.armor || m.armor.durability <= 0 ? 0 : (m.armor.resistance[type] || 0);
+    const ward = type && wardFor(t, type);
     const r = direct ? { healthDamage: Math.max(0, amount - res), durabilityDamage: 0 }
-      : resolveDamage({ attackTotal: amount, damageType: type, armorResistance: res, durabilityCurrent: m.armor?.durability || 0, healthCurrent: m.hp, activeDefense: false });
-    if (r.durabilityDamage) m.armor.durability -= r.durabilityDamage;
+      : resolveDamage({ attackTotal: amount, damageType: type, armorResistance: res, durabilityCurrent: m.armor?.durability || 0, healthCurrent: m.hp, activeDefense: false, wardPool: ward?.pool || 0 });
+    drainWard(state, note, t, ward, r.wardAbsorbed);
+    if (r.durabilityDamage) { m.armor.durability -= r.durabilityDamage; shaken(state, note, t); }
     note(`${label}: ${t.name} takes ${[r.durabilityDamage ? `${r.durabilityDamage} to the ${m.armor.name.toLowerCase()}` : "", r.healthDamage ? `${r.healthDamage} to health` : ""].filter(Boolean).join(", ") || "nothing"}.`, r.healthDamage ? "event" : "");
     if (r.healthDamage) hurtPC(state, rng, note, t, r.healthDamage);
     return;
@@ -954,6 +966,8 @@ export function opportunities(state, u) {
   }
   if (u.held) out.push({ text: `You're held (${u.held.name}): break free for 1 AP, Strength against ${u.held.dc}.`, rule: RULES.breakFree });
   for (const t of b.units.filter(x => x.pc && x !== u && onField(x) && x.held && gap(u, x) <= 1)) out.push({ text: `${t.name} is held: help them break free for 1 AP.`, rule: RULES.assist });
+  if (u.casting) out.push({ text: `You're casting ${u.casting.label}: release it this turn (1 AP)${u.casting.noSomatic ? "" : ". Attacking or defending first loses it"}.`, rule: "You lose the spell and its magan if, before it resolves, you: cast another spell, use another ability, or choose to stop; defend, attack, or interact with an object, unless the spell has no somatic components; cannot spend its AP when it resolves; take health damage and fail a Miscast trial against a DC equal to the health lost (Magic Mastery, Interrupted Casting)." });
+  for (const o of reapplyOptions(state, u).filter(x => x.targets.length)) out.push({ text: `${o.e.name} is still held: 1 AP turns it on a target again.`, rule: "When a target resists a sustained condition spell or breaks free of it, the spell stays in your concentration slot for its duration. On your turn, you can spend 1 AP to apply it again to the same target or to a new one within the spell's reach. The target makes a fresh trial to resist (Magic Mastery, Conditions)." });
   if (attackModes(state, u).some(x => x.id === "hellfire")) out.push({ text: `Hellfire is ready: pick a target within 3 squares. Everything in the cone burns, your own side included.`, rule: "Hellfire (2 AP, Fast, declared): spend 2 magan from your bonded caster to breathe a 15-foot cone of hellfire. Creatures in the cone make an Agility trial against your DC or take d2 + d4 fire damage. Control trial: your tier die; on a 1, the Daeva chooses the direction." });
   if (attackModes(state, u).some(x => x.id === "trample")) for (const t of foes.filter(f => canAttack(state, u, f, "trample").trample?.hit.length > 1)) out.push({ text: `Trample can catch ${canAttack(state, u, t, "trample").trample.hit.map(x => x.name).join(" and ")} in one run (2 AP, Inferiority).`, rule: "Trample (2 AP, Movement + Attack): move in a straight line up to full speed. Roll one tusk attack with Inferiority and apply it to up to 2 targets in the path." });
   const helper = heartener(state, u, "heartenDefense");
@@ -1062,6 +1076,228 @@ function hellfire(state, rng, note, u, t) {
   }
 }
 
+/* ------------------------------------------------------------------ */
+/* Spells (Magic Mastery)                                               */
+
+/** Spell speed from the cost before components (Magic Mastery, Spell Speed). */
+const cap = (w) => w[0].toUpperCase() + w.slice(1);
+export const spellSpeed = (cost) => cost <= 3 ? "fast" : cost <= 6 ? "moderate" : "slow";
+const castDie = (m) => dieOfTier(tierOf(m.attributes[m.casting.attr]));
+const masteryDie = (m, form) => dieOfTier(m.casting.forms[form] || 1);
+/** A spell as this caster recorded it: the chapter's spell with the caster's own parameters over it. */
+function spellOf(m, name) {
+  const sp = SPELLS[name];
+  return sp && { ...sp, ...(m.casting?.recorded?.[name] || {}), name };
+}
+
+/**
+ * The castings a character could declare this round, with what each costs:
+ * the familiar spell as recorded, and for a heal, the older-wounds version
+ * (this encounter, ×3), a modified casting with a miscast trial against
+ * the change in cost (Magic Mastery, Healing and Repair; Modified Familiar Casting).
+ */
+export function castOptions(state, u) {
+  const m = memberOf(state, u);
+  if (!m.casting || u.companion) return [];
+  const out = [];
+  for (const name of m.spells || []) {
+    const sp = spellOf(m, name);
+    if (!sp) continue;
+    const pay = (c) => m.casting.polestar ? Math.max(1, c - 1) : c; // the Polestar focus: 1 less, never below 1
+    out.push({ key: name, name, label: name, base: sp.cost, cost: pay(sp.cost), phase: spellSpeed(sp.cost), age: sp.kind === "heal" ? "round" : null });
+    if (sp.kind === "heal") {
+      const older = sp.cost + 2 * SPELLS[name].cost;
+      out.push({ key: `${name}:older`, name, label: `${name}, older wounds`, base: older, cost: pay(older), phase: spellSpeed(older), age: "encounter", miscast: Math.max(2, older - sp.cost) });
+    }
+  }
+  return out;
+}
+
+/** Declaring draws the magan (Interrupted Casting). Short of it, the pool empties and the caster advances Exhausted (Overcasting). */
+function declareSpell(state, note, u, key) {
+  const m = memberOf(state, u);
+  const opt = castOptions(state, u).find(o => o.key === key);
+  if (!opt) return;
+  if ((m.mp || 0) >= opt.cost) m.mp -= opt.cost;
+  else {
+    m.mp = 0;
+    addCond(state, note, u, "exhausted", 1, { lasting: true });
+    note(`${m.name} overcasts: the pool runs dry.`, "event");
+  }
+  u.casting = { ...opt, noSomatic: !!spellOf(m, opt.name).noSomatic };
+  note(`${m.name} begins casting ${opt.label} (${opt.cost} magan, ${cap(opt.phase)} phase).`);
+}
+
+/** The spell in hand is lost, and its magan with it. */
+function loseSpell(state, note, u, why) {
+  if (!u.casting) return;
+  note(`${u.name} loses ${u.casting.label} (${why}); the magan is spent.`, "event");
+  u.casting = null;
+}
+/** Attacking or defending loses a spell cast with gestures. */
+const somatic = (u) => u.casting && !u.casting.noSomatic;
+
+/** Health lost while casting: a Miscast trial against the health lost, or the spell is gone. Even familiar spells, and no coercing. */
+function miscastOnHurt(state, rng, note, u, dmg) {
+  if (!u.casting) return;
+  const m = memberOf(state, u);
+  const t = trial(rng, [castDie(m), masteryDie(m, SPELLS[u.casting.name].form)]);
+  const ok = passes(t, dmg);
+  note(`${m.name} holds ${u.casting.label} through the pain? Miscast ${t.text} against ${dmg}: ${ok ? "holds" : "no"}.`);
+  if (!ok) loseSpell(state, note, u, "the wound broke it");
+}
+
+/** Where a spell can come from: the caster, or a Puca within 30 feet (Spell Conduit). */
+function spellOrigins(state, u) {
+  const m = memberOf(state, u), out = [u];
+  if (m.companion?.ability === "Spell Conduit") {
+    const pet = unitById(state.battle, m.companion.id);
+    if (pet && standing(state, pet) && gap(u, pet) <= 6) out.push(pet);
+  }
+  return out;
+}
+
+/** Who the spell in hand could land on now. */
+export function castTargets(state, u) {
+  const b = state.battle, c = u.casting;
+  if (!c || u.ap < 1) return [];
+  const sp = spellOf(memberOf(state, u), c.name);
+  const near = (t) => spellOrigins(state, u).some(o => o === t || gap(o, t) <= (sp.reach || 1));
+  if (sp.kind === "damage" || sp.kind === "condition") return b.units.filter(t => t.side !== u.side && standing(state, t) && !isObject(t) && near(t));
+  return b.units.filter(t => t.side === u.side && onField(t) && !memberOf(state, t).dead && near(t) &&
+    (sp.kind !== "heal" || memberOf(state, t).hp < (t.companion ? memberOf(state, t).health : memberOf(state, t).health)) &&
+    (sp.kind !== "heal" || c.age !== "round" || (t.lostThisRound || 0) > 0));
+}
+
+/** Release the spell in hand on a target: 1 AP. */
+export function pcCast(state, rng, note, targetId) {
+  const u = currentPC(state);
+  if (!u?.casting) return;
+  const t = castTargets(state, u).find(x => x.id === targetId);
+  if (!t) return;
+  const c = u.casting, m = memberOf(state, u);
+  u.ap -= 1; u.casting = null; u.moveLeft = 0; u.lastMove = false;
+  if (c.miscast) {
+    const tr = trial(rng, [castDie(m), masteryDie(m, SPELLS[c.name].form)]);
+    if (!passes(tr, c.miscast)) {
+      state.battle.queue.unshift({ op: "ask" });
+      state.battle.prompt = { kind: "coerce", id: u.id, target: t.id, cast: c, yes: "Force it", no: "Let it fail",
+        text: `${m.name}'s ${c.label} slips (Miscast ${tr.text} against ${c.miscast}). Force it through and advance Exhausted by 1 tier?` };
+      return;
+    }
+    note(`${m.name} reaches back for the older wounds (Miscast ${tr.text} against ${c.miscast}).`);
+  }
+  releaseSpell(state, rng, note, u, t, c);
+  advance(state, rng, note);
+}
+
+function releaseSpell(state, rng, note, u, t, c) {
+  const b = state.battle, m = memberOf(state, u), sp = spellOf(m, c.name);
+  const dc = m.casting.dc;
+  const power = () => rollPool(rng, [castDie(m), masteryDie(m, sp.form)], { extra: -1 });
+  if (sp.kind === "damage") {
+    const r = resist(state, rng, t, sp.resist, dc);
+    note(`${m.name} casts ${sp.name} at ${t.name}. ${t.name} resists with ${cap(sp.resist)} (${r.text} against ${dc}): ${r.ok ? "untouched" : "it lands"}.`);
+    if (!r.ok) { const d = power(); note(`${sp.name}: ${d.text}.`); secondaryDamage(state, rng, note, t, d.total, sp.type, sp.name); if (!t.pc && onField(t)) morale(state, rng, note, "hurt", t); }
+    return;
+  }
+  if (sp.kind === "condition") {
+    const r = resist(state, rng, t, sp.resist, dc, { forCond: sp.cond });
+    note(`${m.name} casts ${sp.name} on ${t.name}. ${t.name} resists with ${cap(sp.resist)} (${r.text} against ${dc}): ${r.ok ? "it holds firm" : "it gives"}.`);
+    const entry = concentrate(state, note, u, { name: sp.name, kind: "condition", cond: sp.cond, target: r.ok ? null : t.id });
+    if (!r.ok) { addCond(state, note, t, sp.cond, 1, { by: u.id, lasting: true }); if (sp.cond === "demoralized") t.fearOf = u.id; }
+    else note(`${sp.name} stays in ${m.name}'s concentration: 1 AP on a later turn tries again.`);
+    return entry;
+  }
+  if (sp.kind === "ward") {
+    const pool = (m.casting.forms[sp.form] || 1) * 5 * (sp.duration || 1);
+    (t.wards ||= []).push({ by: u.id, name: sp.name, against: sp.against, pool, round: (sp.duration || 1) === 1 ? b.round : null });
+    note(`${m.name} casts ${sp.name} on ${t.name}: a ward of ${pool} against ${sp.against} damage${(sp.duration || 1) === 1 ? ", for this round" : ""}.`, "reward");
+    if (sp.concentration !== false && (sp.duration || 1) > 1) concentrate(state, note, u, { name: sp.name, kind: "ward", target: t.id });
+    return;
+  }
+  if (sp.kind === "heal") {
+    const tm = memberOf(state, t), max = tm.health;
+    const d = power();
+    let n = Math.min(d.total, max - tm.hp);
+    if (c.age === "round") n = Math.min(n, t.lostThisRound || 0);
+    if (c.age === "round") t.lostThisRound -= n;
+    const was = tm.hp;
+    tm.hp += n;
+    note(`${m.name} casts ${c.label} on ${t.name} (${d.text}): ${was} → ${tm.hp} health${c.age === "round" && d.total > n ? " (only this round's wounds)" : ""}.`, "reward");
+    if (was <= 0 && tm.hp > 0 && !t.companion) {
+      tm.down = false; tm.dying = null; tm.stable = false; tm.fightingOn = false;
+      note(`${tm.name} comes to.`, "reward");
+    }
+  }
+}
+
+/**
+ * Concentration (Magic Mastery): the newest spell takes the free slot and
+ * the one it displaces turns passive. A passive spell breaks on any damage
+ * to health or durability, unless it was cast this round.
+ */
+function concentrate(state, note, u, entry) {
+  for (const e of u.conc || []) if (e.slot === "free") e.slot = "passive";
+  const e = { id: `${entry.name}:${state.battle.round}:${(u.conc || []).length}`, ...entry, slot: "free", round: state.battle.round };
+  (u.conc ||= []).push(e);
+  return e;
+}
+export function concentrationOf(u) { return u.conc || []; }
+/** At declarations: which spell takes the free slot this round. */
+function setFreeSlot(u, id) {
+  if (!(u.conc || []).some(e => e.id === id)) return;
+  for (const e of u.conc) e.slot = e.id === id ? "free" : "passive";
+}
+function endConcentration(state, note, u, e, why) {
+  const b = state.battle;
+  u.conc = (u.conc || []).filter(x => x !== e);
+  const t = e.target && unitById(b, e.target);
+  if (e.kind === "ward" && t) t.wards = (t.wards || []).filter(w => !(w.by === u.id && w.name === e.name));
+  // A held condition starts standard deterioration (Conditions spells).
+  if (e.kind === "condition" && t && cond(t, e.cond)) (t.decay ||= {})[e.cond] = { by: null, round: b.round };
+  note(`${u.name}'s ${e.name} ${why}.`, "event");
+}
+/** Damage reached the caster: passive spells break. */
+function shaken(state, note, u) {
+  for (const e of [...(u.conc || [])]) if (e.slot === "passive" && e.round !== state.battle.round) endConcentration(state, note, u, e, "breaks as the blow lands");
+}
+/** Out cold or dead: every spell lets go. */
+function dropAllSpells(state, note, u) {
+  loseSpell(state, note, u, "they went down");
+  for (const e of [...(u.conc || [])]) endConcentration(state, note, u, e, "ends");
+}
+/** The ward standing against this damage type, if any. */
+const wardFor = (t, type) => (t.wards || []).find(w => w.pool > 0 && wardCovers(w.against, type));
+function drainWard(state, note, t, w, n) {
+  if (!w || !n) return;
+  w.pool -= n;
+  note(`${w.name} on ${t.name} takes ${n}${w.pool > 0 ? ` (${w.pool} left)` : ", and fails"}.`);
+  if (w.pool > 0) return;
+  t.wards = t.wards.filter(x => x !== w);
+  const caster = unitById(state.battle, w.by);
+  const e = caster && (caster.conc || []).find(x => x.kind === "ward" && x.name === w.name && x.target === t.id);
+  if (e) caster.conc = caster.conc.filter(x => x !== e);
+}
+/** Reapply a resisted or broken condition spell still held in concentration: 1 AP, no magan. */
+export function reapplyOptions(state, u) {
+  const b = state.battle;
+  return (u.conc || []).filter(e => e.kind === "condition" && !e.target).map(e => ({ e, targets: u.ap < 1 ? [] : b.units.filter(t => t.side !== u.side && standing(state, t) && !isObject(t) && spellOrigins(state, u).some(o => gap(o, t) <= (SPELLS[e.name].reach || 1))) }));
+}
+export function pcReapply(state, rng, note, entryId, targetId) {
+  const u = currentPC(state);
+  if (!u) return;
+  const opt = reapplyOptions(state, u).find(o => o.e.id === entryId);
+  const t = opt?.targets.find(x => x.id === targetId);
+  if (!t) return;
+  u.ap -= 1;
+  const m = memberOf(state, u), sp = spellOf(m, opt.e.name);
+  const r = resist(state, rng, t, sp.resist, m.casting.dc, { forCond: sp.cond });
+  note(`${m.name} turns ${sp.name} on ${t.name} again (1 AP). ${t.name} resists with ${cap(sp.resist)} (${r.text} against ${m.casting.dc}): ${r.ok ? "it holds firm" : "it gives"}.`);
+  if (!r.ok) { opt.e.target = t.id; addCond(state, note, t, sp.cond, 1, { by: u.id, lasting: true }); if (sp.cond === "demoralized") t.fearOf = u.id; }
+  advance(state, rng, note);
+}
+
 /** Break free of a hold (Conditions, Breaking free), for yourself or an adjacent ally: 1 AP, a Strength trial against the hold. */
 export function freeTargets(state, u) {
   return state.battle.units.filter(t => t.pc && onField(t) && t.held && (t === u || gap(u, t) <= 1));
@@ -1098,6 +1334,7 @@ export function pcTriage(state, rng, note, targetId) {
   const t = triageTargets(state, u).find(x => x.id === targetId);
   if (!t) return;
   u.ap -= 2; u.moveLeft = 0; u.lastMove = false;
+  loseSpell(state, note, u, "tending a wound instead");
   const m = memberOf(state, t);
   m.stable = true; m.dying = null;
   note(`${u.name} stops ${m.name}'s bleeding (Triage, 2 AP). ${m.name} is stable, unconscious at 0 health.`, "reward");
@@ -1141,6 +1378,16 @@ export function respond(state, rng, note, yes) {
         u.ap -= 1;
         b.queue.unshift({ op: "attack", by: p.by, target: p.target, ranged: false, reaction: p.kind });
       }
+      break;
+    }
+    case "coerce": {
+      b.queue.shift();
+      const u = unitById(b, p.id), t = unitById(b, p.target);
+      if (yes) {
+        addCond(state, note, u, "exhausted", 1, { lasting: true });
+        note(`${u.name} forces ${p.cast.label} through (Coerced success).`, "event");
+        if (t && onField(t)) releaseSpell(state, rng, note, u, t, p.cast);
+      } else note(`${p.cast.label} fails; the magan is spent.`);
       break;
     }
     case "fightOn": {
@@ -1429,9 +1676,10 @@ function runAttack(state, rng, note, op) {
       const set = reactOf(memberOf(state, t), "defend");
       const helper = heartener(state, t, "heartenDefense");
       const auto = helper && reactOf(memberOf(state, helper), "heartenDefense") === "always" ? helper.id : null;
-      if (set !== "ask") { op.defend = set === "always"; if (op.defend && auto) op.hearten = auto; return; }
+      // A caster mid-spell is asked even on Always: defending would lose the spell.
+      if (set !== "ask" && !(set === "always" && somatic(t))) { op.defend = set === "always"; if (op.defend && auto) op.hearten = auto; return; }
       b.prompt = { kind: "defend", by: a.id, target: t.id, helper: auto ? null : helper?.id, helperName: helper?.name, autoHearten: auto,
-        text: `${a.name} ${op.reaction === "reprisal" ? "lashes out at" : op.reaction === "counter" || op.reaction === "riposte" ? "counters" : op.charge ? "charges" : "attacks"} ${t.name} (${info.name}${op.ranged ? ", ranged" : ""}). Defend (1 AP, ${t.ap} left)?` };
+        text: `${a.name} ${op.reaction === "reprisal" ? "lashes out at" : op.reaction === "counter" || op.reaction === "riposte" ? "counters" : op.charge ? "charges" : "attacks"} ${t.name} (${info.name}${op.ranged ? ", ranged" : ""}). Defend (1 AP, ${t.ap} left)?${somatic(t) ? ` Defending loses ${t.casting.label}.` : ""}` };
       return;
     } else if (has(t, "doubleDamage") && !op.ranged && t.ap >= 1 && t.hp > t.hpMax / 2) {
       // Double Damage: it lets the blow land, with Superiority, to answer it with its own.
@@ -1456,6 +1704,9 @@ function runAttack(state, rng, note, op) {
   }
   b.queue.shift();
   if (op.defend) t.ap -= 1;
+  // Attacking or defending loses a spell cast with gestures (Interrupted Casting).
+  if (a.pc && somatic(a)) loseSpell(state, note, a, "attacking");
+  if (op.defend && t.pc && somatic(t)) loseSpell(state, note, t, "defending");
   if (op.thrownKey) b.thrown[op.thrownKey] = (b.thrown[op.thrownKey] || 0) + 1;
 
   // Ranged: the Aiming Trial (Combat, Attack). Helpless targets are hit automatically.
@@ -1609,9 +1860,9 @@ function afterHit(state, rng, note, a, t, op, hit, info, heartenTrial) {
   if (t.pc) {
     const set = reactOf(memberOf(state, t), "counter");
     if (set === "never") return;
-    if (set === "always") { t.ap -= 1; b.queue.unshift({ op: "attack", by: t.id, target: a.id, ranged: false, reaction: "counter" }); return; }
+    if (set === "always" && !somatic(t)) { t.ap -= 1; b.queue.unshift({ op: "attack", by: t.id, target: a.id, ranged: false, reaction: "counter" }); return; }
     b.queue.unshift({ op: "ask" });
-    b.prompt = { kind: "counter", by: t.id, target: a.id, text: `${t.name} turned the blow. Counterattack ${a.name} (1 AP, ${t.ap} left)?` };
+    b.prompt = { kind: "counter", by: t.id, target: a.id, text: `${t.name} turned the blow. Counterattack ${a.name} (1 AP, ${t.ap} left)?${somatic(t) ? ` Attacking loses ${t.casting.label}.` : ""}` };
   } else if (t.demoralized < 3 && (t.ap >= 2 || t.doneIn.length) && meleeAttack(CREATURES[t.cname])) {
     t.ap -= 1; t.attack = CREATURES[t.cname].attacks.indexOf(meleeAttack(CREATURES[t.cname]));
     b.queue.unshift({ op: "attack", by: t.id, target: a.id, ranged: false, reaction: "counter" });
@@ -1695,9 +1946,14 @@ function applyHit(state, rng, note, a, t, atk, def, type, ranged) {
     // Whether the shield takes the hit is the character's standing choice (Foundry's shieldAbsorbs).
     const shield = usesShield(m, weaponOf(m, t)) && m.shieldAbsorbs !== false ? m.shield.durability : 0;
     const armor = m.armor?.durability || 0;
-    const r = resolveDamage({ attackTotal: atk.total, damageType: type, armorResistance: armor > 0 ? (m.armor.resistance[type] || 0) : 0,
-      durabilityCurrent: shield + armor, healthCurrent: m.hp, activeDefense: !!def, defenseTotal: def?.total || 0 });
+    // A companion's own hide: its mundane resistance stands whether or not it defends.
+    const res = t.companion ? (MUNDANE.includes(type) ? m.resistance : 0) : armor > 0 ? (m.armor.resistance[type] || 0) : 0;
+    const ward = wardFor(t, type);
+    const r = resolveDamage({ attackTotal: atk.total, damageType: type, armorResistance: res,
+      durabilityCurrent: shield + armor, healthCurrent: m.hp, activeDefense: !!def, defenseTotal: def?.total || 0, wardPool: ward?.pool || 0 });
     if (r.defended) { note(`${t.name} turns it aside.`); return r; }
+    drainWard(state, note, t, ward, r.wardAbsorbed);
+    if (r.durabilityDamage) shaken(state, note, t);
     if (r.absorbed) { note(`${m.armor?.name || "Armor"} takes it.`); return r; }
     // The shield soaks durability damage before the armor (Weapon and Shield Style).
     const toShield = Math.min(shield, r.durabilityDamage), toArmor = r.durabilityDamage - toShield;
@@ -1742,6 +1998,9 @@ function applyHit(state, rng, note, a, t, atk, def, type, ranged) {
 /** Health damage to a character: 0 health, the dying timer, Fighting On, Traumas (Combat, Death). */
 function hurtPC(state, rng, note, u, dmg) {
   const m = memberOf(state, u);
+  u.lostThisRound = (u.lostThisRound || 0) + dmg;
+  shaken(state, note, u);
+  if (u.casting) miscastOnHurt(state, rng, note, u, dmg);
   if (u.companion) {
     m.hp = Math.max(0, m.hp - dmg);
     if (m.hp > 0) return;
@@ -1807,6 +2066,7 @@ function traumaFor(rng, m) {
 
 function knockOut(state, note, u, how = "falls unconscious") {
   const m = memberOf(state, u);
+  dropAllSpells(state, note, u);
   m.down = true; m.fightingOn = false;
   u.ap = 0;
   note(`${m.name} ${how}.`, "event");
@@ -1814,6 +2074,7 @@ function knockOut(state, note, u, how = "falls unconscious") {
 
 function die(state, note, u, how = "dies") {
   const m = memberOf(state, u);
+  dropAllSpells(state, note, u);
   m.dead = true; m.down = true; m.dying = null; m.hp = 0;
   u.dead = true;
   note(`${m.name} ${how}.`, "event");
@@ -2289,7 +2550,7 @@ export function healingMeans(standingMembers) {
     // TODO(party): kits and current magan are tracked from milestone 3; for now carrying a kit or knowing the spell is enough.
     if (m.gear?.includes("Healer's Kit")) return { who: m.name, what: "a Healer's Kit" };
     const spell = (m.spells || []).find(sp => HEALING_SPELLS.includes(sp));
-    if (spell && m.magan > 0) return { who: m.name, what: spell };
+    if (spell && (m.mp ?? m.magan) > 0) return { who: m.name, what: spell };
   }
   return null;
 }
@@ -2355,6 +2616,9 @@ function tend(state, rng, note) {
 
 export function conditionsOf(state, u) {
   const bits = [];
+  if (u.casting) bits.push(`casting ${u.casting.label}`);
+  for (const w of u.wards || []) bits.push(`${w.name} ${w.pool}`);
+  for (const e of u.conc || []) bits.push(`holding ${e.name}${e.slot === "passive" ? " (passive)" : ""}`);
   if (u.impaired) bits.push(IMPAIRED[u.impaired]);
   if (u.demoralized) bits.push(DEMORALIZED[u.demoralized]);
   for (const k of Object.keys(COND_LABELS)) if (cond(u, k)) bits.push(COND_LABELS[k][cond(u, k)]);
