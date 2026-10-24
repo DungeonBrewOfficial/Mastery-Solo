@@ -205,3 +205,34 @@ test("Epic creatures fight to the death", () => {
     assert.doesNotMatch(logOf(s, from), /Wolf, Dire (wavers|holds|flees)/);
   }
 });
+
+test("reaction settings: Never skips the prompt, Always acts without asking", () => {
+  const s = battle(12, [{ name: "Bandit Cutthroat", count: 2 }], { temper: "Raider", distance: "Close" });
+  for (const m of s.party.members) { m.react = { defend: "always", counter: "always", reprisal: "never" }; }
+  runWithDice(s, (rng) => beginRound(s, rng, say(s)));
+  for (let i = 0; i < 200 && s.battle; i++) {
+    const p = s.battle.prompt;
+    assert.ok(!p || !["defend", "counter", "reprisal"].includes(p.kind), `no ${p?.kind} prompt`);
+    if (p) runWithDice(s, (rng) => respond(s, rng, say(s), true));
+    else if (s.battle.stage === "declare") runWithDice(s, (rng) => beginRound(s, rng, say(s)));
+    else if (currentPC(s)) runWithDice(s, (rng) => pcEndTurn(s, rng, say(s)));
+  }
+});
+
+test("Avoid Death set to Ask stops for the choice", () => {
+  let asked = false;
+  for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) {
+    const s = battle(seed, [{ name: "Bandit Leader", count: 1 }, { name: "Bandit Cutthroat", count: 2 }, { name: "Bandit Thug", heads: 6 }], { temper: "Raider" });
+    s.party.members.find(m => m.id === "gerberga").react = { avoidDeath: "ask" };
+    runWithDice(s, (rng) => beginRound(s, rng, say(s)));
+    for (let i = 0; i < 400 && s.battle && !asked; i++) {
+      const p = s.battle.prompt;
+      if (p?.kind === "avoidDeath") { asked = true; runWithDice(s, (rng) => respond(s, rng, say(s), true)); break; }
+      if (p) runWithDice(s, (rng) => respond(s, rng, say(s), true));
+      else if (s.battle.stage === "declare") runWithDice(s, (rng) => beginRound(s, rng, say(s)));
+      else if (currentPC(s)) runWithDice(s, (rng) => pcEndTurn(s, rng, say(s)));
+    }
+    if (asked) break;
+  }
+  assert.ok(asked);
+});

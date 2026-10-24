@@ -7,7 +7,7 @@ import { choices, choose, signChoices, chooseSign, partyLevel, bandFor, ROMAN } 
 import { CREATURES } from "./data/creatures.js";
 import { squareAt, countryAt, findPath, moveCost, TERRAINS, SETTLEMENTS } from "./world.js";
 import { draw, drawBattle, battleLayout } from "./render.js";
-import { attackModes, setMode, freeTargets, pcBreakFree, pcStand, challengeTargets, beginRound, retreat, runPlan, respond, currentPC, moveCost as stepCost, pcMove, pcAttack, pcEndTurn, triageTargets, pcTriage, canAttack, standing, onField, conditionsOf, memberFor, creatureFor, weaponOf, GUARDS, PHASES } from "./combat.js";
+import { opportunities, REACTIONS, reactOf, reactionsFor, setReaction, attackModes, setMode, freeTargets, pcBreakFree, pcStand, challengeTargets, beginRound, retreat, runPlan, respond, currentPC, moveCost as stepCost, pcMove, pcAttack, pcEndTurn, triageTargets, pcTriage, canAttack, standing, onField, conditionsOf, memberFor, creatureFor, weaponOf, GUARDS, PHASES } from "./combat.js";
 import { BAND_LABELS } from "./vendor/foundry/module/helpers/weather-rules.mjs";
 import { openStorage, pack, unpack } from "./storage.js";
 
@@ -258,6 +258,24 @@ function renderBattle(box) {
   } else if (u) {
     const m = memberFor(state, u), w = weaponOf(m, u);
     box.insertAdjacentHTML("beforeend", `<p><strong>${m.name}</strong>'s turn · ${u.ap} AP · ${w ? w.name : "unarmed"}${u.moveLeft ? ` · ${u.moveLeft} squares of movement left` : ""}</p><p class="small muted">Click a lit square to move, a ringed enemy to attack. A ringed enemy 3 or more squares off in a straight line is a Charge (2 AP, Dominance). AP you keep can defend, counter, and strike at enemies who leave your reach.</p>`);
+    const hints = opportunities(state, u);
+    if (hints.length) {
+      const hl = document.createElement("ul");
+      hl.className = "hints";
+      hl.setAttribute("aria-label", "Right now");
+      for (const h of hints) {
+        const li = document.createElement("li");
+        li.textContent = h.text;
+        li.title = h.rule;
+        const rule = document.createElement("p");
+        rule.className = "rule"; rule.hidden = true; rule.textContent = h.rule;
+        li.appendChild(rule);
+        li.onclick = () => { rule.hidden = !rule.hidden; };
+        hl.appendChild(li);
+      }
+      box.insertAdjacentHTML("beforeend", `<p class="small muted hints-head">Right now (tap a line for its rule)</p>`);
+      box.appendChild(hl);
+    }
     const modes = attackModes(state, u);
     if (modes.length > 1) {
       const mr = document.createElement("div");
@@ -329,6 +347,12 @@ function renderParty() {
     const scars = [m.injuries ? `${m.injuries} injur${m.injuries === 1 ? "y" : "ies"}` : "", ...(m.traumas || []).map(t => t.name)].filter(Boolean);
     li.innerHTML = `<strong>${m.name}</strong> <span class="muted">${m.cls} ${m.level}</span> <span>${state_ ? `<span class="warn">${state_}</span>` : `${m.hp}/${m.health} hp`}</span> <span class="muted">${m.xp} XP</span>${scars.length ? `<span class="muted small">${scars.join(", ")}</span>` : ""}`;
     if (m.dead) li.className = "dead";
+    else {
+      const rb = button("Reactions", () => openReactions(m.id));
+      rb.className = "quiet small-btn";
+      rb.title = "What this character does on their own when a reaction comes up";
+      li.appendChild(rb);
+    }
     list.appendChild(li);
   }
   for (const role of ["scout", "watchman"]) {
@@ -339,6 +363,38 @@ function renderParty() {
   $("quiet").checked = !!p.quiet;
   if (p.pelts.length) $("pelts").textContent = `Pelts: ${p.pelts.map(x => `${x.quality} ${x.name.toLowerCase()} (${x.value} sp)`).join(", ")}`;
   else $("pelts").textContent = "";
+}
+
+/** Each character's standing choice for each reaction: Ask, Always, Never. */
+function openReactions(id) {
+  const m = state.party.members.find(x => x.id === id);
+  const box = $("reactions");
+  box.innerHTML = `<p><strong>${m.name}'s reactions</strong> <span class="muted small">Ask stops for you each time; Always and Never decide on their own.</span></p>`;
+  for (const k of reactionsFor(m)) {
+    const r = REACTIONS[k];
+    const row = document.createElement("div");
+    row.className = "react-row";
+    const lab = document.createElement("label");
+    lab.textContent = r.label;
+    const sel = document.createElement("select");
+    for (const v of r.noAsk ? ["always", "never"] : ["ask", "always", "never"]) sel.add(new Option(v[0].toUpperCase() + v.slice(1), v));
+    sel.value = reactOf(m, k);
+    sel.onchange = () => { setReaction(m, k, sel.value); persist(); };
+    lab.appendChild(sel);
+    const rule = document.createElement("p");
+    rule.className = "small muted";
+    rule.textContent = r.text;
+    row.append(lab, rule);
+    box.appendChild(row);
+  }
+  const row = document.createElement("div");
+  row.className = "buttons";
+  const done = button("Done", () => { box.hidden = true; render(); });
+  done.className = "primary";
+  row.appendChild(done);
+  box.appendChild(row);
+  box.hidden = false;
+  box.scrollIntoView({ block: "nearest" });
 }
 
 function describe(sq, x, y) {

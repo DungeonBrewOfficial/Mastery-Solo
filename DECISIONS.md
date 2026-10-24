@@ -73,6 +73,7 @@ Rulings Jon has made for this design, newest last within each section. Each line
 - Avoid Death fires automatically the first time it applies between rests. It's a choice, not a reaction, and costs no AP. (Jon: the rules text calling it a reaction is an error.)
 - Unnumbered Attrition from a rider deals the creature's attack attribute tier, the higher of Strength or Physique.
 - Epic and Legendary creatures fight to the death. They make no morale trials, because lairs and retreats are a process for later.
+- Synergies are surfaced two ways [Jon, 2026-10-24]. First, a "Right now" list on each character's turn names the openings, charges, allies to save or free, and help on hand, each with its rule word for word. Second, each character has a Reactions page with Ask, Always, or Never for defense, counterattacks, reprisals, Snap Shot, Avoid Death, and Hearten on an ally's defense, attack, or trial.
 - Whether the shield takes durability damage before the armor is each character's standing choice, set at each round's declarations (as in Foundry's `shieldAbsorbs`, on by default). A ranged hit doesn't have to go to the shield.
 
 **Creature tiers (a guess, 2026-10-24)**
@@ -95,6 +96,5 @@ Jon is still building monsters. His current guess at the party levels each creat
 - The hoard multiplier (40 sp per point of the guardian's XP value), waiting on play.
 - The site questions at the top of `design/05-sites.md`: areas instead of grid maps, site sizes, default DCs by band, the clock inside, the guardian's group spread through the site, cleared sites refilling, magic treasure, and lost-place guardians.
 - The settlement questions at the top of `design/06-settlements.md`: recruit level, who's available, hiring a smith, rumors, libraries, and a hamlet's hospitality.
-- **Hearten and other help between characters.** Jon suggests a help panel that shows the synergies available. Proposal sent 2026-10-24.
 - **Difficulty settings** (later). Candidates so far: what a wipe means (everyone dies; everyone but the dynasty's main character survives; raiders rob and leave, beasts drag one off), and whether healing means make saving the dying after a fight automatic.
 - Metals, deferred: Jon is working on them in the main rules. Plate is the level-10 bar for now; better materials and craftsmanship belong past that. The five-metal ladder (Iron, Steel, Silver, Gold, Mithril) needs a purpose. Candidates so far: Durability grades on armor and shields, or the substrate for permanent enchantment (which waits on Mastery's magic items).

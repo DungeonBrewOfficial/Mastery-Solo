@@ -30,6 +30,7 @@ import { MASTERY, dtdForTierRank, sizeRowForSquares } from "./vendor/foundry/mod
 import { buildHealthPlan, armoredDurability } from "./vendor/foundry/module/helpers/npc-health.mjs";
 import { headsLost, groupTokenSize, bandFor as groupBand, mobDC } from "./vendor/foundry/module/helpers/minion-rules.mjs";
 import { abilitiesOf, unbuilt } from "./data/abilities.js";
+import { RULES } from "./data/rules-text.js";
 import { TRAUMA_TABLE } from "./vendor/foundry/module/data/trauma-table.mjs";
 import { resolveDamage } from "./vendor/foundry/extract/resolve-damage.mjs";
 import { speedOf, creatureSpeed, creatureTrial, awardCombatXp, spoils, chase, breakAway, cannotRun } from "./events.js";
@@ -169,6 +170,30 @@ function pcDefense(state, u, type, ranged) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Reactions: each character's standing choice, Ask, Always, or Never    */
+
+export const REACTIONS = {
+  defend: { label: "Defend", default: "ask", text: "Spend 1 AP to defend against an incoming attack, declared before the roll (Combat, Defense)." },
+  counter: { label: "Counterattack", default: "ask", text: "If you successfully defend against an attack, you can spend 1 AP as a reaction to make a counterattack against your attacker (Combat, Triggered Reactions)." },
+  reprisal: { label: "Reprisal attack", default: "ask", text: "If a creature moves out of your melee attack range, you can spend 1 AP as a reaction to make an attack against that creature (Combat, Triggered Reactions)." },
+  snap: { label: "Snap Shot", default: "ask", text: "Reprisal, when a creature uses movement to approach within 15 feet of your position. Make a ranged attack with Impotence and move up to half your movement speed away from the triggering creature (Weapon Mastery, Ranged Baseline)." },
+  avoidDeath: { label: "Avoid Death", default: "always", text: "When an attack or spell would reduce you to 0 health, you can roll your Endurance tier die and restore that amount of health. You cannot use this again until you complete a rest (Skill Mastery, Athletics)." },
+  heartenDefense: { label: "Hearten an ally's defense", default: "ask", text: "As a reaction, you may spend 1 AP when an ally makes a trial, attack, or defense roll. You grant a bonus equal to your Charisma tier to that roll (Skill Mastery, Presence, Rhetoric)." },
+  heartenAttack: { label: "Hearten an ally's attack", default: "never", text: "As a reaction, you may spend 1 AP when an ally makes a trial, attack, or defense roll. You grant a bonus equal to your Charisma tier to that roll (Skill Mastery, Presence, Rhetoric)." },
+  heartenTrial: { label: "Hearten an ally's trial", default: "never", noAsk: true, text: "As a reaction, you may spend 1 AP when an ally makes a trial, attack, or defense roll. You grant a bonus equal to your Charisma tier to that roll (Skill Mastery, Presence, Rhetoric). Trials come up mid-attack, so this one is Always or Never." }
+};
+export const reactOf = (m, k) => m.react?.[k] || REACTIONS[k].default;
+/** The reactions a character has, for the settings page. */
+export function reactionsFor(m) {
+  const keys = ["defend", "counter", "reprisal"];
+  if (m.weapons.some(w => w.ranged && (m.weaponSkill?.[w.type] || 1) >= 2)) keys.push("snap");
+  if ((m.abilities || []).includes("Avoid Death")) keys.push("avoidDeath");
+  if ((m.abilities || []).includes("Hearten")) keys.push("heartenDefense", "heartenAttack", "heartenTrial");
+  return keys;
+}
+export function setReaction(m, k, v) { if (REACTIONS[k] && ["ask", "always", "never"].includes(v)) (m.react ||= {})[k] = v; }
+
+/* ------------------------------------------------------------------ */
 /* Conditions (Conditions chapter)                                      */
 
 export const COND_LABELS = {
@@ -260,10 +285,12 @@ function mods(state, u, kind) {
 function resist(state, rng, u, attr, dc, { edge = 0 } = {}) {
   const md = mods(state, u, attr);
   const e = Math.sign(edge + md.edge);
+  const helper = u.pc && state.battle ? heartener(state, u, "heartenTrial") : null;
+  const lift = helper && reactOf(memberOf(state, helper), "heartenTrial") === "always" ? heartenBonus(state, helper.id) : 0;
   const t = u.pc
-    ? trial(rng, [dieOfTier(tierOf(memberOf(state, u).attributes[attr])), dieOfTier(tierOf(memberOf(state, u).attributes[attr]))], { edge: e, bonus: md.bonus - md.pen })
+    ? trial(rng, [dieOfTier(tierOf(memberOf(state, u).attributes[attr])), dieOfTier(tierOf(memberOf(state, u).attributes[attr]))], { edge: e, bonus: md.bonus - md.pen + lift })
     : creatureTrial(rng, CREATURES[u.cname], attr, { edge: e, bonus: md.bonus - md.pen });
-  return { ok: passes(t, dc), text: t.text };
+  return { ok: passes(t, dc), text: t.text + (lift ? `, ${helper.name} heartens +${lift}` : "") };
 }
 
 /* ------------------------------------------------------------------ */
@@ -743,6 +770,37 @@ export function canAttack(state, u, t, mode = u.mode || "strike") {
   return { ok: true, ranged: false, cost };
 }
 
+/**
+ * What the current character could do right now that a player might miss:
+ * openings, charges, allies to save or free, help on hand. → [{ text, rule }]
+ */
+export function opportunities(state, u) {
+  const b = state.battle, m = memberOf(state, u), out = [];
+  const foes = b.units.filter(t => !t.pc && standing(state, t));
+  if (attackModes(state, u).some(x => x.id === "opportunist") && u.ap >= 2) {
+    for (const t of foes.filter(f => canAttack(state, u, f, "opportunist").ok)) {
+      const why = t.startle > 0 ? "it's dazed from Startle" : b.units.filter(o => o.side === u.side && o !== u && standing(state, o) && gap(o, t) <= 1).length >= 2 ? "two allies are on it" : "you're flanking it";
+      const sup = t.demoralized >= 2 || t.startle >= 2;
+      out.push({ text: `Opportunist on ${t.name}: ${why}. Backstab gives Dominance${sup ? " and Superiority" : ""}.`, rule: RULES.opportunist + "\n\n" + RULES.backstab });
+    }
+  }
+  if (u.ap >= 2) for (const t of foes.filter(f => canAttack(state, u, f, "strike").charge)) out.push({ text: `Charge ${t.name}: a straight run in, 2 AP, Dominance.`, rule: RULES.charge });
+  for (const t of foes.filter(f => gap(u, f) <= 1 && flanking(state, u, f))) out.push({ text: `You're flanking ${t.name}: +2 to your attacks on it.`, rule: RULES.flanking });
+  for (const t of foes.filter(f => f.prone)) out.push({ text: `${t.name} is prone: melee attacks on it have Superiority.`, rule: RULES.prone });
+  for (const t of foes.filter(f => f.smashing)) out.push({ text: `${t.name} is winding up a Smash: attacks on it have Superiority until it lands.`, rule: RULES.smash });
+  for (const t of foes.filter(f => helpless(state, f))) out.push({ text: `${t.name} is helpless: it can't defend.`, rule: RULES.helpless });
+  for (const t of b.units.filter(x => x.pc && x !== u && onField(x) && memberOf(state, x).dying != null && !memberOf(state, x).stable)) {
+    const d = gap(u, t);
+    out.push({ text: d <= 1 ? `${t.name} is bleeding out (${memberOf(state, t).dying} rounds): stop it now, 2 AP.` : `${t.name} is bleeding out (${memberOf(state, t).dying} rounds), ${d - 1} square${d === 2 ? "" : "s"} from reach: get beside them and spend 2 AP.`, rule: RULES.triage });
+  }
+  if (u.held) out.push({ text: `You're held (${u.held.name}): break free for 1 AP, Strength against ${u.held.dc}.`, rule: RULES.breakFree });
+  for (const t of b.units.filter(x => x.pc && x !== u && onField(x) && x.held && gap(u, x) <= 1)) out.push({ text: `${t.name} is held: help them break free for 1 AP.`, rule: RULES.assist });
+  const helper = heartener(state, u, "heartenDefense");
+  if (helper) out.push({ text: `${helper.name} can hearten your rolls (+${tierOf(memberOf(state, helper).attributes.charisma)}).`, rule: RULES.hearten });
+  if (usesShield(m, weaponOf(m, u)) && attackModes(state, u).some(x => x.id === "shield")) out.push({ text: `You can bash with the ${m.shield.name.toLowerCase()} instead of the weapon (1 AP, Crushing).`, rule: RULES.shield });
+  return out;
+}
+
 export function setMode(state, mode) {
   const u = currentPC(state);
   if (u && attackModes(state, u).some(x => x.id === mode)) u.mode = mode;
@@ -834,17 +892,17 @@ export function respond(state, rng, note, yes) {
   b.prompt = null;
   const head = b.queue[0];
   switch (p.kind) {
-    case "defend": head.defend = !!yes; if (yes === "hearten" && p.helper) head.hearten = p.helper; break;
+    case "defend": head.defend = !!yes; if (yes === "hearten" && p.helper) head.hearten = p.helper; else if (yes && p.autoHearten) head.hearten = p.autoHearten; break;
     case "snapshot": {
       b.queue.shift();
-      const u = unitById(b, p.by), t = unitById(b, p.target);
-      if (yes && u.ap > 0) {
-        u.ap -= 1;
-        const m = memberOf(state, u), w = weaponOf(m, u);
-        const back = fallBack(state, u, t);
-        if (back) b.queue.unshift({ op: "move", id: u.id, path: back, asked: [] });
-        b.queue.unshift({ op: "attack", by: u.id, target: t.id, ranged: true, edge: -1, reaction: "snap", thrownKey: w.thrown ? `${m.id}:${u.weapon}` : null });
-      }
+      if (yes) snapShot(state, unitById(b, p.by), unitById(b, p.target));
+      break;
+    }
+    case "heartenAttack": head.heartenAsked = true; if (yes) head.heartenAtk = p.by; break;
+    case "avoidDeath": {
+      b.queue.shift();
+      const u = unitById(b, p.id);
+      if (yes) avoidDeath(state, rng, note, u); else dropToZero(state, rng, note, u, p.dmg);
       break;
     }
     case "counter":
@@ -990,6 +1048,9 @@ function runMove(state, rng, note, op) {
       if (gap(o, u) > reach || gap(o, next) <= reach) continue;
       op.asked.push(o.id);
       if (o.pc) {
+        const set = reactOf(memberOf(state, o), "reprisal");
+        if (set === "never") continue;
+        if (set === "always") { o.ap -= 1; b.queue.unshift({ op: "attack", by: o.id, target: u.id, ranged: false, reaction: "reprisal" }); return; }
         b.queue.unshift({ op: "ask" });
         b.prompt = { kind: "reprisal", by: o.id, target: u.id, text: `${u.name} is moving away from ${o.name}. Make a reprisal attack (1 AP)?` };
         return;
@@ -1005,6 +1066,9 @@ function runMove(state, rng, note, op) {
     if (!u.pc) for (const o of b.units.filter(x => x.pc && standing(state, x) && x.ap > 0 && !op.asked.includes(`snap:${x.id}`))) {
       if (gap(o, u) <= 3 || gap(o, next) > 3 || !snapReady(state, o)) continue;
       op.asked.push(`snap:${o.id}`);
+      const set = reactOf(memberOf(state, o), "snap");
+      if (set === "never") continue;
+      if (set === "always") { snapShot(state, o, u); return; }
       b.queue.unshift({ op: "ask" });
       b.prompt = { kind: "snapshot", by: o.id, target: u.id, yes: "Snap Shot", no: "Hold",
         text: `${u.name} is closing on ${o.name}. Snap Shot: a shot with Impotence, then fall back half a move (1 AP, ${o.ap} left)?` };
@@ -1038,6 +1102,17 @@ function snapReady(state, o) {
   if (w.thrown && (w.count ?? 1) - (state.battle.thrown[`${m.id}:${o.weapon}`] || 0) <= 0) return false;
   if (w.projectile && state.battle.units.some(x => x.side !== o.side && standing(state, x) && gap(o, x) <= 1)) return false;
   return true;
+}
+
+/** Snap Shot: the shot with Impotence, then the fall back. */
+function snapShot(state, u, t) {
+  const b = state.battle;
+  if (!u || !t || u.ap < 1) return;
+  u.ap -= 1;
+  const m = memberOf(state, u), w = weaponOf(m, u);
+  const back = fallBack(state, u, t);
+  if (back) b.queue.unshift({ op: "move", id: u.id, path: back, asked: [] });
+  b.queue.unshift({ op: "attack", by: u.id, target: t.id, ranged: true, edge: -1, reaction: "snap", thrownKey: w.thrown ? `${m.id}:${u.weapon}` : null });
 }
 
 /** Fall back up to half a move, as far from the threat as the ground allows. */
@@ -1092,11 +1167,27 @@ function runAttack(state, rng, note, op) {
     const d = canDefend(state, t, info.type, op.ranged);
     if (!d.can) op.defend = false;
     else if (t.pc) {
-      const helper = heartener(state, t);
-      b.prompt = { kind: "defend", by: a.id, target: t.id, helper: helper?.id, helperName: helper?.name,
+      const set = reactOf(memberOf(state, t), "defend");
+      const helper = heartener(state, t, "heartenDefense");
+      const auto = helper && reactOf(memberOf(state, helper), "heartenDefense") === "always" ? helper.id : null;
+      if (set !== "ask") { op.defend = set === "always"; if (op.defend && auto) op.hearten = auto; return; }
+      b.prompt = { kind: "defend", by: a.id, target: t.id, helper: auto ? null : helper?.id, helperName: helper?.name, autoHearten: auto,
         text: `${a.name} ${op.reaction === "reprisal" ? "lashes out at" : op.reaction === "counter" || op.reaction === "riposte" ? "counters" : op.charge ? "charges" : "attacks"} ${t.name} (${info.name}${op.ranged ? ", ranged" : ""}). Defend (1 AP, ${t.ap} left)?` };
       return;
     } else op.defend = t.ap > (t.doneIn.length || b.current === t.id ? 0 : 1);
+  }
+  // Hearten the attack (Presence, Rhetoric), if an ally is set to.
+  if (a.pc && !op.heartenAsked) {
+    op.heartenAsked = true;
+    const helper = heartener(state, a, "heartenAttack");
+    if (helper) {
+      if (reactOf(memberOf(state, helper), "heartenAttack") === "always") op.heartenAtk = helper.id;
+      else {
+        b.prompt = { kind: "heartenAttack", by: helper.id, target: a.id, yes: "Hearten", no: "Hold",
+          text: `${a.name} attacks ${t.name}. ${helper.name}: hearten the attack (+${tierOf(memberOf(state, helper).attributes.charisma)}, 1 AP, ${helper.ap} left)?` };
+        return;
+      }
+    }
   }
   b.queue.shift();
   if (op.defend) t.ap -= 1;
@@ -1128,7 +1219,9 @@ function runAttack(state, rng, note, op) {
   if (!op.ranged && t.prone) sup = true;
   if (op.ranged && t.prone) inf = true;
   if (t.smashing) sup = true;
-  const atk = rollPool(rng, info.dice, { edge: (dom ? 1 : 0) - (imp ? 1 : 0), bonus: info.bonus + (op.bonus || 0) + (flank ? 2 : 0) + am.bonus - am.pen, inferiority: inf, superiority: sup, extra: info.extra });
+  const lift = op.heartenAtk ? heartenBonus(state, op.heartenAtk) : 0;
+  if (lift) note(`${unitById(b, op.heartenAtk).name} heartens ${a.name} (+${lift}).`);
+  const atk = rollPool(rng, info.dice, { edge: (dom ? 1 : 0) - (imp ? 1 : 0), bonus: info.bonus + (op.bonus || 0) + (flank ? 2 : 0) + am.bonus - am.pen + lift, inferiority: inf, superiority: sup, extra: info.extra });
   let def = null;
   if (op.defend) {
     const d = canDefend(state, { ...t, ap: 1 }, info.type, op.ranged);
@@ -1183,6 +1276,9 @@ function afterHit(state, rng, note, a, t, op, hit, info) {
   // A successful defense opens a counterattack (Combat, Triggered Reactions).
   if (!op.defend || !hit.defended || (t.pc && weaponOf(memberOf(state, t), t)?.ranged)) return;
   if (t.pc) {
+    const set = reactOf(memberOf(state, t), "counter");
+    if (set === "never") return;
+    if (set === "always") { t.ap -= 1; b.queue.unshift({ op: "attack", by: t.id, target: a.id, ranged: false, reaction: "counter" }); return; }
     b.queue.unshift({ op: "ask" });
     b.prompt = { kind: "counter", by: t.id, target: a.id, text: `${t.name} turned the blow. Counterattack ${a.name} (1 AP, ${t.ap} left)?` };
   } else if (t.demoralized < 3 && (t.ap >= 2 || t.doneIn.length) && meleeAttack(CREATURES[t.cname])) {
@@ -1230,8 +1326,8 @@ function runGrab(state, rng, note, a, t, ab) {
 }
 
 /** Corra's Hearten (Presence, Rhetoric): a standing ally with AP can add their Charisma tier to this roll. */
-function heartener(state, t) {
-  return state.battle.units.find(o => o.pc && o !== t && standing(state, o) && o.ap > 0 && (memberOf(state, o).abilities || []).includes("Hearten"));
+function heartener(state, t, kind = "heartenDefense") {
+  return state.battle.units.find(o => o.pc && o !== t && standing(state, o) && o.ap > 0 && (memberOf(state, o).abilities || []).includes("Hearten") && reactOf(memberOf(state, o), kind) !== "never");
 }
 function heartenBonus(state, id) {
   const u = unitById(state.battle, id);
@@ -1304,24 +1400,15 @@ function hurtPC(state, rng, note, u, dmg) {
   if (m.hp > 0) {
     m.hp = Math.max(0, m.hp - dmg);
     if (m.hp > 0) return;
-    // Avoid Death (Athletics): once per rest, roll the Endurance tier die and restore that much.
-    if ((m.abilities || []).includes("Avoid Death") && !m.spent?.avoidDeath) {
-      const n = rng.d(dieOfTier(tierOf(m.attributes.endurance))[1]);
-      (m.spent ||= {}).avoidDeath = true;
-      m.hp = n;
-      note(`${m.name} refuses to fall (Avoid Death, d${dieOfTier(tierOf(m.attributes.endurance))[1]} ${n}): back to ${n} health.`, "reward");
+    // Avoid Death (Athletics): once per rest, by the character's setting.
+    if ((m.abilities || []).includes("Avoid Death") && !m.spent?.avoidDeath && reactOf(m, "avoidDeath") !== "never") {
+      if (reactOf(m, "avoidDeath") === "always") return avoidDeath(state, rng, note, u);
+      state.battle.queue.unshift({ op: "ask" });
+      state.battle.prompt = { kind: "avoidDeath", id: u.id, dmg, yes: "Avoid Death", no: "Save it",
+        text: `${m.name} is about to drop to 0 health. Use Avoid Death (roll the Endurance tier die and restore that much; once per rest)?` };
       return;
     }
-    m.injuries = (m.injuries || 0) + 1;
-    m.dying = tierOf(m.attributes.endurance);
-    m.stable = false;
-    const t = endure();
-    note(`${m.name} drops to 0 health: an Injury, and ${m.dying} rounds to live unless someone stops the bleeding. Endurance ${t.text} against ${dmg}: ${passes(t, dmg) ? "still conscious" : "falls unconscious"}.`, "event");
-    if (passes(t, dmg)) {
-      state.battle.queue.unshift({ op: "ask" });
-      state.battle.prompt = { kind: "fightOn", id: u.id, text: `${m.name} is still on their feet at 0 health and dying. Fight on (every wound now is a Trauma) or go down?` , yes: "Fight on", no: "Go down" };
-    } else knockOut(state, note, u);
-    return;
+    return dropToZero(state, rng, note, u, dmg);
   }
   if (!m.fightingOn) return;
   const tr = traumaFor(rng, m);
@@ -1329,6 +1416,31 @@ function hurtPC(state, rng, note, u, dmg) {
   const t = endure();
   if (!passes(t, dmg)) { note(`Endurance ${t.text} against ${dmg}: ${m.name} goes down.`); knockOut(state, note, u); }
   else note(`Endurance ${t.text} against ${dmg}: ${m.name} stays up.`);
+}
+
+function avoidDeath(state, rng, note, u) {
+  const m = memberOf(state, u);
+  const die = dieOfTier(tierOf(m.attributes.endurance))[1];
+  const n = rng.d(die);
+  (m.spent ||= {}).avoidDeath = true;
+  m.hp = n;
+  note(`${m.name} refuses to fall (Avoid Death, d${die} ${n}): back to ${n} health.`, "reward");
+}
+
+/** 0 health (Combat, Death): an Injury, the dying timer, and the Endurance trial to stay up. */
+function dropToZero(state, rng, note, u, dmg) {
+  const m = memberOf(state, u);
+  m.hp = 0;
+  m.injuries = (m.injuries || 0) + 1;
+  m.dying = tierOf(m.attributes.endurance);
+  m.stable = false;
+  const end = dieOfTier(tierOf(m.attributes.endurance));
+  const t = trial(rng, [end, end]);
+  note(`${m.name} drops to 0 health: an Injury, and ${m.dying} rounds to live unless someone stops the bleeding. Endurance ${t.text} against ${dmg}: ${passes(t, dmg) ? "still conscious" : "falls unconscious"}.`, "event");
+  if (passes(t, dmg)) {
+    state.battle.queue.unshift({ op: "ask" });
+    state.battle.prompt = { kind: "fightOn", id: u.id, text: `${m.name} is still on their feet at 0 health and dying. Fight on (every wound now is a Trauma) or go down?`, yes: "Fight on", no: "Go down" };
+  } else knockOut(state, note, u);
 }
 
 function traumaFor(rng, m) {

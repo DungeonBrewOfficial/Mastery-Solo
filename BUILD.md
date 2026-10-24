@@ -61,6 +61,7 @@ The game saves after every action: on the hosted page, to the player's own priva
      - Hamon's Opportunist with Backstab, and Danger Sense against ambushes;
      - Corra's Hearten, offered on an ally's Defend prompt;
      - Gisla's immunity to Profane damage.
+   - *Synergies on the page.* A "Right now" list on each turn names what's open (Opportunist, Charge, flanking, a prone or winding-up foe, someone bleeding out or held, Hearten on hand); tap a line for its rule (`game/data/rules-text.js`). Each character's Reactions page, opened from the party list, sets Ask, Always, or Never for each reaction.
    - *Stage 2, next.* The Band II abilities (about forty: Command and Command Shout, Pride Roar, Roar, Intercept, Shield Punch, Half-Sword, Press, Pinning Shot, Constrict's kin, Web, Dive, and others). The maneuvers and guards past Untrained wait for advancement (milestone 3), since no one can learn them before then.
    - *Stage 3.* Spells (Flame Dart, Stoneskin, Mend, Sacred Ward) and the companions (Tallow, Clabber).
 
