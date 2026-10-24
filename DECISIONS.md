@@ -68,6 +68,11 @@ Rulings Jon has made for this design, newest last within each section. Each line
 - Enemies show their health as words (unhurt, hurt, bloodied, near death), and minion groups show the heads left.
 - Running from a fight is a one-round break-away (one chase trial), then the chase as a scene. The break-away is the bar for "safe enough to tend the dying." Carrying anyone gives the chase trials Impotence. The unconscious are carried or abandoned by choice, and the abandoned die. Details are in `design/02-encounters.md`, Running from a fight.
 - A condition's tiers that no source holds drop one tier at the end of the turn of the creature that last advanced it, starting with its next turn, not the turn it advanced them. A bandit's Low Cut lasts until the end of that bandit's next turn. (Impaired keeps the Startle rule, easing at the start of each round; Demoralized holds while its source is in sight.)
+- Impaired from a failed Startle trial is its own thing: it eases one tier at the start of each round, and it's what Opportunist and Backstab key off. Impaired from any other source wears off like any condition. A creature can carry both at once.
+- Fliers are always aloft for now: they can always Stoop, and Aerial Evasion always applies.
+- Avoid Death fires automatically the first time it applies between rests. It's a choice, not a reaction, and costs no AP. (Jon: the rules text calling it a reaction is an error.)
+- Unnumbered Attrition from a rider deals the creature's attack attribute tier, the higher of Strength or Physique.
+- Epic and Legendary creatures fight to the death. They make no morale trials, because lairs and retreats are a process for later.
 - Whether the shield takes durability damage before the armor is each character's standing choice, set at each round's declarations (as in Foundry's `shieldAbsorbs`, on by default). A ranged hit doesn't have to go to the shield.
 
 **Creature tiers (a guess, 2026-10-24)**
@@ -85,18 +90,11 @@ Jon is still building monsters. His current guess at the party levels each creat
 
 ## Open
 
-- Whether Epic and Legendary creatures retreat to their lairs at half health, or use the morale ladder like everything else. See `design/02-encounters.md`, Breaking point.
 - The chase, until it's tested.
 - The map questions at the top of `design/04-the-map.md`: tiles, region size, hills, Deep country by tile, road and settlement density, spell sources, and river crossings.
 - The hoard multiplier (40 sp per point of the guardian's XP value), waiting on play.
 - The site questions at the top of `design/05-sites.md`: areas instead of grid maps, site sizes, default DCs by band, the clock inside, the guardian's group spread through the site, cleared sites refilling, magic treasure, and lost-place guardians.
 - The settlement questions at the top of `design/06-settlements.md`: recruit level, who's available, hiring a smith, rumors, libraries, and a hamlet's hospitality.
-- **Combat stage 2 calls, asked in chat 2026-10-24:**
-  - *Fliers are always aloft.* Raptors and eagles can always Stoop, and Aerial Evasion always applies. There's no height on the grid yet.
-  - *Hearten is offered only on an ally's Defend prompt.* The ability also covers trials and attacks, but asking before every roll would be a lot of clicking.
-  - *Avoid Death fires on its own,* the first time Gerberga would drop to 0 between rests. It's a reaction with no cost, so I didn't make it a prompt.
-  - *How enemies choose.* A Leader uses Rally when nothing is in its reach and at least two allies are near. A creature uses a rider when the target doesn't already have its effect, Grab before biting, and Charge when a straight run is open. The Living Stone declares Smash when someone is in reach at the top of the round.
-  - *Rider amounts.* An unnumbered Attrition from a rider (Rend, Gore) deals the creature's higher of Strength or Physique tier, its attack attribute. A minion's deals its Creature Tier.
-  - *Opportunist,* which Hamon has at level 1, opens on two allies on the target, flanking, or a target Impaired from Startle. Concealment isn't on the grid yet.
+- **Hearten and other help between characters.** Jon suggests a help panel that shows the synergies available. Proposal sent 2026-10-24.
 - **Difficulty settings** (later). Candidates so far: what a wipe means (everyone dies; everyone but the dynasty's main character survives; raiders rob and leave, beasts drag one off), and whether healing means make saving the dying after a fight automatic.
-- Metals. The five-metal ladder (Iron, Steel, Silver, Gold, Mithril) needs a purpose. Candidates so far: Durability grades on armor and shields, or the substrate for permanent enchantment (which waits on Mastery's magic items).
+- Metals, deferred: Jon is working on them in the main rules. Plate is the level-10 bar for now; better materials and craftsmanship belong past that. The five-metal ladder (Iron, Steel, Silver, Gold, Mithril) needs a purpose. Candidates so far: Durability grades on armor and shields, or the substrate for permanent enchantment (which waits on Mastery's magic items).

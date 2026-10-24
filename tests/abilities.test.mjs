@@ -181,3 +181,27 @@ test("a condition wears off at the end of its source's next turn, not the turn i
   for (let i = 0; i < 40 && s.battle && !foe.doneIn.length; i++) step();
   assert.equal(gisla.cond.restricted || 0, 0, "gone at the end of the bandit's next turn");
 });
+
+test("Opportunist opens on Impaired from Startle, not on Impaired from a cudgel", () => {
+  const s = battle(3, [{ name: "Bandit Cutthroat", count: 1 }], { temper: "Raider" });
+  const foe = s.battle.units.find(u => !u.pc);
+  const hamon = turnOf(s, "hamon", () => {
+    foe.x = 8; foe.y = 5;
+    Object.assign(unit(s, "hamon"), { x: 7, y: 5 });
+    for (const id of ["gerberga", "gisla", "corra"]) Object.assign(unit(s, id), { x: 1, y: ["gerberga", "gisla", "corra"].indexOf(id) * 2 });
+  });
+  assert.ok(hamon);
+  foe.impaired = 1; foe.startle = 0; foe.decay.impaired = { by: "e9", round: s.battle.round };
+  assert.ok(!canAttack(s, hamon, foe, "opportunist").ok, "a cudgel's daze opens nothing");
+  foe.startle = 1;
+  assert.ok(canAttack(s, hamon, foe, "opportunist").ok, "a Startle's daze does");
+});
+
+test("Epic creatures fight to the death", () => {
+  for (const seed of [1, 2, 3]) {
+    const s = battle(seed, [{ name: "Wolf, Dire", count: 1 }]);
+    const from = s.log.length;
+    playBattle(s);
+    assert.doesNotMatch(logOf(s, from), /Wolf, Dire (wavers|holds|flees)/);
+  }
+});

@@ -179,8 +179,8 @@ export const COND_LABELS = {
   invigorated: { 1: "Energized", 2: "Empowered", 3: "Tireless" }
 };
 const PHYSICAL = ["strength", "agility", "physique", "endurance"];
-/** Conditions that deteriorate on their own. Impaired eases at the start of each round (Startle); Demoralized holds while its source is in sight. */
-const DECAYS = ["restricted", "tainted", "inspired", "invigorated"];
+/** Conditions that deteriorate on their own; Impaired's Startle tiers follow the Startle rule instead, and Demoralized holds while its source is in sight. */
+const DECAYS = ["impaired", "restricted", "tainted", "inspired", "invigorated"];
 const cond = (u, k) => (k === "impaired" ? u.impaired : k === "demoralized" ? u.demoralized : u.cond?.[k]) || 0;
 function setCond(u, k, v) {
   if (k === "impaired") u.impaired = v;
@@ -329,7 +329,7 @@ export function startBattle(state, rng, note) {
     m.down = false; m.dying = null; m.fightingOn = false; m.stable = false;
     b.units.push({ id: m.id, pc: true, side: "party", name: m.name, x, y, w: 1, h: 1, ap: 0, weapon: m.weapons.length ? 0 : -1,
       guard: "mutable", impaired: e.impaired?.[m.id] || 0, demoralized: 0, phase: "fast", doneIn: [], moveLeft: 0, lastMove: false, attacks: 0,
-      startled: (e.impaired?.[m.id] || 0) > 0, mode: "strike", ...FRESH() });
+      startle: e.impaired?.[m.id] || 0, mode: "strike", ...FRESH() });
   });
   const gapCols = { Close: 2, Near: 6, Far: 10 }[e.distance] ?? 6;
   let n = 0;
@@ -360,7 +360,7 @@ export function startBattle(state, rng, note) {
       const t = c.rank === "minion" ? trial(rng, [dieOfTier(c.tier), dieOfTier(c.tier)]) : trial(rng, [dieOfTier(c.attributes.agility.tier), dieOfTier(c.attributes.perception.tier)]);
       const miss = e.enemyStartle - t.total;
       u.impaired = passes(t, e.enemyStartle) ? 0 : miss >= 5 ? 3 : miss >= 3 ? 2 : 1;
-      u.startled = u.impaired > 0;
+      u.startle = u.impaired;
       note(`${u.name}: Startle ${t.text}${u.impaired ? `, ${IMPAIRED[u.impaired]}` : ", keeps its head"}.`);
     }
   }
@@ -386,8 +386,9 @@ function startRound(state, rng, note) {
   b.round += 1;
   b.stage = "declare"; b.phaseIdx = 0; b.sideIdx = 0; b.current = null;
   for (const u of b.units) {
-    // Impaired eases one tier at the start of each round after the first.
-    if (b.round > 1 && u.impaired > 0) { u.impaired -= 1; }
+    // Impaired from Startle eases one tier at the start of each round after the first (Combat, Startle).
+    // Impaired from anything else wears off like any other condition.
+    if (b.round > 1 && u.startle > 0) { u.startle -= 1; u.impaired = Math.max(0, u.impaired - 1); }
     u.doneIn = []; u.moveLeft = 0; u.lastMove = false; u.attacks = 0; u.helpedBy = [];
     if (u.pc) {
       const m = memberOf(state, u);
@@ -599,7 +600,9 @@ function secondaryDamage(state, rng, note, t, amount, type, label, { direct = fa
  */
 function wearOff(state, note, u, k) {
   const d = u.decay[k];
-  if (!cond(u, k)) { delete u.decay[k]; return; }
+  // Startle's tiers of Impaired aren't this source's to wear off.
+  const own = k === "impaired" ? u.impaired - (u.startle || 0) : cond(u, k);
+  if (own <= 0) { delete u.decay[k]; return; }
   if (d.round >= state.battle.round || (k === "restricted" && u.held)) return;
   setCond(u, k, cond(u, k) - 1);
   d.round = state.battle.round;
@@ -694,7 +697,7 @@ function opportunity(state, u, t, ranged) {
   const b = state.battle;
   const threats = b.units.filter(o => o.side === u.side && o !== u && standing(state, o) && gap(o, t) <= 1).length;
   if (threats >= 2) return true;
-  if (t.startled && t.impaired > 0) return true;
+  if (t.startle > 0) return true;
   return !ranged && flanking(state, u, t);
 }
 
@@ -759,7 +762,7 @@ export function pcAttack(state, rng, note, targetId) {
   if (u.mode === "opportunist") {
     op.opportunist = true;
     // Backstab: Opportunist attacks always have Dominance; Superiority against the badly shaken or startled.
-    if ((m.abilities || []).includes("Backstab")) { op.edge = 1; if (t.demoralized >= 2 || (t.startled && t.impaired >= 2)) op.sup = true; }
+    if ((m.abilities || []).includes("Backstab")) { op.edge = 1; if (t.demoralized >= 2 || t.startle >= 2) op.sup = true; }
   }
   if (can.ranged && w?.thrown) op.thrownKey = `${m.id}:${u.weapon}`;
   if (can.charge) {
@@ -1370,8 +1373,9 @@ function morale(state, rng, note, why, hurt = null) {
   const them = foes.reduce((n, u) => n + (u.minion ? u.heads : 1), 0);
   const us = b.units.filter(u => u.pc && standing(state, u)).length;
   const edge = them > us ? 1 : them < us ? -1 : 0;
+  // Epic and Legendary creatures fight to the death [Jon, 2026-10-24].
   for (const u of rolling) {
-    if (u.demoralized >= 3) continue;
+    if (u.demoralized >= 3 || ["epic", "legendary"].includes(CREATURES[u.cname].rank)) continue;
     const t = creatureTrial(rng, CREATURES[u.cname], "wisdom", { edge });
     const miss = 5 - t.total;
     if (passes(t, 5)) { note(`${u.name} holds (Wisdom ${t.text}).`); continue; }
