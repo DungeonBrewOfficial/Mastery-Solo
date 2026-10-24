@@ -3,6 +3,7 @@
  * design/04-the-map.md, Discovery). Signs, Discoveries, and Encounters:
  * the terrain tables, contact, disposition, the party's choice, and escape.
  */
+import { checkLevels } from "./advance.js";
 import { roll } from "./rng.js";
 import { trial, passes, tierOf, dieOfTier, RANK_DIE, countsAs } from "./mastery.js";
 import { ENCOUNTERS } from "./data/encounters.js";
@@ -348,23 +349,13 @@ function caught(state, rng, note) {
 /* ------------------------------------------------------------------ */
 /* Rewards                                                              */
 
-export function awardCombatXp(state, xp, note) {
+export function awardCombatXp(state, xp, note, rng) {
   if (!xp) return;
   for (const m of living(state)) m.xp += xp;
   note(`Each character earns ${xp} XP.`, "reward");
-  checkLevels(state, note);
+  checkLevels(state, note, rng);
 }
 
-export function checkLevels(state, note) {
-  for (const m of state.party.members) {
-    const table = CLASS_XP[m.cls];
-    while (table && m.level < 30 && m.xp >= table[m.level]) {
-      m.level += 1;
-      // TODO(advancement): attribute points, mastery points, and health are milestone 3.
-      note(`${m.name} reaches level ${m.level}. (Advancement comes in milestone 3.)`, "reward");
-    }
-  }
-}
 
 const PELTS = { "Wolf": "Wolf", "Bear": null, "Black Bear": "Bear, Black", "Brown Bear": "Bear, Brown", "Cave Bear": "Bear, Brown", "Boar": "Boar / Pig", "War Boar": "Boar / Pig",
   "Mountain Lion": "Cougar", "Lion": "Lion", "Tiger": "Tiger", "Deer": "Deer", "Elk": "Moose / Elk", "Wild Dog": "Dog" };

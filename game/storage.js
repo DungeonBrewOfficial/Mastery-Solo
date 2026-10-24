@@ -8,6 +8,7 @@
 
 import { PREGENS } from "./data/party.js";
 import { ensureStores, outfit } from "./supplies.js";
+import { ensureAdvancement } from "./advance.js";
 
 const LOCAL_KEY = "mastery-solo-save-v2";
 const FLAGS = ["road", "river", "lake"];
@@ -36,6 +37,7 @@ export function unpack(json) {
   }
   // Saves from before supplies set out with what a new party has.
   if (s.party && !s.party.food) outfit(s);
+  for (const m of s.party?.members || []) ensureAdvancement(m);
   if (s.party) { ensureStores(s); s.party.roles = { forager: null, cook: null, healer: null, smith: null, ...s.party.roles }; }
   return s;
 }

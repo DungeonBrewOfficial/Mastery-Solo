@@ -13,6 +13,8 @@ import { openStorage, pack, unpack } from "./storage.js";
 import { count, meals, KEEPS, waterNeed, SKIN_GALLONS } from "./supplies.js";
 import { SHOP, openMarket, buy, priceOf, settlementHere, hasHealer, healerTreats } from "./town.js";
 import { GEAR } from "./data/gear.js";
+import { ATTRIBUTES, MASTERY_NAMES, masteryTargets, masteryLabel, masteryIndex, cannotInvest, invest, raiseAttribute, hasUnspent, nextLevelXp, titleOf } from "./advance.js";
+import { pointsHint } from "./vendor/foundry/module/helpers/advancement-rules.mjs";
 
 const $ = (id) => document.getElementById(id);
 const canvas = $("map");
@@ -433,6 +435,12 @@ function renderParty() {
     li.innerHTML = `<strong>${m.name}</strong> <span class="muted">${m.cls} ${m.level}</span> <span>${state_ ? `<span class="warn">${state_}</span>` : `${m.hp}/${m.health} hp`}</span>${m.casting ? ` <span class="muted">${m.mp ?? 0}/${maxMagan(m)} mg</span>` : ""} <span class="muted">${m.xp} XP</span>${petText}${scars.length ? `<span class="muted small">${scars.join(", ")}</span>` : ""}`;
     if (m.dead) li.className = "dead";
     else {
+      if (hasUnspent(m)) {
+        const lb = button("Level up", () => openAdvance(m.id));
+        lb.className = "primary small-btn";
+        lb.title = "Points to spend from a new level";
+        li.appendChild(lb);
+      }
       const rb = button("Reactions", () => openReactions(m.id));
       rb.className = "quiet small-btn";
       rb.title = "What this character does on their own when a reaction comes up";
@@ -522,6 +530,66 @@ function renderTown(busy) {
     for (const x of hurt) { const b = button(`Treat ${x.name} (${x.injuries})`, () => act(() => healerTreats(state, say, x.id))); b.disabled = state.party.coin < 8; row.append(b); }
     box.append(row);
   }
+}
+
+/* ---------------- advancement */
+
+let undo = [];
+/** Spend a new level's points (Mastery Core Classes, Leveling; Mastery System, Mastery Points). */
+function openAdvance(id) {
+  const m = state.party.members.find(x => x.id === id);
+  const box = $("reactions");
+  const nx = nextLevelXp(m);
+  const u = m.unspent;
+  box.innerHTML = `<p><strong>${m.name}</strong>, level ${m.level} ${m.cls}${titleOf(m) ? `, ${titleOf(m)}` : ""} <span class="muted small">${m.xp} XP${nx ? `, ${nx} for level ${m.level + 1}` : ""}</span></p>
+    <p class="small muted">One mastery point per weapon type, style, form, or skill each level. Points you keep stay for later.</p>`;
+  const step = (fn) => { undo.push({ id, m: JSON.stringify(m), rng: state.rngState }); fn(); persist(); openAdvance(id); renderParty(); };
+  const section = (title, left, rows) => {
+    const h = document.createElement("h3");
+    h.className = "small";
+    h.textContent = `${title}${left != null ? ` · ${left} to spend` : ""}`;
+    box.append(h);
+    const ul = document.createElement("ul");
+    ul.className = "shop";
+    for (const r of rows) ul.append(r);
+    box.append(ul);
+  };
+  const row = (label, value, can, why, onclick, extra = "") => {
+    const li = document.createElement("li");
+    li.innerHTML = `<span>${label} <span class="muted">${value}</span>${extra ? ` <span class="muted small">${extra}</span>` : ""}</span>`;
+    const b = button("+1", onclick);
+    b.className = "small-btn"; b.disabled = !can; if (why) b.title = why;
+    li.append(b);
+    return li;
+  };
+  section("Attributes", u.attr, ATTRIBUTES.map(a => row(cap(a), `${m.attributes[a]} (Tier ${1 + Math.min(Math.floor(m.attributes[a] / 5), 12)})`, u.attr > 0, u.attr > 0 ? "" : "no attribute points",
+    () => step(() => runWithDice(state, (rng) => raiseAttribute(state, m, a, rng, say))), pointsHint(m.attrPts[a]).split(" — ")[1] || "")));
+  const t = masteryTargets(m);
+  const mrow = (key, opts = {}) => {
+    const why = cannotInvest(m, key, opts);
+    return row(masteryLabel(key) + (opts.free ? " (free)" : ""), MASTERY_NAMES[masteryIndex(m, key)], !why, why, () => step(() => invest(m, key, opts)));
+  };
+  section("Weapon mastery", u.weapon, t.weapon.map(k => mrow(k)));
+  if (u.style > 0) section("Free combat style points", u.style, t.weapon.filter(k => k.startsWith("style:")).map(k => mrow(k, { free: true })));
+  if (t.spell.length) section("Spell mastery", u.spell, t.spell.map(k => mrow(k)));
+  section("Skill mastery", u.skill, t.skill.map(k => mrow(k)));
+  const rowb = document.createElement("div");
+  rowb.className = "buttons";
+  const last = undo.filter(x => x.id === id);
+  const ub = button("Undo", () => {
+    const x = undo.pop();
+    const i = state.party.members.findIndex(y => y.id === x.id);
+    state.party.members[i] = JSON.parse(x.m);
+    state.rngState = x.rng;
+    persist(); openAdvance(x.id); renderParty();
+  });
+  ub.disabled = !last.length || undo.at(-1)?.id !== id;
+  const done = button("Done", () => { box.hidden = true; undo = []; render(); });
+  done.className = "primary";
+  rowb.append(ub, done);
+  box.append(rowb);
+  box.hidden = false;
+  box.scrollIntoView({ block: "nearest" });
 }
 
 /** Each character's standing choice for each reaction: Ask, Always, Never. */

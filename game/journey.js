@@ -8,11 +8,12 @@ import { startDynasty, generateTile, getTile, tileOf, squareAt, moveCost, countr
 import { PACES } from "./vendor/foundry/module/helpers/travel-rules.mjs";
 import { WEATHER_TABLES } from "./vendor/foundry/module/data/weather-data.mjs";
 import { PREGENS } from "./data/party.js";
-import { startSign, startEncounter, discover, checkLevels, alive, living } from "./events.js";
+import { startSign, startEncounter, discover, alive, living } from "./events.js";
 import { startBattle } from "./combat.js";
 import { tierOf, dieOfTier } from "./mastery.js";
 import { rowFor, weatherFrom, BAND_LABELS } from "./vendor/foundry/module/helpers/weather-rules.mjs";
 import { effectiveRest, recoveryFor, exhaustedAfter, classUpgrades, REST_LABELS } from "./vendor/foundry/module/helpers/rest-rules.mjs";
+import { ensureAdvancement, checkLevels } from "./advance.js";
 import { ensureStores, morningSupplies, eveningSupplies, refill, exhaustFloor, outfit, treatInjuries, repairGear } from "./supplies.js";
 
 export const DAY_HOURS = 8;
@@ -44,6 +45,7 @@ export function newGame(seed = Math.floor(Math.random() * 2 ** 31)) {
   };
   ensureStores(state);
   outfit(state);
+  for (const m of state.party.members) ensureAdvancement(m);
   note(state, `A new dynasty begins (seed ${seed}).`, "title");
   for (const line of world.log) note(state, line, "map");
   world.log = [];
@@ -190,7 +192,7 @@ function move(state, rng, hours) {
   if (sq?.settlement) {
     note(state, `You reach a ${sq.settlement.home ? "home village" : sq.settlement.size}.`, "place");
     refill(state, (t, k) => note(state, t, k), sq.settlement.home ? "home village" : sq.settlement.size);
-    reachSafety(state);
+    reachSafety(state, rng);
   }
   const place = state.world.places?.[`${p.x},${p.y}`];
   if (place && ["lair", "cave", "ruin", "barrow"].includes(place.type)) {
@@ -209,13 +211,13 @@ function nearWater(state, x, y) {
 }
 
 /** Exploration XP is banked until the party reaches safety (design/01-the-turn.md, Coming Home). */
-function reachSafety(state) {
+function reachSafety(state, rng) {
   const xp = state.party.bankedXp;
   if (!xp) return;
   for (const m of living(state)) m.xp += xp;
   state.party.bankedXp = 0;
   note(state, `Safe in a settlement: each character earns ${xp} banked exploration XP.`, "reward");
-  checkLevels(state, (t, k) => note(state, t, k));
+  checkLevels(state, (t, k) => note(state, t, k), rng);
 }
 
 /** The event die (design/01-the-turn.md, What happened there; Deep country). */

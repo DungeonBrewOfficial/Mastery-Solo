@@ -196,7 +196,7 @@ function pcDefense(state, u, type, ranged) {
   if (u.companion) {
     if (ranged) return { can: false, why: "only a shield stops a missile" };
     const d = petDice(state, u);
-    return { can: true, dice: [d.owner, d.tier], bonus: ["cutting", "cleaving", "crushing", "piercing", "puncturing"].includes(type) ? m.resistance : 0 };
+    return { can: true, dice: [d.owner, d.tier], bonus: (["cutting", "cleaving", "crushing", "piercing", "puncturing"].includes(type) ? m.resistance : 0) + (m.resistAll || 0) };
   }
   const w = weaponOf(m, u);
   const shield = usesShield(m, w);
@@ -738,7 +738,7 @@ function secondaryDamage(state, rng, note, t, amount, type, label, { direct = fa
   if (t.pc) {
     const m = memberOf(state, t);
     if (m.dead) return;
-    const res = noResist || !type ? 0 : (t.companion ? (MUNDANE.includes(type) ? m.resistance : 0) : !m.armor || m.armor.durability <= 0 ? 0 : (m.armor.resistance[type] || 0)) + innateRes(m, type);
+    const res = noResist || !type ? 0 : (t.companion ? (MUNDANE.includes(type) ? m.resistance : 0) + (m.resistAll || 0) : !m.armor || m.armor.durability <= 0 ? 0 : (m.armor.resistance[type] || 0)) + innateRes(m, type);
     const ward = type && wardFor(t, type);
     const r = direct ? { healthDamage: Math.max(0, amount - res), durabilityDamage: 0 }
       : resolveDamage({ attackTotal: amount, damageType: type, armorResistance: res, durabilityCurrent: m.armor?.durability || 0, healthCurrent: m.hp, activeDefense: false, wardPool: ward?.pool || 0 });
@@ -1121,6 +1121,8 @@ function hellfire(state, rng, note, u, t) {
 /** Spell speed from the cost before components (Magic Mastery, Spell Speed). */
 const cap = (w) => w[0].toUpperCase() + w.slice(1);
 export const spellSpeed = (cost) => cost <= 3 ? "fast" : cost <= 6 ? "moderate" : "slow";
+/** Spell DC: the form's mastery level + the casting attribute's tier (Magic Mastery). */
+export const spellDC = (m, form) => (m.casting.forms[form] || 1) + tierOf(m.attributes[m.casting.attr]);
 const castDie = (m) => dieOfTier(tierOf(m.attributes[m.casting.attr]));
 const masteryDie = (m, form) => dieOfTier(m.casting.forms[form] || 1);
 /** A spell as this caster recorded it: the chapter's spell with the caster's own parameters over it. */
@@ -1232,7 +1234,7 @@ export function pcCast(state, rng, note, targetId) {
 
 function releaseSpell(state, rng, note, u, t, c) {
   const b = state.battle, m = memberOf(state, u), sp = spellOf(m, c.name);
-  const dc = m.casting.dc;
+  const dc = spellDC(m, sp.form);
   const power = () => rollPool(rng, [castDie(m), masteryDie(m, sp.form)], { extra: -1 });
   if (sp.kind === "damage") {
     const r = resist(state, rng, t, sp.resist, dc, { vsType: sp.type });
@@ -1367,8 +1369,9 @@ export function pcReapply(state, rng, note, entryId, targetId) {
   if (!t) return;
   u.ap -= 1;
   const m = memberOf(state, u), sp = spellOf(m, opt.e.name);
-  const r = resist(state, rng, t, sp.resist, m.casting.dc, { forCond: sp.cond });
-  note(`${m.name} turns ${sp.name} on ${t.name} again (1 AP). ${t.name} resists with ${cap(sp.resist)} (${r.text} against ${m.casting.dc}): ${r.ok ? "it holds firm" : "it gives"}.`);
+  const dc = spellDC(m, sp.form);
+  const r = resist(state, rng, t, sp.resist, dc, { forCond: sp.cond });
+  note(`${m.name} turns ${sp.name} on ${t.name} again (1 AP). ${t.name} resists with ${cap(sp.resist)} (${r.text} against ${dc}): ${r.ok ? "it holds firm" : "it gives"}.`);
   if (!r.ok) { opt.e.target = t.id; addCond(state, note, t, sp.cond, 1, { by: u.id, lasting: true }); if (sp.cond === "demoralized") t.fearOf = u.id; }
   advance(state, rng, note);
 }
@@ -2190,7 +2193,7 @@ function applyHit(state, rng, note, a, t, atk, def, type, ranged) {
     const shield = usesShield(m, weaponOf(m, t)) && m.shieldAbsorbs !== false ? m.shield.durability : 0;
     const armor = m.armor?.durability || 0;
     // A companion's own hide: its mundane resistance stands whether or not it defends.
-    const res = (t.companion ? (MUNDANE.includes(type) ? m.resistance : 0) : armor > 0 ? (m.armor.resistance[type] || 0) : 0) + innateRes(m, type);
+    const res = (t.companion ? (MUNDANE.includes(type) ? m.resistance : 0) + (m.resistAll || 0) : armor > 0 ? (m.armor.resistance[type] || 0) : 0) + innateRes(m, type);
     const ward = wardFor(t, type);
     const r = resolveDamage({ attackTotal: atk.total, damageType: type, armorResistance: res,
       durabilityCurrent: shield + armor, healthCurrent: m.hp, activeDefense: !!def, defenseTotal: def?.total || 0, wardPool: ward?.pool || 0 });
@@ -2832,7 +2835,7 @@ function finish(state, rng, note, outcome) {
   }
   if (outcome === "won") {
     note("The field is yours.", "reward");
-    awardCombatXp(state, b.xp, note);
+    awardCombatXp(state, b.xp, note, rng);
     if (b.units.some(u => !u.pc && u.dead && u.cname === b.head)) spoils(state, rng, e, note);
     for (const d of b.dropped) note(`${state.party.members.find(m => m.id === d.member).name} picks up the ${state.party.members.find(m => m.id === d.member).weapons[d.weapon].name.toLowerCase()}.`);
     if (Object.keys(b.thrown).length) note("You gather up the thrown weapons.");
