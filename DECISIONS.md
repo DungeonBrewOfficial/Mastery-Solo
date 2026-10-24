@@ -29,6 +29,21 @@ Rulings Jon has made for this design, newest last within each section. Each line
 - No set goal for a run. Apex threats (the odd "dragon") belong in the game as long as there is room to escape. (2026-10-23)
 - Death should come from the player's choices. Doing something stupid can be punished. Death that is random and outside the player's control should not happen. (2026-10-23)
 
+**Encounters**
+- Party level for choosing an encounter band is the average of the characters' levels, rounded down. (2026-10-24)
+- Every Epic and Legendary, and anything from a Tier above the party's band, arrives as a Sign before it can be met. (2026-10-24)
+- The drafted entourage sizes are good enough to start with. (2026-10-24)
+- Leaders and Masters hold their groups together. When they fall, the rest may break; other groups have a chance of breaking once half are defeated. (2026-10-24)
+- The Eidolon of the Hunt works as written: running from it is the mistake. (2026-10-24)
+- Hunting with the Wilderness skill is abstracted and pays no XP. Only a real encounter, a fight, pays combat XP. (2026-10-24)
+- The measure of danger is greed: break points where the party decides to go on or turn back, and punishment for going off the beaten path. (2026-10-24)
+
+**Treasure and money**
+- Purses are small. (2026-10-24)
+- Target: a character can afford plate armor (full plate is 46 gn, 3,680 sp) by about level 10. (2026-10-24)
+- Along the way, characters need enough for repair kits, healing supplies, and the like, while still saving to improve their gear. (2026-10-24)
+- Baseline for treasure by level: the four gem grades (Ornamental, Common, Semi-Precious, Precious) each cover roughly 7 levels, with some overlap. (2026-10-24)
+
 **Creature tiers (a guess, 2026-10-24)**
 Jon is still building monsters. His current guess at the party levels each creature Tier serves, used until the tables test it:
 
@@ -44,5 +59,7 @@ Jon is still building monsters. His current guess at the party levels each creat
 
 ## Open
 
-- The encounter questions listed at the top of `design/02-encounters.md`: party level for a mixed roster, which creatures count as apex, entourage sizes, breaking points, the chase, the Eidolon, hunting XP, purses, and bestiary gaps.
+- The break roll's DC, and whether Epic and Legendary creatures retreat to their lairs at half health. See `design/02-encounters.md`, Breaking point.
+- The chase, until it's tested.
+- How far from roads and settlements Deep country starts. See `design/01-the-turn.md`.
 - Metals. The five-metal ladder (Iron, Steel, Silver, Gold, Mithril) needs a purpose. Candidates so far: Durability grades on armor and shields, or the substrate for permanent enchantment (which waits on Mastery's magic items).

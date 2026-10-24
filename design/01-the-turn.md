@@ -67,6 +67,16 @@ Roll a d6 on the square where you stopped [S: "one die to determine what happene
 
 **Nothing above your band arrives unannounced** [N]. Every encounter table is divided into bands by party level. If an encounter result comes from a band above the party's, it becomes a **Sign** instead, unless the party is already following that creature's signs or is inside its lair. If the party then meets it, contact begins at a distance with the party aware. This is how the game keeps its promise: the dangerous thing is out there, and you get to decide whether to go and find it.
 
+**Deep country** [N, Jon's principle, 2026-10-24]. The danger in this game is meant to come from greed: going where you shouldn't and staying longer than you should. So the map has three kinds of country.
+
+| Country | Where | Event die |
+|:---|:---|:---|
+| **Settled** | On a road, or within 2 squares of a settlement | An Encounter only on a 6; a 5 is Quiet. |
+| **Wild** | Everywhere else | As the table above. |
+| **Deep** | More than 8 squares (half a day at Normal pace) from any road or settlement | Encounters roll on the next band up. Discoveries are richer (see the sites file, to come). |
+
+Above-band results in Deep country still arrive as Signs first, so the rule about warnings holds. What changes is how often the warnings come and what's waiting behind them. The road home is always the safer way, and the shortcut through the deep wood always pays better and costs more. [?] Eight squares is a guess.
+
 ### 5. Encounter
 
 The full procedure is in `02-encounters.md`. In outline:

@@ -1,6 +1,6 @@
 # Encounters
 
-*Draft 1, 2026-10-24. Tags as in the README. Every [N] stands until corrected.*
+*Draft 2, 2026-10-24. Tags as in the README. Every [N] stands until corrected.*
 
 This file covers what happens when the event die (see `01-the-turn.md`) comes up Sign or Encounter: what you meet, who sees whom first, what the creature wants, how you get away, and when the creature gives up. The woodland tables are at the end, built from the creatures in Mastery's bestiary as of today.
 
@@ -8,17 +8,12 @@ This file covers what happens when the event die (see `01-the-turn.md`) comes up
 
 ## Questions for Jon
 
-Flagged here so they're easy to find. Each one is marked **[?]** where it comes up below.
+Flagged here so they're easy to find. Each is marked **[?]** where it comes up below. Settled questions move to `DECISIONS.md`.
 
-1. **Party level for a mixed roster.** After a death, a level 1 recruit can join level 5 veterans. Which level picks the band: the highest, the average, or the lowest? I've drafted it as the **average, rounded down**.
-2. **Apex creatures.** I've treated every Epic and Legendary as an apex that always arrives as a Sign first, whatever its Tier, along with anything from a Tier above the party's band. Is that the right line?
-3. **Entourage sizes are guesses.** I don't know what a fair fight for four characters looks like in Mastery yet. Is a Bandit Leader with two Cutthroats and a Cluster of six Thugs a fair Band I fight, or a massacre?
-4. **Breaking point.** Mastery has no morale rule; creatures stop according to their Motivation. I've written fixed breaking points by temper (the head falls, half the group is down, a lone creature is at half health). The alternative is a B/X-style morale roll, which the red box had. Which?
-5. **The chase.** Escape is a race: three successes before two failures. A faster pursuer gives the party Impotence. Too harsh, too soft, or the wrong shape?
-6. **The Eidolon of the Hunt** can't be outrun by design: running is what it punishes. Does that break "room to escape," or does it pass because its signs and its stat block both tell you to stand your ground?
-7. **Hunting.** Does bringing down a deer or an elk pay combat XP?
-8. **Purses.** Folk carry coin. How much, by Division, belongs with the treasure-by-Division table for sites. Should both be built together?
-9. **Bestiary gaps** for your monster work are listed at the end.
+1. **Breaking points (redrafted 2026-10-24).** Leaders and Masters hold a group together; when they fall, or when half the group is down, the rest roll to break. I've made the roll a Wisdom trial, since Wisdom is what resists fear in Mastery. Is DC 5 the right starting point?
+2. **Epic and Legendary creatures retreat to their lairs** at half health. You called this game-y. The case for it is under Breaking point; the alternative is that they fight on or flee for good.
+3. **The chase** stands as drafted until it's tested.
+4. **Deep country.** Your "punishment is going where you shouldn't" is now a rule in `01-the-turn.md`: the farther from roads and settlements, the harder the encounters and the better the finds. The distance that makes country Deep is a guess.
 
 ---
 
@@ -33,9 +28,9 @@ The encounter tables are divided into **bands** by party level [N], using your T
 | III | 6–8 | 3, and 4 from level 7 | 4 at level 6; 5 and up |
 | IV+ | 9 and up | waiting on creatures | |
 
-**Party level** is the average of the characters' levels, rounded down [N, ?1].
+**Party level** is the average of the characters' levels, rounded down [Jon, 2026-10-24].
 
-**Above band.** A creature is above the party's band if its Tier serves only levels higher than the party's. Every Epic and Legendary is also treated as above band, whatever its Tier [N, ?2]. Above-band creatures follow the rule in the turn: the result becomes a **Sign**, unless the party is already following that creature's signs or is inside its lair. If the party does meet it, contact begins at **Far**, with the party aware.
+**Above band.** A creature is above the party's band if its Tier serves only levels higher than the party's. Every Epic and Legendary is also treated as above band, whatever its Tier [Jon, 2026-10-24]. Above-band creatures follow the rule in the turn: the result becomes a **Sign**, unless the party is already following that creature's signs or is inside its lair. If the party does meet it, contact begins at **Far**, with the party aware.
 
 Each table has a row for the apex creatures of that terrain. They are the "dragons" [S]: real, rare, announced, and avoidable.
 
@@ -77,7 +72,7 @@ Every creature wants something, and violence follows from that [M, Monster Manua
 | **Predator** | **1–2 Fed.** It watches, keeps its distance, and leaves if you don't come closer. **3–4 Testing.** It stalks you, and strikes only a lone, wounded, or sleeping target. **5–6 Hungry.** It attacks. |
 | **Territorial** | **1–3 Warning.** It makes a display. Leave the square and it lets you go. **4–5 Defending.** It attacks if you approach or stay. **6 Enraged.** It attacks now. |
 | **Raider** | **1–2 Toll.** They demand payment, and fight if refused. **3–4 Lying in wait.** If they noticed you first, they've set an ambush ahead; if you noticed them first, you've spotted it. **5–6 Attack.** |
-| **Prey** | **Any roll: it flees** on contact. Taking it is a hunt, made with Wilderness (Hunting and Foraging) [M]. |
+| **Prey** | **Any roll: it flees** on contact. Taking it is a hunt, abstracted under Wilderness (Hunting and Foraging) [M], and pays no XP [Jon, 2026-10-24]. |
 | **Restless dead** | **No roll.** It attacks anything living that comes into its ground, never breaks, and doesn't pursue beyond its ground. |
 | **Guardian** | **No roll.** It is hostile only to trespass or harm (for a Treow, axes and fire), and never pursues beyond its place. |
 | **Strange** | **No roll.** Follow the Behavior in its stat block [M]. The Morphon courts are written there already. |
@@ -97,13 +92,17 @@ With contact and disposition settled, the party chooses [N]:
 
 ## Breaking point
 
-The red box had morale [S, via the reconstruction record, §4]. Mastery has Motivation instead: a creature fights for what it wants and stops when the price gets too high [M]. Solo play needs that stopping point written down [N, ?4]:
+The red box had morale [S, via the reconstruction record, §4]. Mastery has Motivation instead: a creature fights for what it wants and stops when the price gets too high [M]. Solo play needs that stopping point written down.
 
-- **A group breaks** when its head falls, or when half its number is down.
-- **A lone creature breaks** at half its health.
-- **Enraged** creatures and **Guardians** break only at a quarter of their health. **Restless dead** never break.
+**Heads hold the group** [Jon, 2026-10-24]. While a Leader or Master stands, its group doesn't roll to break.
 
-A broken creature flees and doesn't pursue. A broken group scatters, and their XP is still earned: the fight is over, and the party holds the field.
+**The break roll** [N, ?1]. A group rolls when its Leader or Master falls, and when half its number is down, whichever comes first; a group with no Leader or Master rolls only at half. A lone creature rolls at half its health. The roll is a Wisdom trial against DC 5, made by the strongest creature left standing, with its trial dice [M, Monster Manual, Trials]. Wisdom is the attribute that resists fear [M, Mastery Core Classes, What Your Attributes Do]. A minion group rolls 1d2 + its Tier die, so a Tier 1 minion group without its head always runs and a Tier 2 group nearly always does, while a Champion usually holds.
+
+**Restless dead** never roll. **Guardians** roll only at a quarter of their health, and never leave their place.
+
+A broken creature flees and doesn't pursue. A broken group scatters, and the XP is still earned: the fight is over, and the party holds the field.
+
+**Epic and Legendary creatures go home** [N, ?2]. At half health, an apex creature breaks off and retreats to its lair, and heals there over days. The lair becomes a site the party can find by following its signs. You called this game-y, and it can be. Here's the case for it anyway. Your Dryad already works this way: beaten in a fight, she reforms at her tree, and ending her for good means going to the tree [M, Creatures - Fae]. A wounded bear going back to its den is ordinary animal behavior. And it turns the apex fight into exactly the decision you want the game to be about: you've hurt the dragon, and now you can go home and brag, or follow it into the dark while it's weak, which is the greedy choice and the dangerous one. The alternative is simpler: apex creatures fight to the death or flee for good, like anything else.
 
 ---
 
@@ -115,14 +114,14 @@ Mastery has a reprisal attack for leaving reach, but no procedure for getting aw
 
 **Pay the price.** A creature that wants something stops when it gets it. A hungry predator takes food instead of you: a fresh carcass, or a day's rations for each creature hunting. Raiders take the purse. A territorial creature takes the square. A price can be paid at any point, including mid-fight, and it ends the encounter. The creature's head still pays no XP, because you didn't defeat it.
 
-**The chase** [?5]. When you run from a pursuer that wants to catch you:
+**The chase** [N, ?3]. When you run from a pursuer that wants to catch you:
 
 1. The party's leader makes a group trial each exchange, with one Helper [M, Group Trials]. Choose the skill to fit how you run: Wilderness (Orienteering) to lose it in the terrain, Stealth to hide, or Athletics to outpace it. The DC is the pursuer's Division + 1 [M, Creature Skills].
 2. If the pursuer's Speed is higher than the slowest character's, the trial has Impotence. If it's lower, Dominance.
 3. Three successes before two failures, and you're away. Two failures first, and it catches you. Combat begins at Close, and the party isn't Startled; they know it's coming.
 4. Dropping something it wants (see Pay the price) ends the chase.
 
-Some creatures make running a mistake. The Eidolon of the Hunt gains Superiority against anything that moved [M, Creatures - Morphon]. The chase fails against it automatically, and its signs say so to anyone who reads them [?6].
+Some creatures make running a mistake. The Eidolon of the Hunt gains Superiority against anything that moved [M, Creatures - Morphon]. The chase fails against it automatically, and its signs say so to anyone who reads them. That stands as written [Jon, 2026-10-24].
 
 ---
 
@@ -131,7 +130,7 @@ Some creatures make running a mistake. The Eidolon of the Hunt gains Superiority
 What the defeated carried [N]:
 
 - **Beasts** leave their pelts, by animal, quality, and weight [M, Treasure, Furs]. A fresh pelt weighs about three times its dressed weight until it's cured, and it has to be hauled home [M, Treasure, Pelt Reference].
-- **Folk** carry purses and gear. Their armor keeps its current Durability and can be repaired [M, Monster Manual, Armored Health]. How much coin a purse holds waits on the treasure-by-Division table [?8].
+- **Folk** carry purses and gear. Their armor keeps its current Durability and can be repaired [M, Monster Manual, Armored Health]. Purses are small [Jon, 2026-10-24]. How much they hold is set with the treasure-by-Division table for sites.
 - **Hoards** are found only in sites [Jon, 2026-10-23].
 
 ---
@@ -149,9 +148,9 @@ Roll 2d6 on the table for the party's band. Results marked **Sign first** are ab
 | 4 | A Viper [Territorial] | 4 |
 | 5 | A Wolf Spider with a Cluster of Spider Swarm. The spider is an Ambusher [Predator]. | 4 |
 | 6 | 1d2 + 1 Wild Dogs [Predator] | 4 |
-| 7 | 1d4 Deer [Prey] | 4 [?7] |
+| 7 | 1d4 Deer [Prey]. A hunt, not a fight. | — |
 | 8 | Two Bandit Cutthroats with a Cluster of Bandit Thugs [Raider] | 4 |
-| 9 | A Bandit Leader with two Cutthroats and a Cluster of Thugs [Raider] [?3] | 6 |
+| 9 | A Bandit Leader with two Cutthroats and a Cluster of Thugs [Raider] | 6 |
 | 10 | Two Large Hunting Dogs, run off from some lord's hunt [Predator] | 10 |
 | 11 | **Sign first:** a Boar [Territorial] | 6 |
 | 12 | **Sign first:** a Wolf Beta with two Gammas and a Cluster of Runts [Predator] | 10 |
@@ -167,7 +166,7 @@ At party level 3, Tier 3 results (the Black Bear) are above band and arrive as S
 | 4 | A Mountain Lion, an Ambusher [Predator] | 6 |
 | 5 | 1d2 Boars [Territorial] | 6 |
 | 6 | A Wolf Beta with two Gammas and a Cluster of Runts [Predator] | 10 |
-| 7 | An Elk bull with 1d4 cows. In autumn the bull is [Territorial]; otherwise all are [Prey]. | 6 |
+| 7 | An Elk bull with 1d4 cows. In autumn the bull is [Territorial] and a fight with him pays XP; otherwise all are [Prey], a hunt. | 6 / — |
 | 8 | A Ranger Captain with two Woodsmen: foresters [Raider, the toll being questions and a fine for poaching] or outlaws [Raider], even or odd on a d6 | 10 |
 | 9 | Three Orc Raiders [Raider] | 6 |
 | 10 | d6: 1–3 a Black Bear [Territorial]. 4–6 a Treow [Guardian]. | 10 / 20 |
@@ -194,7 +193,7 @@ At party level 3, Tier 3 results (the Black Bear) are above band and arrive as S
 
 ## What the tables show
 
-Filling these from today's bestiary turned up gaps you may want for your monster work [?9]:
+Filling these from today's bestiary turned up gaps you may want for your monster work:
 
 - **Band I woodland is thin at the top.** At Tier 1 the only Leader is the Bandit Leader, and the only Champions are trained dogs and horses. A wild Tier 1 woodland head is missing.
 - **Band III leans on Tier 2 creatures in bigger groups.** Woodland Tier 3 has bears, aurochs, the Ogre, and the undead, and little else.
