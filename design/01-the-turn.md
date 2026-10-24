@@ -59,7 +59,7 @@ Roll a d6 on the square where you stopped [S: "one die to determine what happene
 | d6 | Result |
 |:---:|:---|
 | 1–2 | **Quiet.** The hours pass without incident. |
-| 3 | **Sign.** Roll on the terrain's encounter table, but you find traces of the result instead of the creature itself: tracks, a kill, a camp gone cold. A Scout can read the signs to learn what made them and how many (Alertness, Stalking; Wilderness, Beast Lore or the right Creature Lore) [M]. You may follow the signs toward the creature or its lair, or steer clear. |
+| 3 | **Sign.** Roll on the terrain's encounter table, but you find traces of the result instead of the creature itself: tracks, a kill, a camp gone cold. A Scout can read the signs to learn what made them and how many: Alertness (Stalking), with Wilderness (Beast Lore) or the right Creature Lore [M], against the band's Even DC (see `05-sites.md`, Default DCs) [N, from the dry run]. You may follow the signs toward the creature or its lair, or steer clear. |
 | 4 | **Discovery.** A landmark, ruin, lair, or settlement, rolled on the terrain's discovery table. A place reached for the first time is a New Location [M, General Rules, Exploration Experience]. |
 | 5–6 | **Encounter.** Roll on the terrain's encounter table, then follow the encounter procedure. |
 

@@ -10,6 +10,7 @@ The design is meant to work on paper, with dice, pencils, and the Mastery rulebo
 
 - `sources/` holds the restoration of the original game: the reconstruction record (what was remembered, inferred, and guessed) and *The Solo Game as Played*. These are the attested starting point. Nothing in `design/` changes them.
 - `design/` holds the new procedures, one file per piece, numbered in reading order.
+- `playtests/` holds playtest and dry-run reports.
 - `DECISIONS.md` lists the rulings Jon has made, with dates, and the questions still open.
 
 ## Tags

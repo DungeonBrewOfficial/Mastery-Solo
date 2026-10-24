@@ -114,6 +114,8 @@ The map decides which kind of country each square is, as `01-the-turn.md` uses t
 - **Wild:** everywhere else, except Deep country.
 - **Deep:** a tile is Deep when neither it nor any of the eight tiles around it has a road or a settlement [N, ?4]. A party in the middle of a big forest, two tiles from the nearest road, is in Deep country. The farther the frontier gets from home, the more of it is Deep.
 
+Decide whether a tile is Deep when it's generated, counting blank neighbors as having no road [N, from the dry run]. So the frontier starts out Deep, and a tile already drawn stays as it was even if a road turns up next to it later. Mark Deep tiles on the map, lightly; it's easy to forget.
+
 ---
 
 ## Discovery

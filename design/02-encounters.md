@@ -71,7 +71,7 @@ Every creature wants something, and violence follows from that [M, Monster Manua
 |:---|:---|
 | **Predator** | **1–2 Fed.** It watches, keeps its distance, and leaves if you don't come closer. **3–4 Testing.** It stalks you, and strikes only a lone, wounded, or sleeping target. **5–6 Hungry.** It attacks. |
 | **Territorial** | **1–3 Warning.** It makes a display. Leave the square and it lets you go. **4–5 Defending.** It attacks if you approach or stay. **6 Enraged.** It attacks now. |
-| **Raider** | **1–2 Toll.** They demand payment, and fight if refused. **3–4 Lying in wait.** If they noticed you first, they've set an ambush ahead; if you noticed them first, you've spotted it. **5–6 Attack.** |
+| **Raider** | **1–2 Toll.** They demand payment, and fight if refused. The toll is the head's XP value × 5 sp for each character [N, from the dry run]. **3–4 Lying in wait.** If they noticed you first, they've set an ambush ahead; if you noticed them first, you've spotted it. **5–6 Attack.** |
 | **Prey** | **Any roll: it flees** on contact. Taking it is a hunt, abstracted under Wilderness (Hunting and Foraging) [M], and pays no XP [Jon, 2026-10-24]. |
 | **Restless dead** | **No roll.** It attacks anything living that comes into its ground, never breaks, and doesn't pursue beyond its ground. |
 | **Guardian** | **No roll.** It is hostile only to trespass or harm (for a Treow, axes and fire), and never pursues beyond its place. |
