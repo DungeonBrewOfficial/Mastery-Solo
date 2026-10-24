@@ -10,10 +10,7 @@ This file covers where money comes from, how much, and how a party turns it into
 
 Each is marked **[?]** where it comes up. Settled questions move to `DECISIONS.md`.
 
-1. **Scrap value.** Broken armor sells only as scrap. I've drafted scrap at 5% of the listed price for metal armor, and nothing for leather, hide, and cloth.
-2. **Repairing loot pays well.** A repair kit (24 sp) restores about 16 Durability, and on scale mail every point of Durability is worth about 8 sp at sale. So repairing salvage before selling it is very profitable, and what limits it is weight, a workshop, and who has the coin. Is that the right limit, or should repaired secondhand armor sell for less than half?
-3. **Settlement coin.** The coin-on-hand figures and the weekly refill are a first ballpark, worked from your wage table. See Selling.
-4. **The hoard multiplier** waits on play.
+1. **The hoard multiplier** waits on play.
 
 ---
 
@@ -23,7 +20,7 @@ Each is marked **[?]** where it comes up. Settled questions move to `DECISIONS.m
 |:---|:---|:---|
 | **Purses** | Folk you defeat | Small |
 | **Pelts** | Beasts you defeat | Small to moderate, and heavy |
-| **Salvage** | Arms and armor from defeated folk | Moderate, and heavy [?1] |
+| **Salvage** | Arms and armor from defeated folk | Moderate, and heavy |
 | **Hoards** | Sites: lairs, ruins, barrows, dungeons | Most of it [Jon, 2026-10-23] |
 
 Overland fights pay for the trip. Sites pay for the plate.
@@ -32,7 +29,7 @@ Overland fights pay for the trip. Sites pay for the plate.
 
 ## Hoards
 
-**A hoard is worth 40 sp per point of its guardian's XP value** [N, ?4]. The guardian is the head of the strongest encounter that holds the site. Tying hoards to the XP table means wealth keeps pace with level without a separate curve, and the same steep climb that makes high-Division XP worth chasing makes their hoards worth chasing too.
+**A hoard is worth 40 sp per point of its guardian's XP value** [N, ?1]. The guardian is the head of the strongest encounter that holds the site. Tying hoards to the XP table means wealth keeps pace with level without a separate curve, and the same steep climb that makes high-Division XP worth chasing makes their hoards worth chasing too.
 
 | Guardian Division | XP | Hoard value | Deep country (×2) |
 |:---:|:---:|:---:|:---:|
@@ -116,11 +113,11 @@ Some woodland pelts at Average quality: wolf 10 sp, black bear 70, brown bear 12
 
 Most armored folk start a fight in worn armor: a creature's armor is listed at its current Durability, below the armor's maximum [M, Monster Manual, Armored Health]. By the end of the fight, it's often broken [Jon, 2026-10-24]. Looted armor keeps its current Durability and can be repaired up to its maximum [M].
 
-**What it's worth** [N, ?1]:
+**What it's worth** [Jon, 2026-10-24]:
 
 - Secondhand arms and armor sell for **half their listed value, times their condition** (current Durability over maximum). A Warlord's scale mail, listed at 1,120 sp and taken at 40%, sells for about 220 sp.
 - **Broken** armor (0 Durability) sells only as scrap: 5% of its listed value for metal armor, and nothing for leather, hide, or cloth. The same scale mail, broken, is 56 sp of iron.
-- **Repairing** it first raises the price. Repair takes repair kits and a Blacksmith [M, Skill Mastery, Trade], and work that needs an anvil waits until the party stops [M, General Rules, Working on the road]. It pays well [?2].
+- **Repairing** it first raises the price. Repair takes repair kits and a Blacksmith [M, Skill Mastery, Trade], and work that needs an anvil waits until the party stops [M, General Rules, Working on the road]. It pays well, and that's the point: a character who invests in the Blacksmith discipline isn't advancing a combat skill, and the trade pays them back for it [Jon, 2026-10-24].
 
 **What it weighs.** Carried armor counts 1 toward encumbrance for every 10 pounds [M, Equipment, Encumbrance]. A brigandine (43 lb) is 5, full plate (70 lb) is 7, against a carrying limit equal to your Strength. One suit is a burden. Three are a wagon.
 
@@ -151,7 +148,7 @@ A hamlet (2d4) can't buy a 700 sp brooch at all. A town (2d8) finds a buyer abou
 
 ### Settlement coin
 
-Every settlement has a limit on how much it can pay out in total [N, ?3]. Selling draws it down, and it refills by a quarter of its full amount each week.
+Every settlement has a limit on how much it can pay out in total [Jon, 2026-10-24; figures are a ballpark]. Selling draws it down, and it refills by a quarter of its full amount each week.
 
 | Settlement | Market dice | People | Coin on hand |
 |:---|:---:|:---|:---:|

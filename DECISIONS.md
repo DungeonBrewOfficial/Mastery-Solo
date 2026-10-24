@@ -49,6 +49,8 @@ Rulings Jon has made for this design, newest last within each section. Each line
 - Purses at about the creature's Division in d6 silver are in the right range. (2026-10-24)
 - Selling: treasure sells at its value only if the settlement has a buyer who can afford it, found with the Availability table in reverse. The same goes for salvage. Small settlements won't want broken armor and lack the coin. (2026-10-24)
 - Salvaged armor is usually worn to begin with and often broken by the end of a fight. The party can leave it, lug it home and sell it for a fraction, or spend time and effort repairing it to get more. (2026-10-24)
+- Broken metal armor sells as scrap at 5% of its listed value; secondhand gear sells at half value times condition. Repairing loot is profitable on purpose: a character who invests in the Blacksmith discipline gives up advancing something else, and low-level parties can carry back only a couple of suits. (2026-10-24)
+- Settlement coin on hand (about 4 sp per resident, 8 in cities, refilling a quarter each week) is accepted as a ballpark. (2026-10-24)
 
 **Creature tiers (a guess, 2026-10-24)**
 Jon is still building monsters. His current guess at the party levels each creature Tier serves, used until the tables test it:
@@ -68,5 +70,5 @@ Jon is still building monsters. His current guess at the party levels each creat
 - Whether Epic and Legendary creatures retreat to their lairs at half health, or use the morale ladder like everything else. See `design/02-encounters.md`, Breaking point.
 - The chase, until it's tested.
 - How far from roads and settlements Deep country starts. See `design/01-the-turn.md`.
-- The treasure questions at the top of `design/03-treasure.md`: scrap value, repairing loot, settlement coin, and the hoard multiplier (waiting on play).
+- The hoard multiplier (40 sp per point of the guardian's XP value), waiting on play.
 - Metals. The five-metal ladder (Iron, Steel, Silver, Gold, Mithril) needs a purpose. Candidates so far: Durability grades on armor and shields, or the substrate for permanent enchantment (which waits on Mastery's magic items).
