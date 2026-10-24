@@ -16,7 +16,7 @@
  * (data/abilities.js: riders, Mob traits, pack reactions, Riposte, Leader
  * buffs, Charge, grabs, Smash, auras), and what the party can use at level 1:
  * Charge, Snap Shot, the shield bash, Opportunist with Backstab, Danger
- * Sense, Avoid Death, Challenge, and Hearten. Spells and companions are stage 3.
+ * Sense, Avoid Death, Challenge, and Hearten. Stage 3 adds spells, class abilities, and companions.
  *
  * Everything lives in state.battle as plain data, so a fight can be saved
  * and picked up mid-round. Work waits in battle.queue (moves and attacks);

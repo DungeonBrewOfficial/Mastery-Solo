@@ -70,11 +70,16 @@ The game saves after every action: on the hosted page, to the player's own priva
      - regrowth and healing (Tree-Bound, Reconstitute), Woodland Meld, Mark Quarry, Cunning Feint;
      - reactions (Intercept, Double Damage, Shed, False, Press), Grief Fury, Breaker, Incorporeal, Three Heads, Absorb Flame, Blood Up.
      The Exhausted condition now exists: in fights, carried out of them, and eased by rest. Archers now shoot while no one is beside them. Abilities that need water, fog, walls, or the Magpie's talk are named in the log as waiting on those. The maneuvers and guards past Untrained wait for advancement (milestone 3), since no one can learn them before then.
-   - *Stage 3.* Spells (Flame Dart, Stoneskin, Mend, Sacred Ward) and the companions (Tallow, Clabber).
+   - *Stage 3, built.* Magic, class abilities, and companions:
+     - *Spells* (`game/data/spells.js`): declared at the top of the round, which draws the magan (or overcasts into Exhausted) and sets the phase by cost; released on the caster's turn for 1 AP. Lost to attacking or defending (unless recorded without gestures), to a failed Miscast trial on health loss, or to a turn that ends without it. Concentration keeps the newest spell in the free slot; passive spells break on damage. Flame Dart, Demoralize (held, retried for 1 AP when resisted), Stoneskin and Sacred Ward (durability pools through `resolveDamage`'s `wardPool`), Mend and Mend Flesh (this round's wounds, or older ones at ×3 with a miscast and coerced success). Gerberga's Polestar takes 1 off each prayer. Magan shows in the party list and recovers with rest.
+     - *Gisla:* Hard to Kill, Possessed (sacred Impotence and Superiority, fire resistance by level), Demon Trigger and the Fire Aura.
+     - *Gerberga:* Turn and Destroy Daeva (declared, once per encounter, minion heads one by one), Imbue (sacred or sky).
+     - *Companions:* Tallow and Clabber fight beside their owners. Clabber has Gore, Trample, and Spell Conduit (Corra's touch spells through the boar); Tallow's Hellfire is declared, spends Gisla's magan, and burns everything in its cone.
+     Not yet: reaction casting, paid concentration slots (1 AP a round), Charm Asura, and the Charmed and Concealed conditions, since no party ability uses them.
 
 ## Known gaps
 
-- **Combat has no spells, class abilities, or companions yet** (stage 3): no Flame Dart, Stoneskin, Mend, or Sacred Ward, no Hard to Kill or Turn, no Tallow or Clabber. Band II creatures fight without most of their abilities.
+- The autoplayer used by the tests doesn't cast spells, Turn, or Imbue, so the balance numbers in the sims leave magic out.
 - The battlefield is open ground: no terrain, cover, or light yet.
 - **Healing is a stopgap until milestone 3.** Camp gives a Wilderness Rest (a Dungeon Rest in Deep country, one step worse if the night die brings something), and a night in a settlement gives a Good Night's Rest, free. After a fight the healer Heals each wounded character once without spending Wound Kits. Injuries and Traumas are recorded but nothing treats them yet.
 - When the whole party is down, the dynasty run ends; the next generation is milestone 3.

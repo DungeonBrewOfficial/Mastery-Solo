@@ -79,6 +79,14 @@ Rulings Jon has made for this design, newest last within each section. Each line
 - Rules gaps found while building are listed in `RULES-GAPS.md` and raised in chat when found.
 - The White Hart is a narrative pull more than a fight: tracking it can lead to a hidden or lost place. It stays off the encounter tables until sites are built (milestone 4). Its Charmed and Concealed abilities wait for stage 3.
 - Whether the shield takes durability damage before the armor is each character's standing choice, set at each round's declarations (as in Foundry's `shieldAbsorbs`, on by default). A ranged hit doesn't have to go to the shield.
+- Stage 3 calls made while building, each raised with Jon in chat:
+  - A caster who declares a spell acts in the spell's phase (by cost), not the weapon's. A weapon drawn that round can still slow them.
+  - A Defend or Counterattack set to Always still asks while the character holds a spell with gestures, because answering yes loses the spell.
+  - Healing a character at 0 health brings them to.
+  - Turned minion heads leave the field for good; a group turned whole flees as one while Gerberga holds the Turn.
+  - Imbue holds only in the free concentration slot; anything that takes the slot ends it.
+  - A party down to only a Hard to Kill character at 0 health counts as fallen, pending Jon's ruling.
+  - Spells, Hellfire, Imbue, and creature bolts are the "magical damage" that can kill Gisla at 0 health.
 
 **Creature tiers (a guess, 2026-10-24)**
 Jon is still building monsters. His current guess at the party levels each creature Tier serves, used until the tables test it:
