@@ -461,7 +461,7 @@ export function discover(state, rng, note, forced = null) {
     }
     case 5: {
       const r = rollTable(rng, state, terrain, bandHere(state));
-      at("lair", { creature: r.opt.head, text: r.opt.text });
+      at("lair", { creature: r.opt.head, text: r.opt.text, group: r.opt.group, xp: r.opt.xp, temper: r.opt.temper });
       text = `a lair: the home of ${r.opt.text.replace(/\s*\[[^\]]*\]/g, "")}`;
       break;
     }

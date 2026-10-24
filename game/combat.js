@@ -2912,6 +2912,7 @@ function finish(state, rng, note, outcome) {
   if (outcome === "won" || outcome === "fled") tend(state, rng, note);
   for (const u of b.units.filter(x => x.pc)) { const m = memberOf(state, u); m.exhausted = cond(u, "exhausted") || 0; }
   for (const m of state.party.members) { m.down = m.dead || m.hp <= 0; m.fightingOn = false; m.stable = false; m.dying = null; }
+  state.lastFight = { outcome, site: e?.site || null };
   state.encounter = null;
   state.battle = null;
 }

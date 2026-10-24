@@ -17,6 +17,7 @@ import { ensureAdvancement, checkLevels } from "./advance.js";
 import { ensureStores, morningSupplies, eveningSupplies, refill, exhaustFloor, outfit, treatInjuries, treatTraumas, repairGear } from "./supplies.js";
 import { restDay, hardToKillDay, ensureTrauma } from "./health.js";
 import { rumorAtInn, rumorHere } from "./town.js";
+import { atSite, makeSite, enter, siteAct, afterFight, restClock } from "./sites.js";
 
 export const DAY_HOURS = 8;
 export const SEASONS = ["spring", "summer", "autumn", "winter"];
@@ -99,7 +100,7 @@ function morning(state, rng) {
   if (w.windy) bits.push(`wind ${w.wind} mph`);
   if (w.wet) bits.push(w.precip || "wet");
   note(state, `Day ${state.day}, ${seasonOf(state.day)}. Weather (${w.roll}): ${bits.join(", ")}.`, "day");
-  morningSupplies(state, rng, (t, k) => note(state, t, k), state.indoors ? null : weatherDC(w.band));
+  morningSupplies(state, rng, (t, k) => note(state, t, k), state.indoors || state.site ? null : weatherDC(w.band));
 }
 
 /* ------------------------------------------------------------------ */
@@ -123,6 +124,7 @@ export function setPace(state, pace) {
  */
 export function travelLeg(state, choice = null) {
   if (state.encounter || state.sign || state.over) return state;
+  if (state.site) { note(state, "Leave the site first."); return state; }
   if (state.pending?.type === "nightfall" && !choice) return state;
   if (!state.target && !state.pending) { note(state, "Choose where to go: click the map."); return state; }
   const down = state.party.members.filter(m => !m.dead && m.collapsed);
@@ -205,9 +207,10 @@ function move(state, rng, hours) {
     reachSafety(state, rng);
   }
   const place = state.world.places?.[`${p.x},${p.y}`];
-  if (place && ["lair", "cave", "ruin", "barrow"].includes(place.type)) {
-    // TODO(sites): exploring sites is milestone 4.
-    note(state, `You stand at the ${place.type}${place.creature ? ` of ${place.creature}` : ""}. Exploring sites comes in milestone 4.`, "todo");
+  if (atSite(state)) {
+    const say = (t, k) => note(state, t, k);
+    note(state, `You stand at the ${place.type}${place.creature ? ` of ${place.creature}` : ""}${place.site?.cleared ? ", empty now" : ""}.`, "place");
+    if (!place.site) makeSite(state, rng, place, say);
   }
 }
 
@@ -288,7 +291,7 @@ function camp(state, rng) {
   const household = sq?.settlement && (sq.settlement.home || sq.settlement.size === "hamlet");
   const stay = state.stayKind;
   const bill = sq?.settlement && !household ? awake.length * (3 + 0.5 + (stay ? 0.5 : 0)) : 0;
-  if (sq?.settlement && p.coin >= bill) {
+  if (sq?.settlement && p.coin >= bill && !state.site) {
     if (bill) { p.coin -= bill; note(state, `You take Common rooms and ${stay ? "meals" : "supper"} at the ${sq.settlement.size === "roadhouse" ? "roadhouse" : "inn"}: ${bill} sp for ${awake.length}.`, "camp"); }
     else note(state, sq.settlement.home ? "You spend the night at home." : "A household in the hamlet takes you in for the night.", "camp");
     eveningSupplies(state, rng, say, { inn: "common" });
@@ -298,14 +301,20 @@ function camp(state, rng) {
     if (!stay) repairGear(state, rng, say); // no strenuous work during a Civilized or Bed Rest
     rest(state, rng, stay || "goodNight");
   } else {
-    if (sq?.settlement) note(state, `You can't pay for the inn (${bill} sp), so you sleep rough outside the ${sq.settlement.size}.`, "camp");
-    const atWater = !!p.waterToday || nearWater(state, p.x, p.y) || !!sq?.settlement;
+    if (sq?.settlement && !state.site) note(state, `You can't pay for the inn (${bill} sp), so you sleep rough outside the ${sq.settlement.size}.`, "camp");
+    const atWater = !state.site && (!!p.waterToday || nearWater(state, p.x, p.y) || !!sq?.settlement);
     if (atWater) refill(state, say, sq?.settlement ? sq.settlement.size : "water");
     eveningSupplies(state, rng, say, { atWater });
     // The evening's camping roles (General Rules, Camping Roles): the Healer and the Smith at work.
     treatInjuries(state, rng, say);
     treatTraumas(state, rng, say);
     repairGear(state, rng, say);
+    if (state.site) {
+      // Inside a site: a Dungeon Rest at best, and the clock is rolled for it (design/05-sites.md).
+      note(state, "You rest where you are, in the dark, with a watch kept.", "camp");
+      const came = restClock(state, rng, say);
+      rest(state, rng, "dungeon", { danger: true, interrupted: came });
+    } else {
     const n = rng.d(6);
     note(state, `You make camp. Night die ${n}${n === 6 ? ": something finds the camp." : ": the night passes."}`, n === 6 ? "event" : "camp");
     // Deep country is never safe: a Dungeon Rest. A night attack spoils the rest one step.
@@ -316,6 +325,7 @@ function camp(state, rng) {
       startEncounter(state, rng, say, { night: true });
       state.night = false;
       state.sign = null; // a Sign at night is only noises in the dark
+    }
     }
   }
   // A day with no travel is a day's rest for the Trauma Table; Hard to Kill counts its toll.
@@ -397,12 +407,26 @@ function rest(state, rng, kind, { danger = false, interrupted = false } = {}) {
 
 /** After an encounter or sign is settled, finish the day if it was over. */
 export function afterEvent(state) {
+  if (!state.battle && state.lastFight) withDice(state, (rng) => afterFight(state, rng, (t, k) => note(state, t, k)));
   if (state.encounter?.toBattle && !state.battle) withDice(state, (rng) => startBattle(state, rng, (t, k) => note(state, t, k)));
   if (!state.encounter && !state.sign && !state.over && state.campDue) withDice(state, (rng) => camp(state, rng));
   return state;
 }
 
 export function runWithDice(state, fn) { return withDice(state, fn); }
+
+/** Go into the site the party stands at, or act inside it (sites.js). The morning comes first, indoors. */
+export function siteAction(state, id, arg) {
+  if (state.encounter || state.sign || state.over || state.battle || state.pending) return state;
+  if (id === "rest") { campNow(state); return afterEvent(state); }
+  withDice(state, (rng) => {
+    const say = (t, k) => note(state, t, k);
+    if (!state.morningDone) morning(state, rng);
+    if (id === "enter") enter(state, rng, say);
+    else siteAct(state, rng, say, id, arg);
+  });
+  return afterEvent(state);
+}
 
 export const save = (state) => JSON.stringify(state);
 export const load = (json) => JSON.parse(json);

@@ -25,7 +25,7 @@ export const SHOP = [
   { group: "Food and water", items: { "Rations, Standard": "Serf", "Rations, Dry": "Serf", "Rations, Iron": "Serf", "Waterskin": "Serf" } },
   { group: "Kits", items: { "Adventurer's Pack": "Peasant", "Forager's Kit": "Peasant", "Healer's Kit": "Knight", "Smith's Kit": "Peasant" } },
   { group: "Healing", items: { "Wound Kit": "Serf", "Injury Kit": "Peasant", "Trauma Kit": "Knight", "Physic Kit": "Peasant", "Surgeon's Pocket Set": "Knight", "Surgeon's Chest": "Burgher" } },
-  { group: "Tools", items: { "Repair Kit": "Peasant", "Hammer": "Serf", "Iron Pot": "Serf" } },
+  { group: "Tools", items: { "Repair Kit": "Peasant", "Thieves' Picks": "Peasant", "Crowbar": "Peasant", "Hammer": "Serf", "Iron Pot": "Serf" } },
   { group: "Clothing", items: { "Cold Clothing": "Peasant", "Extreme Cold Clothing": "Knight", "Heat Clothing": "Serf",
     "Cloak, Wool": "Serf", "Hood, Wool": "Serf", "Gloves, Wool": "Serf", "Boots, Hide": "Serf", "Cloak, Pile": "Peasant", "Hat, Fur": "Peasant",
     "Hat, Straw": "Serf", "Head-cloth, Linen": "Serf", "Robe, Common": "Serf" } }
@@ -142,6 +142,7 @@ export function townCoin(state) {
 export function saleList(state) {
   const out = state.party.pelts.map((p, i) => ({ id: `pelt:${i}`, label: `${p.quality} ${p.name.toLowerCase()} pelt`, value: p.value }));
   // Secondhand arms and armor: half their value times their condition; broken, 5% as scrap, and only where there's a smith (design/03-treasure.md, Salvage).
+  (state.party.treasure || []).forEach((t, i) => out.push({ id: `treasure:${i}`, label: t.name, value: t.value }));
   const s = settlementHere(state);
   (state.party.spare || []).forEach((a, i) => {
     const list = priceOf(a.name);
@@ -169,9 +170,10 @@ export function sell(state, rng, note, id) {
   const [kind, key] = id.split(":");
   if (kind === "pelt") state.party.pelts.splice(Number(key), 1);
   else if (kind === "spare") state.party.spare.splice(Number(key), 1);
+  else if (kind === "treasure") state.party.treasure.splice(Number(key), 1);
   else { state.party.stores[key] -= 1; if (!state.party.stores[key]) delete state.party.stores[key]; }
   delete m.buyers[id];
-  for (const k of Object.keys(m.buyers)) if (k.startsWith(`${kind}:`) && kind !== "item") delete m.buyers[k];
+  for (const k of Object.keys(m.buyers)) if (k.startsWith(`${kind}:`) && kind !== "item") delete m.buyers[k]; // indexes shift
   note(`Sold the ${piece.label} for ${piece.value} sp.`, "reward");
   return true;
 }

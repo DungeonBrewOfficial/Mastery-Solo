@@ -114,6 +114,19 @@ Rulings Jon has made for this design, newest last within each section. Each line
 
 **Sites (`design/05-sites.md`) [Jon, 2026-10-24]:** all eight drafts stand. A site is a chain of areas drawn as the party goes, with fights on the combat grid; sizes as drafted; trials inside use the Even and Hard DCs by band (+2 in Deep country); the clock rolls every 3 exploration rounds and after each fight; the guardian's group is spread through the Occupied areas; cleared sites may refill after a month; no magic treasure until magic items exist. Lost places can be held by the Asura (the Cherub, the Agathodaimon) as one option among the rolls, not the rule.
 
+- Milestone 4, stage 1, calls made while building sites (raised with Jon in chat) [N]:
+  - Areas link in a chain as drawn; going back to a drawn area takes a round, and leaving takes a round per area back to the entrance.
+  - A noticed trap can be stepped around for free, one at a time; an unnoticed one springs on the Scout, who leads.
+  - Trap kinds: a spiked pit (puncturing, Restricted), swinging blades (cutting, Bleeding), a poisoned needle (piercing, Tainted), a falling weight (crushing, Impaired). The condition trial is Strength for Restricted and Endurance for the rest, against the trap's Detection DC.
+  - A character brought to 0 health outside a fight (a trap, a floor) is down until rest brings them back; there's no dying timer outside a fight yet.
+  - Obstacles: a climb (Strength and Athletics), a swim (Endurance and Athletics), a riddle (Intelligence and Lore), a collapse (Wisdom and Lore, standing in for Stone Lore). A failed unsound floor drops the one crossing for 1d6.
+  - Occupied areas take a single creature kind or a minion group (cut to six heads) from the guardian's entourage, at even odds when both are left; residents brought by the clock are 1d3 of a single kind, else vermin.
+  - Lairs aren't dark; the other types are, throughout.
+  - A remains clue to "the contents of one undrawn area" means the next area entered holds no surprises: a trap there is already spotted.
+  - Salvage from remains is a random armor set or shield at 1d10 × 10% of its Durability.
+  - A Band I purse in remains is 1d6 sp, Band II 2d6, Band III 3d6.
+  - Thieves' Picks and the Crowbar are on the market at Peasant. Hamon has neither, as his build episode chose.
+
 **Creature tiers (a guess, 2026-10-24)**
 Jon is still building monsters. His current guess at the party levels each creature Tier serves, used until the tables test it:
 

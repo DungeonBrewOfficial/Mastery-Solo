@@ -2,7 +2,8 @@
  * The page: wires the map canvas and the side panel to the game state, and
  * saves after every action.
  */
-import { stay, maxMagan, newGame, travelLeg, campNow, setTarget, setPace, seasonOf, DAY_HOURS, squaresPerHour, note, afterEvent, runWithDice } from "./journey.js";
+import { stay, maxMagan, newGame, travelLeg, campNow, setTarget, setPace, seasonOf, DAY_HOURS, squaresPerHour, note, afterEvent, runWithDice, siteAction } from "./journey.js";
+import { atSite, siteHere, siteChoices, areaLabel, inDark } from "./sites.js";
 import { choices, choose, signChoices, chooseSign, partyLevel, bandFor, ROMAN } from "./events.js";
 import { CREATURES } from "./data/creatures.js";
 import { squareAt, countryAt, findPath, moveCost, TERRAINS, SETTLEMENTS } from "./world.js";
@@ -52,7 +53,7 @@ function render() {
   document.querySelector(".map-tools").hidden = !!state.battle;
   $("travel").closest(".panel").hidden = !!state.battle;
   $("choice").hidden = !pending;
-  $("travel").disabled = pending || busy;
+  $("travel").disabled = pending || busy || !!state.site;
   $("camp").disabled = pending || busy;
   renderEvent();
   renderParty();
@@ -127,7 +128,48 @@ function renderEvent() {
     row.className = "buttons";
     for (const ch of signChoices(state)) row.appendChild(button(ch.label, () => act(() => { runWithDice(state, (rng) => chooseSign(state, rng, ch.id, say)); afterEvent(state); })));
     box.appendChild(row);
-  } else box.hidden = true;
+  } else if (state.site || atSite(state)) renderSite(box);
+  else box.hidden = true;
+}
+
+/* ---------------- sites */
+
+const SITE_NAMES = { lair: "lair", cave: "cave", ruin: "ruin", barrow: "barrow", lost: "lost place" };
+function renderSite(box) {
+  box.hidden = false;
+  const place = atSite(state), site = siteHere(state) || place?.site;
+  const name = SITE_NAMES[place.type];
+  if (!state.site) {
+    box.innerHTML = `<h2>At the ${name}</h2><p class="small muted">${site ? `${site.size} areas, Band ${ROMAN[site.band]}${site.deep ? ", Deep country" : ""}.${site.cleared ? " Cleared." : site.areas.length ? ` ${site.areas.length} drawn so far.` : ""}` : ""}</p>`;
+    const row = document.createElement("div");
+    row.className = "buttons";
+    row.appendChild(button(`Go into the ${name}`, () => act(() => siteAction(state, "enter"))));
+    box.appendChild(row);
+    return;
+  }
+  const s = state.site, here = site.areas[s.at];
+  const lightNote = inDark(state) ? '<span class="warn">no light</span>' : s.torch ? `torch, ${s.torch} round${s.torch > 1 ? "s" : ""} left (${count(state, "Torch")} spare)` : "daylight";
+  box.innerHTML = `<h2>In the ${name}</h2>
+    <p class="small muted">Band ${ROMAN[site.band]}${site.deep ? ", Deep country" : ""} · ${site.areas.filter(a => !a.secret).length} of ${site.size} areas drawn · ${s.rounds} exploration round${s.rounds === 1 ? "" : "s"} · ${lightNote} · ${state.party.bankedXp} XP banked</p>`;
+  const ol = document.createElement("ol");
+  ol.className = "small areas";
+  for (const a of site.areas) {
+    const li = document.createElement("li");
+    li.value = a.id + 1;
+    const open = a.exits > 0 ? ` · ${a.exits} way${a.exits > 1 ? "s" : ""} on unexplored` : "";
+    li.innerHTML = `${a.id === s.at ? "<strong>You are here:</strong> " : ""}${areaLabel(a).replace(/^Area \d+: /, "")}${a.blocked ? ' <span class="warn">(blocks the way)</span>' : ""}${a.kind === "occupied" && a.group ? ' <span class="warn">(occupied)</span>' : ""}${a.kind === "heart" && site.headAlive ? ` <span class="warn">(${site.guardian.head})</span>` : ""}<span class="muted">${open}</span>`;
+    ol.appendChild(li);
+  }
+  box.appendChild(ol);
+  const row = document.createElement("div");
+  row.className = "buttons";
+  for (const ch of siteChoices(state)) {
+    const b = button(ch.label, () => act(() => siteAction(state, ch.id, ch.arg)));
+    if (ch.disabled) b.disabled = true;
+    if (["heart", "fight"].includes(ch.id)) b.className = "primary";
+    row.appendChild(b);
+  }
+  box.appendChild(row);
 }
 
 /* ---------------- battle */
@@ -489,6 +531,7 @@ function renderParty() {
   $("quiet").checked = !!p.quiet;
   if (p.pelts.length) $("pelts").textContent = `Pelts: ${p.pelts.map(x => `${x.quality} ${x.name.toLowerCase()} (${x.value} sp)`).join(", ")}`;
   else $("pelts").textContent = "";
+  if (p.treasure?.length) $("pelts").textContent += `${p.pelts.length ? " · " : ""}Treasure: ${p.treasure.map(x => `${x.name} (${x.value} sp)`).join(", ")}`;
 }
 
 /* ---------------- supplies and the market */
