@@ -110,6 +110,7 @@ export const ABILITIES = {
   /* ---------------- Band II ---------------- */
   "Morphon (Sora)": { kind: "immune", damage: ["void"], text: "Immune to Void damage." },
   "Behemoth (Stone)": { kind: "immune", damage: ["stone"], text: "Immune to Stone damage." },
+  "Sídhe (Primal)": { kind: "immune", damage: ["primal"], text: "Immune to Primal damage." },
   "Incorporeal": { kind: "incorporeal", text: "Attacks that deal mundane damage have Inferiority against it (dice cannot explode). Magical damage, including the magical portion of an enchanted weapon's hit, lands normally." },
   "Three Heads": { kind: "unflankable", startle: 3, text: "The Ettin cannot be flanked. It has awareness in all directions, gains +3 to Startle trials and Perception-based trials, and is immune to Charmed and Controlled." },
   "Iron-Shod": { kind: "resistBonus", conds: ["restricted", "prone"], bonus: 2, text: "The Redcap's heavy iron boots grant it +2 to trials against Restricted and Prone." },

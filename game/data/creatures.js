@@ -3464,7 +3464,7 @@ export const CREATURES = {
      2
     ],
     "bonus": 0,
-    "range": "Projectile 150/300/450"
+    "range": "Projectile, Ranged 150/300/450"
    },
    {
     "name": "Great Knife",
@@ -7959,7 +7959,7 @@ export const CREATURES = {
   ],
   "abilityText": {
    "Pinning Shot": "Pinning Shot (1 AP, Attack. Ability slot 1). On a hit with a bow attack, with Inferiority, if damage is dealt, the target must succeed on a STR trial [5] or advance Restricted by 1 tier. Multiple successful Pinning Shots stack the condition.",
-   "Mark Quarry": "Mark Quarry (2 AP, Action. Ability slot 2). The ranger captain designates a target within line of sight. All allied hunters and beasts within 60 feet advance Inspired by 1 tier against that target only. Lasts 1 round. Can be reapplied to stack tiers."
+   "Mark Quarry": "Mark Quarry (2 AP, Action. Ability slot 2). The ranger captain designates a target within line of sight. All allied hunters and beasts within 60 feet advance Invigorated by 1 tier against that target only. Can be reapplied to stack tiers."
   },
   "senses": "<p>Scent (via hunting dog companion, not inherent).</p>"
  },
@@ -9935,7 +9935,7 @@ export const CREATURES = {
   ],
   "abilityText": {
    "Deep Roots": "Deep Roots. (Ability slot 1.) The Treow has Superiority on all trials to resist being moved or displaced.",
-   "Root Snare": "Root Snare (1 AP, Action. Ability slot 2.) The target must succeed on a STR trial [6] or advance Restricted by 1 tier. Advances on repeated application. No damage. Restricted does not deteriorate while held. Once per turn, the target can spend 1 AP on a STR trial [6] to break free; on success, the hold drops by 1 tier. An adjacent ally can spend 1 AP on its own turn to make the same trial for it. While a target is Pinned by Root Snare, the Treow's attacks against it have Superiority.",
+   "Root Snare": "Root Snare (1 AP, Action. Ability slot 2. Range 30 ft.) The target must succeed on a STR trial [6] or advance Restricted by 1 tier. Advances on repeated application. No damage. Restricted does not deteriorate while held. Once per turn, the target can spend 1 AP on a STR trial [6] to break free; on success, the hold drops by 1 tier. An adjacent ally can spend 1 AP on its own turn to make the same trial for it. While a target is Pinned by Root Snare, the Treow's attacks against it have Superiority.",
    "Timber": "Timber (2 AP, Attack. Ability slot 3.) The Treow makes a branch slam attack targeting all creatures in a 10-foot line. Roll one attack and apply to all targets. On a hit, targets must succeed on a STR trial [6] or be pushed 10 feet."
   },
   "senses": "<p>Perceives creatures in contact with the ground within 60 ft through its root network, regardless of visibility.</p>"
@@ -10775,6 +10775,118 @@ export const CREATURES = {
    "False": "False (1 AP, Reaction. Ability slot 1). When the warrior moves out of a threatened space and is attacked, it gains +1 to its defense roll. If the attack misses, the warrior can make a melee attack with Superiority before completing its movement."
   },
   "senses": ""
+ },
+ "White Hart": {
+  "name": "White Hart",
+  "tier": 3,
+  "rank": "champion",
+  "division": 6,
+  "classification": "fae",
+  "kingdom": "sidhe",
+  "size": {
+   "width": 2,
+   "height": 1,
+   "reach": 5
+  },
+  "locomotion": [
+   "quadruped"
+  ],
+  "attributes": {
+   "strength": {
+    "score": 12,
+    "tier": 3
+   },
+   "agility": {
+    "score": 20,
+    "tier": 5
+   },
+   "physique": {
+    "score": 15,
+    "tier": 4
+   },
+   "endurance": {
+    "score": 14,
+    "tier": 3
+   },
+   "intelligence": {
+    "score": 6,
+    "tier": 2
+   },
+   "wisdom": {
+    "score": 16,
+    "tier": 4
+   },
+   "charisma": {
+    "score": 15,
+    "tier": 4
+   },
+   "perception": {
+    "score": 18,
+    "tier": 4
+   }
+  },
+  "armored": false,
+  "resistance": {
+   "cleaving": 6,
+   "cutting": 6,
+   "crushing": 10,
+   "piercing": 8,
+   "puncturing": 8,
+   "sea": 4,
+   "stone": 4,
+   "primal": 0,
+   "profane": 3,
+   "fire": 4,
+   "sky": 4,
+   "sacred": 3,
+   "void": 0
+  },
+  "attacks": [
+   {
+    "name": "Antler",
+    "phase": "moderate",
+    "damageType": "piercing",
+    "attribute": "physique",
+    "style": "natural",
+    "dice": [
+     10,
+     6
+    ],
+    "bonus": 0,
+    "range": ""
+   },
+   {
+    "name": "Kick",
+    "phase": "moderate",
+    "damageType": "crushing",
+    "attribute": "strength",
+    "style": "natural",
+    "dice": [
+     10,
+     4
+    ],
+    "bonus": 0,
+    "range": ""
+   }
+  ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
+  "abilities": [
+   "Sídhe (Primal)",
+   "The White Hart",
+   "Turned Shaft",
+   "At Bay",
+   "Into the Wood"
+  ],
+  "abilityText": {
+   "Sídhe (Primal)": "Sídhe (Primal) (Classification, no slot). Immune to Primal damage. Impotence on trials vs Void damage. Connected to Primal magic.",
+   "The White Hart": "The White Hart (Ability slot 1). A sapient creature that can see the hart within 60 feet, either for the first time in an encounter or at the start of its turn, must succeed on a WIS trial [7] or advance Charmed by 1 tier. The hart's implied request is to be followed. This aura cannot advance Charmed past Tier 1. A creature that succeeds is immune to the aura for the rest of the encounter. While a creature can see the hart, its Charmed does not deteriorate, including tiers from other sources. Once per turn, it can spend 1 AP on a WIS trial [7] to break the hold; on a success, Charmed deteriorates normally even while it can see the hart.",
+   "Turned Shaft": "Turned Shaft (Ability slot 2). When a ranged attack deals health damage to the hart, the attacker takes the same amount as Primal damage. If this reduces the attacker to 0 health, it also suffers the Hart's Wound, a Grievous Trauma that only Primal magic can heal. While the wound lasts, the creature's maximum health is reduced by 7.",
+   "At Bay": "At Bay (Ability slot 4). While the hart cannot move away from its attackers (it is cornered or Restricted, or its foal is threatened within 10 feet), its attacks have Dominance.",
+   "Into the Wood": "Into the Wood (2 AP, Movement. Ability slot 3). In woodland, the hart moves up to its speed; this movement does not trigger reactions. It advances Concealed by 2 tiers against every creature. Searching uses DC 7. Behavior: The hart doesn't fight to win. It runs and lets itself be followed. It defends itself only when it can't run or its foal is threatened, and it breaks off the moment a way out opens."
+  },
+  "senses": "<p>Scent, crepuscular sight.</p>"
  },
  "Wild Dog": {
   "name": "Wild Dog",
