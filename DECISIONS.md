@@ -90,5 +90,13 @@ Jon is still building monsters. His current guess at the party levels each creat
 - The hoard multiplier (40 sp per point of the guardian's XP value), waiting on play.
 - The site questions at the top of `design/05-sites.md`: areas instead of grid maps, site sizes, default DCs by band, the clock inside, the guardian's group spread through the site, cleared sites refilling, magic treasure, and lost-place guardians.
 - The settlement questions at the top of `design/06-settlements.md`: recruit level, who's available, hiring a smith, rumors, libraries, and a hamlet's hospitality.
+- **Combat stage 2 calls, waiting on Jon** (2026-10-24):
+  - *Conditions wear off at the end of the round.* Tiers no source holds drop one tier at the end of each round, unless something advanced them that round. RAW times it to the end of the turn of whoever advanced it last, which would wipe a condition out on the turn it lands. The end-of-round version gives the Leader buffs exactly the "Tier 3 after three rounds in a row" the Monster Manual describes.
+  - *Fliers are always aloft.* Raptors and eagles can always Stoop, and Aerial Evasion always applies. There's no height on the grid yet.
+  - *Hearten is offered only on an ally's Defend prompt.* The ability also covers trials and attacks, but asking before every roll would be a lot of clicking.
+  - *Avoid Death fires on its own,* the first time Gerberga would drop to 0 between rests. It's a reaction with no cost, so I didn't make it a prompt.
+  - *How enemies choose.* A Leader uses Rally when nothing is in its reach and at least two allies are near. A creature uses a rider when the target doesn't already have its effect, Grab before biting, and Charge when a straight run is open. The Living Stone declares Smash when someone is in reach at the top of the round.
+  - *Rider amounts.* An unnumbered Attrition from a rider (Rend, Gore) deals the creature's higher of Strength or Physique tier, its attack attribute. A minion's deals its Creature Tier.
+  - *Opportunist,* which Hamon has at level 1, opens on two allies on the target, flanking, or a target Impaired from Startle. Concealment isn't on the grid yet.
 - **Difficulty settings** (later). Candidates so far: what a wipe means (everyone dies; everyone but the dynasty's main character survives; raiders rob and leave, beasts drag one off), and whether healing means make saving the dying after a fight automatic.
 - Metals. The five-metal ladder- Metals. The five-metal ladder (Iron, Steel, Silver, Gold, Mithril) needs a purpose. Candidates so far: Durability grades on armor and shields, or the substrate for permanent enchantment (which waits on Mastery's magic items).

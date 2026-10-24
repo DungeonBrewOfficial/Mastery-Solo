@@ -261,8 +261,12 @@ function camp(state, rng) {
 const RESTS = { none: "No Rest", dungeon: "Dungeon Rest", wilderness: "Wilderness Rest", good: "Good Night's Rest" };
 function rest(state, rng, kind) {
   const bits = [];
+  const ORDER = ["none", "dungeon", "wilderness", "good"];
   for (const m of living(state)) {
-    const k = kind === "wilderness" && m.cls === "Druid" ? "good" : kind;
+    let k = kind === "wilderness" && m.cls === "Druid" ? "good" : kind;
+    if (k !== "none") m.spent = {};
+    // Infected: rest counts as one stage lower per tier (Conditions).
+    if (m.infected) k = m.infected >= 3 ? "none" : ORDER[Math.max(0, ORDER.indexOf(k) - m.infected)];
     if (m.hp >= m.health || k === "none" || (k === "dungeon" && m.hp < 1)) continue;
     const gain = k === "dungeon" ? 1 : k === "wilderness" ? rng.d(3) : total(rng, `1d${dieOfTier(tierOf(m.attributes.endurance))[1]}`);
     const before = m.hp;

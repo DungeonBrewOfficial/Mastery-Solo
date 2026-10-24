@@ -10,7 +10,13 @@
  * counterattacks, durability then health (Foundry's resolveDamage), 0 health
  * (Injury, the dying timer, Fighting On, Traumas), Triage, minion groups,
  * Startle, Impaired, the morale ladder (design/02-encounters.md), and running.
- * Maneuvers, spells, creature abilities, and companions come in later stages.
+ *
+ * Stage 2 adds the chained conditions (Restricted with holds, Tainted,
+ * Infected, Inspired, Invigorated, Prone, Attrition), creature abilities
+ * (data/abilities.js: riders, Mob traits, pack reactions, Riposte, Leader
+ * buffs, Charge, grabs, Smash, auras), and what the party can use at level 1:
+ * Charge, Snap Shot, the shield bash, Opportunist with Backstab, Danger
+ * Sense, Avoid Death, Challenge, and Hearten. Spells and companions are stage 3.
  *
  * Everything lives in state.battle as plain data, so a fight can be saved
  * and picked up mid-round. Work waits in battle.queue (moves and attacks);
@@ -22,7 +28,8 @@ import { trial, passes, tierOf, dieOfTier, PROGRESSION } from "./mastery.js";
 import { CREATURES } from "./data/creatures.js";
 import { MASTERY, dtdForTierRank, sizeRowForSquares } from "./vendor/foundry/module/config.mjs";
 import { buildHealthPlan, armoredDurability } from "./vendor/foundry/module/helpers/npc-health.mjs";
-import { headsLost, groupTokenSize, bandFor as groupBand } from "./vendor/foundry/module/helpers/minion-rules.mjs";
+import { headsLost, groupTokenSize, bandFor as groupBand, mobDC } from "./vendor/foundry/module/helpers/minion-rules.mjs";
+import { abilitiesOf, unbuilt } from "./data/abilities.js";
 import { TRAUMA_TABLE } from "./vendor/foundry/module/data/trauma-table.mjs";
 import { resolveDamage } from "./vendor/foundry/extract/resolve-damage.mjs";
 import { speedOf, creatureSpeed, creatureTrial, awardCombatXp, spoils, chase, breakAway, cannotRun } from "./events.js";
@@ -54,7 +61,8 @@ const label = ([c, s]) => s === 1 ? "1" : `${c > 1 ? c : ""}d${s}`;
  * (Two-Handed Style). kept counts the dice kept, explosions included, for
  * killing minion heads.
  */
-function rollPool(rng, dice, { edge = 0, bonus = 0, inferiority = false, extra = -1 } = {}) {
+function rollPool(rng, dice, { edge = 0, bonus = 0, inferiority = false, superiority = false, extra = -1 } = {}) {
+  if (inferiority && superiority) inferiority = superiority = false;
   let total = bonus, kept = 0;
   const parts = [];
   dice.forEach((d, i) => {
@@ -63,7 +71,7 @@ function rollPool(rng, dice, { edge = 0, bonus = 0, inferiority = false, extra =
     const chains = [];
     for (let k = 0; k < c + (i === extra ? 1 : 0); k++) {
       const chain = [rng.d(s)];
-      while (s >= 3 && !inferiority && chain[chain.length - 1] === s && chain.length < 20) chain.push(rng.d(s));
+      while (s >= 3 && !inferiority && chain[chain.length - 1] >= (superiority ? s - 1 : s) && chain.length < 20) chain.push(rng.d(s));
       chains.push(chain);
     }
     const sum = (ch) => ch.reduce((a, b) => a + b, 0);
@@ -75,7 +83,7 @@ function rollPool(rng, dice, { edge = 0, bonus = 0, inferiority = false, extra =
   });
   const mods = [];
   if (bonus) mods.push(bonus > 0 ? `+ ${bonus}` : `− ${-bonus}`);
-  const tags = [edge > 0 ? "Dominance" : edge < 0 ? "Impotence" : "", inferiority ? "Inferiority" : ""].filter(Boolean);
+  const tags = [edge > 0 ? "Dominance" : edge < 0 ? "Impotence" : "", inferiority ? "Inferiority" : "", superiority ? "Superiority" : ""].filter(Boolean);
   return { total: Math.max(0, total), kept, text: `${parts.join(" + ")}${mods.length ? " " + mods.join(" ") : ""}${tags.length ? ` (${tags.join(", ")})` : ""} = ${Math.max(0, total)}` };
 }
 
@@ -160,11 +168,99 @@ function pcDefense(state, u, type, ranged) {
   return { can: true, dice: [attrTD(m, attr)], bonus: res + (shield ? m.shield.defense : 0) + (w?.defense || 0), unarmed: !w && !shield };
 }
 
-/** Penalties and Inferiority from conditions and untreated Injuries (Conditions). */
-function strain(state, u) {
+/* ------------------------------------------------------------------ */
+/* Conditions (Conditions chapter)                                      */
+
+export const COND_LABELS = {
+  restricted: { 1: "Grappled", 2: "Pinned", 3: "Restrained" },
+  tainted: { 1: "Dosed", 2: "Blighted", 3: "Corrupted" },
+  infected: { 1: "Afflicted", 2: "Sickened", 3: "Diseased" },
+  inspired: { 1: "Rallied", 2: "Emboldened", 3: "Fearless" },
+  invigorated: { 1: "Energized", 2: "Empowered", 3: "Tireless" }
+};
+const PHYSICAL = ["strength", "agility", "physique", "endurance"];
+const cond = (u, k) => (k === "impaired" ? u.impaired : k === "demoralized" ? u.demoralized : u.cond?.[k]) || 0;
+function setCond(u, k, v) {
+  if (k === "impaired") u.impaired = v;
+  else if (k === "demoralized") u.demoralized = v;
+  else (u.cond ||= {})[k] = v;
+}
+function immuneTo(state, u, k) {
+  if (u.pc) return (memberOf(state, u).immuneConds || []).includes(k);
+  return abilitiesOf(CREATURES[u.cname]).some(a => a.kind === "immune" && a.conds?.includes(k));
+}
+function immuneToDamage(state, u, type) {
+  if (u.pc) return (memberOf(state, u).immune || []).includes(type);
+  return abilitiesOf(CREATURES[u.cname]).some(a => a.kind === "immune" && a.damage?.includes(type));
+}
+
+/**
+ * Advance a condition by n tiers, to Tier 3 (or a source's max). Inspired and
+ * Demoralized counter each other tier for tier. Infected lives on the
+ * character, not the fight.
+ */
+function addCond(state, note, u, k, n = 1, { max = 3 } = {}) {
+  if (immuneTo(state, u, k)) { note(`${u.name} is immune to ${k === "tainted" ? "poison" : k === "infected" ? "disease" : k}.`); return; }
+  if (k === "infected" && u.pc) {
+    const m = memberOf(state, u);
+    m.infected = Math.min(3, (m.infected || 0) + n);
+    note(`${u.name} is ${COND_LABELS.infected[m.infected]} (Infected ${m.infected}).`, "event");
+    return;
+  }
+  const pair = { inspired: "demoralized", demoralized: "inspired" }[k];
+  if (pair && cond(u, pair) > 0) {
+    const cancel = Math.min(n, cond(u, pair));
+    setCond(u, pair, cond(u, pair) - cancel);
+    n -= cancel;
+    if (!n) { note(`${u.name}'s ${k} cancels against ${pair}.`); return; }
+  }
+  const before = cond(u, k);
+  const next = Math.min(3, Math.max(before, Math.min(max, before + n)));
+  if (next === before) return;
+  setCond(u, k, next);
+  (u.fresh ||= {})[k] = true;
+  const name = k === "impaired" ? IMPAIRED[next] : k === "demoralized" ? DEMORALIZED[next] : COND_LABELS[k]?.[next] || k;
+  note(`${u.name} is ${name} (${k[0].toUpperCase() + k.slice(1)} ${next}).`, ["inspired", "invigorated"].includes(k) ? "" : "event");
+}
+
+/**
+ * Every modifier a creature's conditions put on one roll.
+ * kind: "attack" | "defense" | a trial's attribute. → { pen, bonus, edge, sup, inf }
+ */
+function mods(state, u, kind) {
   const m = u.pc ? memberOf(state, u) : null;
-  const pen = (u.impaired === 1 ? 1 : u.impaired === 2 ? 2 : 0) + (m?.injuries || 0);
-  return { pen, attackInf: u.impaired === 2 || u.demoralized >= 1, defenseInf: u.impaired === 2 || u.demoralized >= 2 };
+  const physical = kind === "attack" || kind === "defense" || PHYSICAL.includes(kind);
+  const mental = !physical;
+  const combat = kind === "attack" || kind === "defense";
+  let pen = m?.injuries || 0, bonus = 0, dom = false, imp = false, sup = false, inf = false;
+  const im = cond(u, "impaired"), re = cond(u, "restricted"), ta = cond(u, "tainted"), de = cond(u, "demoralized");
+  const iv = cond(u, "invigorated"), ins = cond(u, "inspired");
+  pen += im === 1 ? 1 : im === 2 ? 2 : 0;
+  if (im === 2 && combat) inf = true;
+  if (physical) pen += re >= 2 ? 2 : re;
+  if (re >= 2 && combat) inf = true;
+  pen += ta;
+  if (ta >= 2) imp = true;
+  if (kind === "attack" && de >= 1) inf = true;
+  if (kind === "defense" && de >= 2) inf = true;
+  if (u.prone && combat) inf = true;
+  if (iv >= 1 && (physical || iv >= 3)) dom = true;
+  if (iv === 2 && physical) bonus += 1;
+  if (iv >= 3) bonus += 2;
+  if (ins >= 1 && mental) dom = true;
+  if (ins >= 2 && !combat) bonus += ins === 2 ? 1 : 2;
+  if (ins >= 3 && combat) sup = true;
+  return { pen, bonus, edge: (dom ? 1 : 0) - (imp ? 1 : 0), sup, inf };
+}
+
+/** A trial to resist: the character's attribute trial, or the creature's trial dice, with its conditions. */
+function resist(state, rng, u, attr, dc, { edge = 0 } = {}) {
+  const md = mods(state, u, attr);
+  const e = Math.sign(edge + md.edge);
+  const t = u.pc
+    ? trial(rng, [dieOfTier(tierOf(memberOf(state, u).attributes[attr])), dieOfTier(tierOf(memberOf(state, u).attributes[attr]))], { edge: e, bonus: md.bonus - md.pen })
+    : creatureTrial(rng, CREATURES[u.cname], attr, { edge: e, bonus: md.bonus - md.pen });
+  return { ok: passes(t, dc), text: t.text };
 }
 
 /* ------------------------------------------------------------------ */
@@ -209,6 +305,8 @@ function rollHealth(rng, c) {
 /* Setting up                                                           */
 
 const FORMATION = { gerberga: [3, 5], hamon: [3, 6], gisla: [2, 5], corra: [2, 6] };
+/** Per-unit condition state for a fresh fight. */
+const FRESH = () => ({ cond: {}, fresh: {}, attrition: [], prone: false, held: null, tookTurn: false });
 
 /**
  * Open the battle for the current encounter. Distance sets how far apart the
@@ -227,7 +325,8 @@ export function startBattle(state, rng, note) {
     const [x, y] = FORMATION[m.id] || [2, 3 + i];
     m.down = false; m.dying = null; m.fightingOn = false; m.stable = false;
     b.units.push({ id: m.id, pc: true, side: "party", name: m.name, x, y, w: 1, h: 1, ap: 0, weapon: m.weapons.length ? 0 : -1,
-      guard: "mutable", impaired: e.impaired?.[m.id] || 0, demoralized: 0, phase: "fast", doneIn: [], moveLeft: 0, lastMove: false, attacks: 0 });
+      guard: "mutable", impaired: e.impaired?.[m.id] || 0, demoralized: 0, phase: "fast", doneIn: [], moveLeft: 0, lastMove: false, attacks: 0,
+      startled: (e.impaired?.[m.id] || 0) > 0, mode: "strike", ...FRESH() });
   });
   const gapCols = { Close: 2, Near: 6, Far: 10 }[e.distance] ?? 6;
   let n = 0;
@@ -245,7 +344,7 @@ export function startBattle(state, rng, note) {
         id: `e${++n}`, pc: false, side: "enemy", cname: g.name, minion,
         name: minion ? `${g.name}s (${heads})` : count > 1 ? `${g.name} ${k + 1}` : g.name,
         x: 0, y: 0, w: fp.width, h: fp.height, hp, hpMax: hp, heads, headsMax: heads, armorDur: dur, armorMax: dur,
-        ap: 0, phases: [], attack: null, impaired: 0, demoralized: 0, doneIn: [], moveLeft: 0, lastMove: false, attacks: 0, marks: 0
+        ap: 0, phases: [], attack: null, impaired: 0, demoralized: 0, doneIn: [], moveLeft: 0, lastMove: false, attacks: 0, marks: 0, ...FRESH()
       };
       place(b, u, Math.min(GRID_W - fp.width, 3 + gapCols));
       b.units.push(u);
@@ -258,10 +357,13 @@ export function startBattle(state, rng, note) {
       const t = c.rank === "minion" ? trial(rng, [dieOfTier(c.tier), dieOfTier(c.tier)]) : trial(rng, [dieOfTier(c.attributes.agility.tier), dieOfTier(c.attributes.perception.tier)]);
       const miss = e.enemyStartle - t.total;
       u.impaired = passes(t, e.enemyStartle) ? 0 : miss >= 5 ? 3 : miss >= 3 ? 2 : 1;
+      u.startled = u.impaired > 0;
       note(`${u.name}: Startle ${t.text}${u.impaired ? `, ${IMPAIRED[u.impaired]}` : ", keeps its head"}.`);
     }
   }
   note(`The fight begins: ${b.units.filter(u => !u.pc).map(u => u.name).join(", ")}, ${e.distance === "Close" ? "close" : e.distance === "Far" ? "far" : "a little way"} off.`, "event");
+  const missing = [...new Set(b.units.filter(u => !u.pc).flatMap(u => unbuilt(CREATURES[u.cname]).map(a => `${u.cname}'s ${a}`)))];
+  if (missing.length) note(`Not built yet, so not used in this fight: ${missing.join(", ")}.`, "todo");
   startRound(state, rng, note);
 }
 
@@ -283,11 +385,13 @@ function startRound(state, rng, note) {
   for (const u of b.units) {
     // Impaired eases one tier at the start of each round after the first.
     if (b.round > 1 && u.impaired > 0) { u.impaired -= 1; }
-    u.doneIn = []; u.moveLeft = 0; u.lastMove = false; u.attacks = 0;
+    u.doneIn = []; u.moveLeft = 0; u.lastMove = false; u.attacks = 0; u.helpedBy = [];
     if (u.pc) {
       const m = memberOf(state, u);
       u.ap = m.down || u.impaired >= 3 ? 0 : 2;
+      u.tookTurn = false;
     } else {
+      u.tookTurn = false;
       const c = CREATURES[u.cname];
       const rank = MASTERY.npcRanks[c.rank];
       const a = meleeAttack(c) || rangedAttack(c);
@@ -296,9 +400,24 @@ function startRound(state, rng, note) {
       // Epic and Legendary creatures get 2 AP in each phase they act in.
       u.phases = rank.phasesActive >= 3 ? [...PHASES] : rank.phasesActive === 2 ? (base === "slow" ? ["moderate", "slow"] : [base, "slow"]) : [u.impaired ? "slow" : base];
       u.ap = u.impaired >= 3 ? 0 : rank.phasesActive > 1 ? 0 : rank.ap;
+      // Smash is declared: the creature acts in the Slow phase, open to Superiority until it lands.
+      const smash = abilitiesOf(c).find(a => a.kind === "smash");
+      u.smashing = !!(smash && onField(u) && u.ap >= 2 && b.units.some(t => t.pc && standing(state, t) && gap(u, t) <= reachOf(u, c)));
+      if (u.smashing) { u.phases = ["slow"]; note(`${u.name} gathers itself for a Smash (Slow phase). Until it lands, attacks against it have Superiority.`); }
     }
   }
   note(`Round ${b.round}.`, "day");
+}
+
+/**
+ * Challenge (Presence, Etiquette): once per encounter, declared before the
+ * first phase of round two, against an intelligent creature not yet hurt.
+ */
+export function challengeTargets(state, u) {
+  const b = state.battle;
+  if (!(memberOf(state, u).abilities || []).includes("Challenge") || u.challenged || b.round > 2) return [];
+  return b.units.filter(t => !t.pc && standing(state, t) && t.hp >= t.hpMax && (t.armorDur ?? 0) >= (t.armorMax ?? 0) &&
+    (CREATURES[t.cname].kingdom === "folk" || (CREATURES[t.cname].attributes.intelligence?.score || 0) >= 5));
 }
 
 /**
@@ -313,6 +432,10 @@ export function beginRound(state, rng, note, picks = {}) {
     const p = picks[u.id] || {};
     if (p.guard && GUARDS[p.guard]) u.guard = p.guard;
     if (m.shield && typeof p.shieldAbsorbs === "boolean") m.shieldAbsorbs = p.shieldAbsorbs;
+    if (p.challenge && challengeTargets(state, u).some(t => t.id === p.challenge)) {
+      u.challenge = p.challenge; u.challenged = true;
+      note(`${m.name} challenges ${unitById(b, p.challenge).name}.`, "event");
+    }
     let slowest = null;
     if (Number.isInteger(p.weapon) && p.weapon !== u.weapon && m.weapons[p.weapon]) {
       // Drop what's in hand (free) and draw the new weapon (1 AP). Dropped weapons are picked up after the fight.
@@ -336,6 +459,18 @@ export function beginRound(state, rng, note, picks = {}) {
 
 function endRound(state, rng, note) {
   const b = state.battle;
+  // Whoever had no turn this round (unconscious, Paralyzed) still bleeds at its end.
+  for (const u of b.units.filter(x => onField(x) && !x.tookTurn)) endOfTurn(state, rng, note, u);
+  // Tiers no source holds deteriorate by one each round; a hold keeps Restricted.
+  for (const u of b.units.filter(onField)) {
+    if (u.held && !holdStands(state, u)) { note(`${u.name} is no longer held.`); u.held = null; }
+    for (const k of ["restricted", "tainted", "inspired", "invigorated"]) {
+      if (!cond(u, k) || u.fresh?.[k] || (k === "restricted" && u.held)) continue;
+      setCond(u, k, cond(u, k) - 1);
+    }
+    u.fresh = {};
+  }
+  if (checkEnd(state, rng, note)) return;
   // The dying timer runs down at the end of each round.
   for (const u of b.units.filter(x => x.pc && onField(x))) {
     const m = memberOf(state, u);
@@ -358,8 +493,9 @@ function nextActor(state, rng, note) {
     (x.pc ? x.phase === phase : x.phases.includes(phase)));
   if (u) {
     b.current = u.id;
-    u.moveLeft = 0; u.lastMove = false; u.attacks = 0;
+    u.moveLeft = 0; u.lastMove = false; u.attacks = 0; u.brokeFree = false;
     if (!u.pc && u.phases.length > 1) u.ap = 2;
+    startOfTurn(state, rng, note, u);
     return;
   }
   b.sideIdx += 1;
@@ -367,12 +503,102 @@ function nextActor(state, rng, note) {
   if (b.phaseIdx > 2) endRound(state, rng, note);
 }
 
-function finishTurn(state, u) {
+function finishTurn(state, u, rng, note) {
   const b = state.battle;
+  endOfTurn(state, rng, note, u);
   u.doneIn.push(PHASES[b.phaseIdx]);
   u.moveLeft = 0; u.lastMove = false;
   if (!u.pc && u.phases.length > 1) u.ap = 0;
   b.current = null;
+}
+
+/** Things that happen as a creature starts its turn: Mob traits that work on presence (Death Tick). */
+function startOfTurn(state, rng, note, u) {
+  const b = state.battle;
+  for (const o of b.units.filter(x => x.side !== u.side && x.minion && onField(x) && x.heads > 0)) {
+    for (const a of abilitiesOf(CREATURES[o.cname]).filter(x => x.kind === "presence")) {
+      if (gap(o, u) > a.range || cond(u, a.cond.name) >= (a.cond.max || 3)) continue;
+      const dc = mobDC(CREATURES[o.cname].tier, o.heads);
+      const t = resist(state, rng, u, a.resist.attr, dc);
+      note(`${o.name}: ${a.name}. ${u.name} resists (${t.text} against ${dc}): ${t.ok ? "steady" : "it gets under the skin"}.`);
+      if (!t.ok) { addCond(state, note, u, a.cond.name, a.cond.n, { max: a.cond.max }); if (a.cond.name === "demoralized") u.fearOf = o.id; }
+    }
+  }
+}
+
+/**
+ * The end of a creature's turn (Conditions): its Attrition instances resolve
+ * and expire, Tainted 2 and 3 cost health, and an aura burns whoever ends
+ * the turn inside it.
+ */
+function endOfTurn(state, rng, note, u) {
+  if (!onField(u)) return;
+  u.tookTurn = true;
+  const b = state.battle;
+  const hits = u.attrition || [];
+  u.attrition = [];
+  for (const a of hits) {
+    if (!onField(u)) break;
+    if (u.minion) {
+      // Attrition removes one head per instance.
+      u.heads -= 1; u.hp = u.heads;
+      note(`Attrition (${a.label}): one of the ${u.cname.toLowerCase()}s falls${u.heads ? `, ${u.heads} left` : ""}.`, "event");
+      if (u.heads <= 0) { u.dead = true; note(`The last of the ${u.cname.toLowerCase()}s falls.`, "reward"); morale(state, rng, note, "fall"); }
+      else regroupHeads(u);
+      continue;
+    }
+    secondaryDamage(state, rng, note, u, a.amount, a.type, `Attrition (${a.label})`, { direct: true });
+  }
+  const ta = cond(u, "tainted");
+  if (ta >= 2 && onField(u)) secondaryDamage(state, rng, note, u, ta === 3 ? 2 : 1, null, "poison", { direct: true, noResist: true });
+  for (const o of b.units.filter(x => x.side !== u.side && onField(x) && !x.pc)) {
+    for (const a of abilitiesOf(CREATURES[o.cname]).filter(x => x.kind === "aura")) {
+      if (onField(u) && gap(o, u) <= a.radius) secondaryDamage(state, rng, note, u, a.amount, a.type, `${o.name}'s ${a.name}`);
+    }
+  }
+}
+
+/**
+ * Damage outside an attack: Attrition, poison, venom, flame. It meets
+ * resistance of its type and, unless direct, the armor's durability like
+ * any hit (resolveDamage, passive). Immunity stops it.
+ */
+function secondaryDamage(state, rng, note, t, amount, type, label, { direct = false, noResist = false } = {}) {
+  if (!onField(t) || !(amount > 0)) return;
+  if (type && immuneToDamage(state, t, type)) { note(`${label}: ${t.name} is immune.`); return; }
+  if (t.pc) {
+    const m = memberOf(state, t);
+    if (m.dead) return;
+    const res = noResist || !type || !m.armor || m.armor.durability <= 0 ? 0 : (m.armor.resistance[type] || 0);
+    const r = direct ? { healthDamage: Math.max(0, amount - res), durabilityDamage: 0 }
+      : resolveDamage({ attackTotal: amount, damageType: type, armorResistance: res, durabilityCurrent: m.armor?.durability || 0, healthCurrent: m.hp, activeDefense: false });
+    if (r.durabilityDamage) m.armor.durability -= r.durabilityDamage;
+    note(`${label}: ${t.name} takes ${[r.durabilityDamage ? `${r.durabilityDamage} to the ${m.armor.name.toLowerCase()}` : "", r.healthDamage ? `${r.healthDamage} to health` : ""].filter(Boolean).join(", ") || "nothing"}.`, r.healthDamage ? "event" : "");
+    if (r.healthDamage) hurtPC(state, rng, note, t, r.healthDamage);
+    return;
+  }
+  const c = CREATURES[t.cname];
+  const res = noResist || !type ? 0 : (c.resistance?.[type] || 0) + (t.armorDur > 0 && !direct ? armorRes(c, type) : 0);
+  const r = direct ? { healthDamage: Math.max(0, amount - res), durabilityDamage: 0 }
+    : resolveDamage({ attackTotal: amount, damageType: type, armorResistance: res, durabilityCurrent: t.armorDur, healthCurrent: t.hp, activeDefense: false });
+  if (r.durabilityDamage) t.armorDur -= r.durabilityDamage;
+  if (t.minion) { if (r.healthDamage) { t.heads -= 1; t.hp = t.heads; regroupHeads(t); } }
+  else t.hp = Math.max(0, t.hp - (r.healthDamage || 0));
+  note(`${label}: ${t.name} takes ${[r.durabilityDamage ? `${r.durabilityDamage} to armor` : "", r.healthDamage ? (t.minion ? "a head" : `${r.healthDamage} to health`) : ""].filter(Boolean).join(", ") || "nothing"}.`, "event");
+  if (t.hp <= 0) { t.dead = true; note(`${t.name} falls.`, "reward"); morale(state, rng, note, "fall"); }
+}
+
+function regroupHeads(u) {
+  const c = CREATURES[u.cname];
+  const fp = groupTokenSize(Math.max(1, u.heads), c.size.width * c.size.height);
+  u.w = fp.width; u.h = fp.height;
+  u.name = `${u.cname}s (${u.heads})`;
+}
+
+/** A grab holds only while the grabber stands beside its catch. */
+function holdStands(state, u) {
+  const g = u.held && unitById(state.battle, u.held.by);
+  return !!(g && standing(state, g) && gap(g, u) <= reachOf(g, CREATURES[g.cname]));
 }
 
 /** Run the battle until it needs the player: a character's turn, a decision, or the next declarations. */
@@ -384,7 +610,7 @@ export function advance(state, rng, note) {
     if (checkEnd(state, rng, note)) return;
     if (b.current) {
       const u = unitById(b, b.current);
-      if (!able(state, u) || u.ap <= 0) { finishTurn(state, u); continue; }
+      if (!able(state, u) || u.ap <= 0) { finishTurn(state, u, rng, note); continue; }
       if (u.pc) return;
       aiStep(state, rng, note, u);
       continue;
@@ -406,9 +632,15 @@ export function currentPC(state) {
 /** What it costs to move a character to x, y: { path, ap } or null. */
 export function moveCost(state, u, x, y) {
   const b = state.battle;
+  if (cond(u, "restricted") >= 1) return null;
   const path = pathTo(b, u, x, y);
   if (!path || !path.length) return null;
-  const speed = speedOf(memberOf(state, u));
+  // Demoralized: no willing step toward the source of the fear.
+  const fear = u.demoralized && u.fearOf && unitById(b, u.fearOf);
+  if (fear && onField(fear) && gap({ ...u, x, y }, fear) < gap(u, fear)) return null;
+  // Prone: one square per AP. Tainted 2 and up: movement halved.
+  let speed = u.prone ? 1 : speedOf(memberOf(state, u));
+  if (cond(u, "tainted") >= 2) speed = Math.max(1, Math.floor(speed / 2));
   let left = u.moveLeft, ap = 0, last = u.lastMove;
   while (left < path.length) {
     if (ap >= u.ap) return null;
@@ -430,31 +662,123 @@ export function pcMove(state, rng, note, x, y) {
   advance(state, rng, note);
 }
 
-/** Can the current character attack this target with what's in hand? → { ok, why, ranged } */
-export function canAttack(state, u, t) {
+/** The attack modes a character has: a plain strike, the shield bash, Opportunist. */
+export function attackModes(state, u) {
+  const m = memberOf(state, u), w = weaponOf(m, u);
+  const modes = [{ id: "strike", label: w ? w.name : "Unarmed" }];
+  if (usesShield(m, w) && w && !w.ranged) modes.push({ id: "shield", label: `${m.shield.name} bash` });
+  if ((m.abilities || []).includes("Opportunist") && w?.attribute === "physique") modes.push({ id: "opportunist", label: "Opportunist (2 AP)" });
+  return modes;
+}
+
+/** Opportunist (Stealth): flanking, two or more allies threatening, or a target Impaired from Startle. */
+function opportunity(state, u, t, ranged) {
+  const b = state.battle;
+  const threats = b.units.filter(o => o.side === u.side && o !== u && standing(state, o) && gap(o, t) <= 1).length;
+  if (threats >= 2) return true;
+  if (t.startled && t.impaired > 0) return true;
+  return !ranged && flanking(state, u, t);
+}
+
+/** A straight line of at least 3 squares, no farther than one Move, that ends within reach of the target (Charge). */
+export function chargeLine(state, u, t, speed) {
+  const b = state.battle;
+  const reach = u.pc ? 1 : reachOf(u, CREATURES[u.cname]);
+  if (gap(u, t) <= reach || cond(u, "restricted") || u.prone) return null;
+  for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+    const path = [];
+    for (let k = 1; k <= speed; k++) {
+      const x = u.x + dx * k, y = u.y + dy * k;
+      if (blockedFor(b, u, x, y)) break;
+      path.push([x, y]);
+      if (k >= 3 && gap({ ...u, x, y }, t) <= reach) return path;
+    }
+  }
+  return null;
+}
+
+/** Can the current character attack this target? → { ok, why, ranged, charge, cost } */
+export function canAttack(state, u, t, mode = u.mode || "strike") {
   if (!t || t.side === u.side || !onField(t)) return { ok: false };
-  if (u.ap < 1) return { ok: false, why: "no AP left" };
+  if (cond(u, "restricted") >= 3) return { ok: false, why: "Restrained: only breaking free" };
+  const cost = mode === "opportunist" ? 2 : 1;
+  if (u.ap < cost) return { ok: false, why: `needs ${cost} AP` };
   const m = memberOf(state, u), w = weaponOf(m, u);
   const g = gap(u, t);
-  if (w?.ranged) {
+  const ranged = !!w?.ranged && mode !== "shield";
+  if (mode === "opportunist" && !opportunity(state, u, t, ranged)) return { ok: false, why: "no opening for Opportunist (flank it, or two allies on it)" };
+  if (ranged) {
     const b = state.battle;
     if (w.thrown && (w.count ?? 1) - (b.thrown[`${m.id}:${u.weapon}`] || 0) <= 0) return { ok: false, why: `no ${w.name.toLowerCase()} left` };
     if (w.projectile && b.units.some(o => o.side !== u.side && standing(state, o) && gap(u, o) <= 1)) return { ok: false, why: "an enemy is too close to shoot" };
     if (g > w.range[2]) return { ok: false, why: "out of range" };
-    return { ok: true, ranged: true };
+    return { ok: true, ranged: true, cost };
   }
-  if (g > 1) return { ok: false, why: "out of reach" };
-  return { ok: true, ranged: false };
+  if (g > 1) {
+    // Charge (Untrained baseline maneuver): 2 AP, a straight run of 15 feet or more, then the attack with Dominance.
+    if (mode === "strike" && u.ap >= 2 && !u.prone && chargeLine(state, u, t, speedOf(m))) return { ok: true, ranged: false, charge: true, cost: 2 };
+    return { ok: false, why: "out of reach" };
+  }
+  return { ok: true, ranged: false, cost };
+}
+
+export function setMode(state, mode) {
+  const u = currentPC(state);
+  if (u && attackModes(state, u).some(x => x.id === mode)) u.mode = mode;
 }
 
 export function pcAttack(state, rng, note, targetId) {
   const u = currentPC(state);
   if (!u) return;
-  const t = unitById(state.battle, targetId);
+  const b = state.battle;
+  const t = unitById(b, targetId);
   const can = canAttack(state, u, t);
   if (!can.ok) { if (can.why) note(can.why[0].toUpperCase() + can.why.slice(1) + "."); return; }
-  u.ap -= 1; u.moveLeft = 0; u.lastMove = false; u.attacks += 1;
-  state.battle.queue.push({ op: "attack", by: u.id, target: t.id, ranged: can.ranged });
+  const m = memberOf(state, u), w = weaponOf(m, u);
+  u.ap -= can.cost; u.attacks += 1;
+  const op = { op: "attack", by: u.id, target: t.id, ranged: can.ranged };
+  if (u.mode === "shield") op.shield = true;
+  if (u.mode === "opportunist") {
+    op.opportunist = true;
+    // Backstab: Opportunist attacks always have Dominance; Superiority against the badly shaken or startled.
+    if ((m.abilities || []).includes("Backstab")) { op.edge = 1; if (t.demoralized >= 2 || (t.startled && t.impaired >= 2)) op.sup = true; }
+  }
+  if (can.ranged && w?.thrown) op.thrownKey = `${m.id}:${u.weapon}`;
+  if (can.charge) {
+    const path = chargeLine(state, u, t, speedOf(m));
+    b.queue.push({ op: "move", id: u.id, path, asked: [] });
+    op.edge = 1; op.charge = true;
+    note(`${u.name} charges ${t.name}.`);
+  }
+  u.moveLeft = 0; u.lastMove = false;
+  if (u.mode !== "strike") u.mode = "strike";
+  b.queue.push(op);
+  advance(state, rng, note);
+}
+
+/** Break free of a hold (Conditions, Breaking free), for yourself or an adjacent ally: 1 AP, a Strength trial against the hold. */
+export function freeTargets(state, u) {
+  return state.battle.units.filter(t => t.pc && onField(t) && t.held && (t === u || gap(u, t) <= 1));
+}
+export function pcBreakFree(state, rng, note, targetId) {
+  const u = currentPC(state);
+  if (!u || u.ap < 1) return;
+  const t = freeTargets(state, u).find(x => x.id === targetId);
+  if (!t || (t === u ? u.brokeFree : t.helpedBy?.includes(u.id))) return;
+  u.ap -= 1;
+  if (t === u) u.brokeFree = true; else (t.helpedBy ||= []).push(u.id);
+  const r = resist(state, rng, u, "strength", t.held.dc);
+  note(`${u.name} ${t === u ? "strains against" : `helps ${t.name} against`} the ${t.held.name.toLowerCase()} (Strength ${r.text} against ${t.held.dc}): ${r.ok ? "it gives" : "it holds"}.`);
+  if (r.ok) { setCond(t, "restricted", Math.max(0, cond(t, "restricted") - 1)); if (!cond(t, "restricted")) { t.held = null; note(`${t.name} is free.`); } }
+  advance(state, rng, note);
+}
+
+/** Stand from Prone: 1 AP. */
+export function pcStand(state, rng, note) {
+  const u = currentPC(state);
+  if (!u || !u.prone || u.ap < 1) return;
+  u.ap -= 1; u.prone = false;
+  note(`${u.name} gets up.`);
   advance(state, rng, note);
 }
 
@@ -477,7 +801,7 @@ export function pcTriage(state, rng, note, targetId) {
 export function pcEndTurn(state, rng, note) {
   const u = currentPC(state);
   if (!u) return;
-  finishTurn(state, u);
+  finishTurn(state, u, rng, note);
   advance(state, rng, note);
 }
 
@@ -489,7 +813,19 @@ export function respond(state, rng, note, yes) {
   b.prompt = null;
   const head = b.queue[0];
   switch (p.kind) {
-    case "defend": head.defend = !!yes; break;
+    case "defend": head.defend = !!yes; if (yes === "hearten" && p.helper) head.hearten = p.helper; break;
+    case "snapshot": {
+      b.queue.shift();
+      const u = unitById(b, p.by), t = unitById(b, p.target);
+      if (yes && u.ap > 0) {
+        u.ap -= 1;
+        const m = memberOf(state, u), w = weaponOf(m, u);
+        const back = fallBack(state, u, t);
+        if (back) b.queue.unshift({ op: "move", id: u.id, path: back, asked: [] });
+        b.queue.unshift({ op: "attack", by: u.id, target: t.id, ranged: true, edge: -1, reaction: "snap", thrownKey: w.thrown ? `${m.id}:${u.weapon}` : null });
+      }
+      break;
+    }
     case "counter":
     case "reprisal": {
       b.queue.shift();
@@ -644,8 +980,22 @@ function runMove(state, rng, note, op) {
         return;
       }
     }
+    // Snap Shot (Untrained ranged baseline): a creature closing within 15 feet of a ready missile.
+    if (!u.pc) for (const o of b.units.filter(x => x.pc && standing(state, x) && x.ap > 0 && !op.asked.includes(`snap:${x.id}`))) {
+      if (gap(o, u) <= 3 || gap(o, next) > 3 || !snapReady(state, o)) continue;
+      op.asked.push(`snap:${o.id}`);
+      b.queue.unshift({ op: "ask" });
+      b.prompt = { kind: "snapshot", by: o.id, target: u.id, yes: "Snap Shot", no: "Hold",
+        text: `${u.name} is closing on ${o.name}. Snap Shot: a shot with Impotence, then fall back half a move (1 AP, ${o.ap} left)?` };
+      return;
+    }
+    const wasIn = auraHolders(state, u).filter(h => gap(h.o, u) <= h.a.radius).map(h => h.o.id);
     u.x = nx; u.y = ny;
     op.path.shift();
+    // Stepping into an aura on your own turn burns.
+    if (u.id === b.current) for (const h of auraHolders(state, u)) {
+      if (gap(h.o, u) <= h.a.radius && !wasIn.includes(h.o.id)) secondaryDamage(state, rng, note, u, h.a.amount, h.a.type, `${h.o.name}'s ${h.a.name}`);
+    }
   }
   b.queue.shift();
   if (op.flee && onField(u) && (u.x === 0 || u.y === 0 || u.x + u.w >= b.w || u.y + u.h >= b.h)) {
@@ -654,13 +1004,55 @@ function runMove(state, rng, note, op) {
   }
 }
 
+/** Helpless creatures can't defend (Conditions: Paralyzed, Restrained, unconscious). */
+const helpless = (state, t) => t.impaired >= 3 || cond(t, "restricted") >= 3 || (t.pc && memberOf(state, t).down);
+
+const auraHolders = (state, u) => state.battle.units.filter(o => o.side !== u.side && !o.pc && onField(o))
+  .flatMap(o => abilitiesOf(CREATURES[o.cname]).filter(a => a.kind === "aura").map(a => ({ o, a })));
+
+/** Is this character holding a missile they can loose right now? */
+function snapReady(state, o) {
+  const m = memberOf(state, o), w = weaponOf(m, o);
+  if (!w?.ranged || (m.weaponSkill?.[w.type] || 1) < 2) return false;
+  if (w.thrown && (w.count ?? 1) - (state.battle.thrown[`${m.id}:${o.weapon}`] || 0) <= 0) return false;
+  if (w.projectile && state.battle.units.some(x => x.side !== o.side && standing(state, x) && gap(o, x) <= 1)) return false;
+  return true;
+}
+
+/** Fall back up to half a move, as far from the threat as the ground allows. */
+function fallBack(state, u, from) {
+  const b = state.battle;
+  const steps = Math.floor(speedOf(memberOf(state, u)) / 2);
+  let best = null;
+  for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) {
+    const path = pathTo(b, u, x, y);
+    if (!path || !path.length || path.length > steps) continue;
+    const d = gap({ ...u, x, y }, from);
+    if (!best || d > best.d) best = { d, path };
+  }
+  return best?.path || null;
+}
+
 function canDefend(state, t, type, ranged) {
-  if (!standing(state, t) || t.ap < 1 || t.impaired >= 3) return { can: false };
+  if (!standing(state, t) || t.ap < 1 || helpless(state, t)) return { can: false };
   return t.pc ? pcDefense(state, t, type, ranged) : creatureDefense(t, CREATURES[t.cname], type, ranged);
 }
 
-function attackInfo(state, a) {
-  if (a.pc) return pcAttackDice(state, a, weaponOf(memberOf(state, a), a));
+/** The dice for this attack: the weapon (or shield, or Opportunist), or the creature's attack line, or a special. */
+function attackInfo(state, a, op = {}) {
+  if (op.special) return { ...op.special, dice: op.special.dice.map(d => Array.isArray(d) ? d : [1, d]), extra: -1 };
+  if (a.pc) {
+    const m = memberOf(state, a), w = weaponOf(m, a);
+    if (op.shield) {
+      // Weapon and Shield: a shield attack follows track I, deals Crushing, and uses the main weapon's attribute.
+      const level = m.styles?.shield || 1;
+      return { dice: [attrTD(m, w?.attribute || "strength"), fromCS(MASTERY.weaponAttackTable[level][1])], bonus: 0, extra: -1, type: "crushing", name: m.shield.name };
+    }
+    const info = pcAttackDice(state, a, w);
+    // Opportunist (Stealth): two Stealth mastery dice join the roll.
+    if (op.opportunist) return { ...info, dice: [...info.dice, dieOfTier(m.skills.stealth), dieOfTier(m.skills.stealth)], name: `${info.name} (Opportunist)` };
+    return info;
+  }
   const c = CREATURES[a.cname];
   const atk = c.attacks[a.attack] || meleeAttack(c) || c.attacks[0];
   return creatureAttackDice(a, c, atk);
@@ -671,59 +1063,161 @@ function runAttack(state, rng, note, op) {
   const a = unitById(b, op.by), t = unitById(b, op.target);
   if (!a || !t || !standing(state, a) || !onField(t) || (t.pc && memberOf(state, t).dead)) { b.queue.shift(); return; }
   if (!op.ranged && gap(a, t) > reachOf(a, CREATURES[a.cname])) { b.queue.shift(); return; }
-  const info = attackInfo(state, a);
+  const info = attackInfo(state, a, op);
+  // Grab: in lieu of an attack roll, a trial.
+  if (op.grab) { b.queue.shift(); return runGrab(state, rng, note, a, t, op.grab); }
   // Declare the defense before the roll (Combat, Defense).
   if (op.defend === undefined) {
     const d = canDefend(state, t, info.type, op.ranged);
     if (!d.can) op.defend = false;
     else if (t.pc) {
-      b.prompt = { kind: "defend", by: a.id, target: t.id, text: `${a.name} ${op.reaction === "reprisal" ? "lashes out at" : op.reaction === "counter" ? "counters" : "attacks"} ${t.name} (${info.name}${op.ranged ? ", ranged" : ""}). Defend (1 AP, ${t.ap} left)?` };
+      const helper = heartener(state, t);
+      b.prompt = { kind: "defend", by: a.id, target: t.id, helper: helper?.id, helperName: helper?.name,
+        text: `${a.name} ${op.reaction === "reprisal" ? "lashes out at" : op.reaction === "counter" || op.reaction === "riposte" ? "counters" : op.charge ? "charges" : "attacks"} ${t.name} (${info.name}${op.ranged ? ", ranged" : ""}). Defend (1 AP, ${t.ap} left)?` };
       return;
     } else op.defend = t.ap > (t.doneIn.length || b.current === t.id ? 0 : 1);
   }
   b.queue.shift();
   if (op.defend) t.ap -= 1;
+  if (op.thrownKey) b.thrown[op.thrownKey] = (b.thrown[op.thrownKey] || 0) + 1;
 
-  // Ranged: the Aiming Trial (Combat, Attack).
-  if (op.ranged) {
+  // Ranged: the Aiming Trial (Combat, Attack). Helpless targets are hit automatically.
+  if (op.ranged && !helpless(state, t)) {
     const m = a.pc ? memberOf(state, a) : null;
     const w = m ? weaponOf(m, a) : null;
-    if (w?.thrown) b.thrown[`${m.id}:${a.weapon}`] = (b.thrown[`${m.id}:${a.weapon}`] || 0) + 1;
-    const range = w ? w.range : rangeOf(CREATURES[a.cname].attacks[a.attack]) || [6, 12, 18];
+    const range = w?.range || rangeOf(CREATURES[a.cname]?.attacks[a.attack]) || [6, 12, 18];
     const g = gap(a, t);
     const friends = b.units.filter(o => o.side === a.side && o !== a && standing(state, o) && gap(o, t) <= 1).length;
-    const dc = Math.max(1, 2 + (g > range[1] ? 3 : g > range[0] ? 1 : 0) + friends - (t.minion && t.heads > 1 ? 2 : 0));
+    const evade = !t.pc && abilitiesOf(CREATURES[t.cname]).some(x => x.kind === "evasion") ? CREATURES[t.cname].attributes.agility.tier : 0;
+    const dc = Math.max(1, 2 + (g > range[1] ? 3 : g > range[0] ? 1 : 0) + friends + evade - (t.minion && t.heads > 1 ? 2 : 0));
     const per = a.pc ? dieOfTier(tierOf(m.attributes.perception)) : dieOfTier(CREATURES[a.cname].rank === "minion" ? CREATURES[a.cname].tier : CREATURES[a.cname].attributes.perception.tier);
     const r = per[1] === 1 ? 1 : rng.d(per[1]);
     const hit = r !== 1 && (r === per[1] || r >= dc);
-    note(`${a.name} takes aim at ${t.name}: d${per[1]} ${r} against ${dc}${friends ? ` (${friends} of their own beside it)` : ""}, ${hit ? "on target" : "misses"}.`);
+    note(`${a.name} takes aim at ${t.name}: d${per[1]} ${r} against ${dc}${friends ? ` (${friends} of their own beside it)` : ""}${evade ? " (on the wing)" : ""}, ${hit ? "on target" : "misses"}.`);
     if (!hit) return;
   }
 
-  const st = strain(state, a);
-  const flank = !op.ranged && b.units.some(o => o.side === a.side && o !== a && standing(state, o) && gap(o, t) <= 1 && opposite(a, o, t));
-  const edgeA = a.pc ? (a.guard === "striking" ? 1 : a.guard === "stable" ? -1 : 0) : 0;
-  const atk = rollPool(rng, info.dice, { edge: edgeA, bonus: info.bonus + (flank ? 2 : 0) - st.pen, inferiority: st.attackInf, extra: info.extra });
+  const am = mods(state, a, "attack");
+  const flankOn = !op.ranged && b.units.some(o => o.side === a.side && o !== a && standing(state, o) && gap(o, t) <= 1 && opposite(a, o, t));
+  // Opportunist always has the flanking bonus; Hamstring gives it up.
+  const flank = (flankOn || op.opportunist) && !op.forfeitFlank;
+  let dom = op.edge > 0 || am.edge > 0, imp = op.edge < 0 || am.edge < 0;
+  if (a.pc) { if (a.guard === "striking") dom = true; if (a.guard === "stable") imp = true; }
+  let sup = !!op.sup || am.sup, inf = !!op.inf || am.inf;
+  if (!op.ranged && t.prone) sup = true;
+  if (op.ranged && t.prone) inf = true;
+  if (t.smashing) sup = true;
+  const atk = rollPool(rng, info.dice, { edge: (dom ? 1 : 0) - (imp ? 1 : 0), bonus: info.bonus + (op.bonus || 0) + (flank ? 2 : 0) + am.bonus - am.pen, inferiority: inf, superiority: sup, extra: info.extra });
   let def = null;
   if (op.defend) {
     const d = canDefend(state, { ...t, ap: 1 }, info.type, op.ranged);
-    const ts = strain(state, t);
-    const edgeD = t.pc ? (t.guard === "stable" ? 1 : t.guard === "striking" ? -1 : 0) : 0;
-    def = rollPool(rng, d.dice, { edge: edgeD, bonus: d.bonus - ts.pen, inferiority: ts.defenseInf || (d.unarmed && !info.unarmed) });
+    const dm = mods(state, t, "defense");
+    let ddom = dm.edge > 0, dimp = dm.edge < 0;
+    if (t.pc) { if (t.guard === "stable") ddom = true; if (t.guard === "striking") dimp = true; }
+    const hearten = op.hearten ? heartenBonus(state, op.hearten) : 0;
+    def = rollPool(rng, d.dice, { edge: (ddom ? 1 : 0) - (dimp ? 1 : 0), bonus: d.bonus + dm.bonus - dm.pen + hearten, inferiority: dm.inf || d.unarmed, superiority: dm.sup });
+    if (hearten) note(`${unitById(b, op.hearten).name} heartens ${t.name} (+${hearten}).`);
   }
-  const verb = op.reaction === "counter" ? "counters" : op.reaction === "reprisal" ? "strikes at" : op.ranged ? "shoots" : "attacks";
-  note(`${a.name} ${verb} ${t.name} with ${info.name.toLowerCase()}${flank ? ", flanking (+2)" : ""}: ${atk.text}.${def ? ` ${t.name} defends: ${def.text}.` : ""}`);
+  const verb = op.reaction === "counter" || op.reaction === "riposte" ? "counters" : op.reaction === "reprisal" ? "strikes at" : op.reaction === "pack" ? "piles onto" : op.charge ? "charges" : op.ranged ? "shoots" : "attacks";
+  note(`${a.name} ${verb} ${t.name} with ${info.name.toLowerCase()}${flank ? ", flanking (+2)" : ""}${op.rider ? ` (${op.rider})` : ""}: ${atk.text}.${def ? ` ${t.name} defends: ${def.text}.` : ""}`);
+  const killedBefore = !onField(t);
   const hit = applyHit(state, rng, note, a, t, atk, def, info.type, op.ranged);
-  // A successful defense opens a counterattack (Combat, Triggered Reactions).
-  if (def && hit.defended && !op.ranged && !b.prompt && standing(state, t) && t.ap > 0 && gap(t, a) <= reachOf(t, CREATURES[t.cname]) && !(t.pc && weaponOf(memberOf(state, t), t)?.ranged)) {
-    if (t.pc) {
-      b.queue.unshift({ op: "ask" });
-      b.prompt = { kind: "counter", by: t.id, target: a.id, text: `${t.name} turned the blow. Counterattack ${a.name} (1 AP, ${t.ap} left)?` };
-    } else if (t.demoralized < 3 && (t.ap >= 2 || t.doneIn.length) && meleeAttack(CREATURES[t.cname])) {
-      t.ap -= 1; t.attack = CREATURES[t.cname].attacks.indexOf(meleeAttack(CREATURES[t.cname]));
-      b.queue.unshift({ op: "attack", by: t.id, target: a.id, ranged: false, reaction: "counter" });
+  if (!killedBefore) afterHit(state, rng, note, a, t, op, hit, info);
+}
+
+/** What lands after the damage: riders, Mob traits, flame, the pack, Challenge, Riposte, and counters. */
+function afterHit(state, rng, note, a, t, op, hit, info) {
+  const b = state.battle;
+  const dealt = (hit.durabilityDamage || 0) + (hit.healthDamage || 0) > 0;
+  if (dealt && onField(t)) {
+    if (op.rider) applyRider(state, rng, note, a, t, abilitiesOf(CREATURES[a.cname]).find(x => x.name === op.rider), hit);
+    if (a.minion) for (const m of abilitiesOf(CREATURES[a.cname]).filter(x => x.kind === "mob")) applyRider(state, rng, note, a, t, m, hit);
+    if (!a.pc) for (const f of abilitiesOf(CREATURES[a.cname]).filter(x => x.kind === "flame" && x.whenType === info.type)) secondaryDamage(state, rng, note, t, f.amount, f.type, `${a.name}'s ${f.name}`);
+  }
+  // Challenge: the killing blow on the challenged foe inspires the challenger.
+  if (a.pc && !onField(t) && a.challenge === t.id) {
+    const n = { minion: 1, adept: 1, leader: 2, champion: 2 }[CREATURES[t.cname].rank] || 3;
+    note(`${a.name} answers the Challenge with the killing blow.`, "reward");
+    addCond(state, note, a, "inspired", n);
+    (a.fresh ||= {}).inspired = true;
+  }
+  // The pack: allies with Pack or Swarm Frenzy pile onto a creature that was hit.
+  if (dealt && !a.pc && onField(t) && standing(state, a)) {
+    for (const o of b.units.filter(x => !x.pc && x !== a && standing(state, x) && x.ap > 0 && x.demoralized < 3 && gap(x, t) <= reachOf(x, CREATURES[x.cname]))) {
+      const p = abilitiesOf(CREATURES[o.cname]).find(x => x.kind === "pileOn");
+      const atk = p && CREATURES[o.cname].attacks.find(x => p.attack.test(x.name));
+      if (!atk || !(o.ap >= 2 || o.doneIn.length)) continue;
+      o.ap -= 1; o.attack = CREATURES[o.cname].attacks.indexOf(atk);
+      b.queue.unshift({ op: "attack", by: o.id, target: t.id, ranged: false, reaction: "pack" });
+      break;
     }
   }
+  if (b.prompt || op.ranged || !standing(state, t) || t.ap <= 0 || gap(t, a) > reachOf(t, CREATURES[t.cname])) return;
+  // Riposte: no damage taken from a melee attack, defended or not, opens a counter with its bonus.
+  const rip = !t.pc && abilitiesOf(CREATURES[t.cname]).find(x => x.kind === "riposte");
+  if (rip && !dealt && t.demoralized < 3 && meleeAttack(CREATURES[t.cname])) {
+    t.ap -= 1; t.attack = CREATURES[t.cname].attacks.indexOf(meleeAttack(CREATURES[t.cname]));
+    b.queue.unshift({ op: "attack", by: t.id, target: a.id, ranged: false, reaction: "riposte", bonus: rip.bonus });
+    return;
+  }
+  // A successful defense opens a counterattack (Combat, Triggered Reactions).
+  if (!op.defend || !hit.defended || (t.pc && weaponOf(memberOf(state, t), t)?.ranged)) return;
+  if (t.pc) {
+    b.queue.unshift({ op: "ask" });
+    b.prompt = { kind: "counter", by: t.id, target: a.id, text: `${t.name} turned the blow. Counterattack ${a.name} (1 AP, ${t.ap} left)?` };
+  } else if (t.demoralized < 3 && (t.ap >= 2 || t.doneIn.length) && meleeAttack(CREATURES[t.cname])) {
+    t.ap -= 1; t.attack = CREATURES[t.cname].attacks.indexOf(meleeAttack(CREATURES[t.cname]));
+    b.queue.unshift({ op: "attack", by: t.id, target: a.id, ranged: false, reaction: "counter" });
+  }
+}
+
+/** A rider or Mob trait landing: extra damage, then a resist trial, then the condition, Attrition, or swap. */
+function applyRider(state, rng, note, a, t, ab, hit) {
+  if (!ab || !onField(t)) return;
+  if (ab.gate === "health" && !hit.healthDamage) return;
+  if (ab.extra) secondaryDamage(state, rng, note, t, ab.extra.amount, ab.extra.type, `${a.name}'s ${ab.name}`);
+  if (!onField(t) || (t.pc && memberOf(state, t).dead)) return;
+  if (ab.cond && cond(t, ab.cond.name) >= (ab.cond.max || 3) && ab.cond.name !== "infected") return;
+  if (ab.resist) {
+    const dc = ab.resist.dc === "band" ? mobDC(CREATURES[a.cname].tier, a.heads) : ab.resist.dc;
+    const r = resist(state, rng, t, ab.resist.attr, dc);
+    note(`${ab.name}: ${t.name} resists with ${ab.resist.attr[0].toUpperCase() + ab.resist.attr.slice(1)} (${r.text} against ${dc}), ${r.ok ? "and shrugs it off" : "and fails"}.`);
+    if (r.ok) return;
+  }
+  if (ab.cond) addCond(state, note, t, ab.cond.name, ab.cond.n, { max: ab.cond.max });
+  if (ab.attrition) {
+    const c = CREATURES[a.cname];
+    const amount = ab.attrition.amount ?? (a.minion ? c.tier : Math.max(c.attributes.strength.tier, c.attributes.physique.tier));
+    t.attrition.push({ label: ab.attrition.label, type: ab.attrition.type || null, amount });
+    note(`${t.name} suffers Attrition (${ab.attrition.label}) ${amount}, at the end of their turn.`, "event");
+  }
+  if (ab.swap && standing(state, a)) {
+    const [ax, ay, tx, ty] = [a.x, a.y, t.x, t.y];
+    a.x = -100; t.x = tx; // swap if both fit
+    if (!blockedFor(state.battle, t, ax, ay)) { t.x = ax; t.y = ay; a.x = tx; a.y = ty; note(`${a.name} hooks ${t.name} past it: they swap places.`, "event"); }
+    else { a.x = ax; a.y = ay; t.x = tx; t.y = ty; }
+  }
+}
+
+/** Grab and Constrict: a Strength trial or Restricted, held while the grabber stays beside its catch. */
+function runGrab(state, rng, note, a, t, ab) {
+  if (cond(t, "restricted") >= 3) return;
+  const r = resist(state, rng, t, ab.resist.attr, ab.resist.dc);
+  note(`${a.name} tries to ${ab.name === "Constrict" ? "wrap around" : "seize"} ${t.name} (${ab.name}). ${t.name} resists with Strength (${r.text} against ${ab.resist.dc}), ${r.ok ? "and slips free" : "and is caught"}.`, r.ok ? "" : "event");
+  if (r.ok) return;
+  addCond(state, note, t, "restricted", 1);
+  t.held = { by: a.id, dc: ab.resist.dc, name: ab.name };
+}
+
+/** Corra's Hearten (Presence, Rhetoric): a standing ally with AP can add their Charisma tier to this roll. */
+function heartener(state, t) {
+  return state.battle.units.find(o => o.pc && o !== t && standing(state, o) && o.ap > 0 && (memberOf(state, o).abilities || []).includes("Hearten"));
+}
+function heartenBonus(state, id) {
+  const u = unitById(state.battle, id);
+  if (!u || u.ap < 1) return 0;
+  u.ap -= 1;
+  return tierOf(memberOf(state, u).attributes.charisma);
 }
 
 /** Is the ally on the far side of the target from the attacker? (Combat, Flanking) */
@@ -732,12 +1226,13 @@ function opposite(a, o, t) {
   const [ax, ay] = side(a), [ox, oy] = side(o);
   return (ax !== 0 && ox === -ax) || (ay !== 0 && oy === -ay);
 }
+export const flanking = (state, a, t) => state.battle.units.some(o => o.side === a.side && o !== a && standing(state, o) && gap(o, t) <= 1 && opposite(a, o, t));
 
 /* ------------------------------------------------------------------ */
 /* Damage                                                               */
 
 function applyHit(state, rng, note, a, t, atk, def, type, ranged) {
-  const b = state.battle;
+  if (immuneToDamage(state, t, type)) { note(`${t.name} is immune to ${type} damage.`); return { defended: false, durabilityDamage: 0, healthDamage: 0 }; }
   if (t.pc) {
     const m = memberOf(state, t);
     // Whether the shield takes the hit is the character's standing choice (Foundry's shieldAbsorbs).
@@ -768,9 +1263,7 @@ function applyHit(state, rng, note, a, t, atk, def, type, ranged) {
     const lost = headsLost({ mode: ranged ? "ranged" : "", damage: r.healthDamage, kept: atk.kept, current: t.heads }).heads;
     t.heads -= lost; t.hp = t.heads;
     if (lost) {
-      const fp = groupTokenSize(Math.max(1, t.heads), c.size.width * c.size.height);
-      t.w = fp.width; t.h = fp.height;
-      t.name = `${t.cname}s (${t.heads})`;
+      regroupHeads(t);
       bits.push(`${lost} of the ${t.cname.toLowerCase()}s fall${t.heads ? `, ${t.heads} left` : ""}`);
     }
   } else if (r.healthDamage) { t.hp = Math.max(0, t.hp - r.healthDamage); bits.push(`${r.healthDamage} to health`); }
@@ -791,6 +1284,14 @@ function hurtPC(state, rng, note, u, dmg) {
   if (m.hp > 0) {
     m.hp = Math.max(0, m.hp - dmg);
     if (m.hp > 0) return;
+    // Avoid Death (Athletics): once per rest, roll the Endurance tier die and restore that much.
+    if ((m.abilities || []).includes("Avoid Death") && !m.spent?.avoidDeath) {
+      const n = rng.d(dieOfTier(tierOf(m.attributes.endurance))[1]);
+      (m.spent ||= {}).avoidDeath = true;
+      m.hp = n;
+      note(`${m.name} refuses to fall (Avoid Death, d${dieOfTier(tierOf(m.attributes.endurance))[1]} ${n}): back to ${n} health.`, "reward");
+      return;
+    }
     m.injuries = (m.injuries || 0) + 1;
     m.dying = tierOf(m.attributes.endurance);
     m.stable = false;
@@ -868,16 +1369,28 @@ function morale(state, rng, note, why, hurt = null) {
 function aiStep(state, rng, note, u) {
   const b = state.battle;
   const c = CREATURES[u.cname];
+  const abs = abilitiesOf(c);
   const pcs = b.units.filter(t => t.pc && standing(state, t));
-  if (u.ap <= 0 || !pcs.length) return finishTurn(state, u);
+  if (u.ap <= 0 || !pcs.length) return finishTurn(state, u, rng, note);
+  // Held: strain against it first.
+  if (u.held && !u.brokeFree) {
+    u.ap -= 1; u.brokeFree = true;
+    const r = resist(state, rng, u, "strength", u.held.dc);
+    note(`${u.name} strains against the hold (Strength ${r.text} against ${u.held.dc}): ${r.ok ? "it gives" : "it holds"}.`);
+    if (r.ok) { setCond(u, "restricted", Math.max(0, cond(u, "restricted") - 1)); if (!cond(u, "restricted")) u.held = null; }
+    return;
+  }
+  if (cond(u, "restricted") >= 3) return finishTurn(state, u, rng, note);
+  if (u.prone) { u.ap -= 1; u.prone = false; note(`${u.name} gets up.`); return; }
   const speed = creatureSpeed(c);
   // Panicked: away from the party by the safest route, off the field.
   // Guardians never leave their place: cornered, they only defend.
-  if (u.demoralized >= 3 && b.temper === "Guardian") return finishTurn(state, u);
+  if (u.demoralized >= 3 && b.temper === "Guardian") return finishTurn(state, u, rng, note);
   if (u.demoralized >= 3) {
+    if (cond(u, "restricted")) return finishTurn(state, u, rng, note);
     const edge = (x, y) => x === 0 || y === 0 || x + u.w >= b.w || y + u.h >= b.h;
     const path = search(b, u, (x) => x + u.w >= b.w) || search(b, u, edge);
-    if (!path?.length) return finishTurn(state, u);
+    if (!path?.length) return finishTurn(state, u, rng, note);
     u.ap -= 1;
     b.queue.push({ op: "move", id: u.id, path: path.slice(0, moveStep(u, speed)), asked: [], flee: true });
     u.lastMove = true;
@@ -889,11 +1402,64 @@ function aiStep(state, rng, note, u) {
   const maxAttacks = MASTERY.npcRanks[c.rank].maxAttacks;
   const mayAttack = u.attacks < maxAttacks && (u.attacks === 0 || u.ap - 1 >= (yetToAct ? 1 : 0));
   const near = pcs.filter(t => gap(u, t) <= reach).sort((x, y) => memberOf(state, x).hp - memberOf(state, y).hp);
+
+  // Smash: declared at the top of the round; it lands now if anyone is still in reach.
+  if (u.smashing) {
+    u.smashing = false;
+    const sm = abs.find(a => a.kind === "smash");
+    if (near.length && u.ap >= 2) {
+      u.ap -= 2; u.attacks += 1;
+      b.queue.push({ op: "attack", by: u.id, target: near[0].id, ranged: false, special: { name: "Smash", dice: sm.dice, bonus: sm.bonus, type: sm.type } });
+      return;
+    }
+  }
+  // A Leader's buff (2 AP): when it isn't engaged and has allies near to stir.
+  const buff = abs.find(a => a.kind === "buff");
+  if (buff && !near.length && u.ap >= 2 && u.attacks === 0) {
+    const allies = b.units.filter(o => o !== u && !o.pc && standing(state, o) && buff.who.test(o.cname) && gap(o, u) <= buff.range && cond(o, buff.cond) < 3);
+    if (allies.length >= 2) {
+      u.ap -= 2;
+      note(`${u.name} uses ${buff.name}.`, "event");
+      for (const o of allies) addCond(state, note, o, buff.cond, 1);
+      return finishTurn(state, u, rng, note);
+    }
+  }
   if (near.length && melee) {
-    if (!mayAttack) return finishTurn(state, u);
-    u.attack = c.attacks.indexOf(melee);
-    attack(b, u, near[0], false);
+    if (!mayAttack) return finishTurn(state, u, rng, note);
+    // Squeeze what it holds; seize what it doesn't.
+    const grab = abs.find(a => a.kind === "grab");
+    const caught = near.find(t => t.held?.by === u.id);
+    if (grab?.squeeze && caught) {
+      attack(b, u, caught, false);
+      b.queue[b.queue.length - 1].special = { name: grab.squeeze.name, dice: grab.squeeze.dice, bonus: grab.squeeze.bonus, type: grab.squeeze.type };
+      return;
+    }
+    if (grab && !caught && u.attacks === 0) {
+      const t = near.find(x => !x.held) || near[0];
+      if (!t.held) { attack(b, u, t, false); b.queue[b.queue.length - 1].grab = grab; return; }
+    }
+    const t = near[0];
+    const pick = riderFor(state, u, c, t, false);
+    u.attack = c.attacks.indexOf(pick?.atk || melee);
+    attack(b, u, t, false);
+    if (pick) Object.assign(b.queue[b.queue.length - 1], { rider: pick.ab.name, edge: pick.ab.edge || 0, inf: !!pick.ab.inf, forfeitFlank: !!pick.ab.needsFlank });
     return;
+  }
+  if (cond(u, "restricted")) return finishTurn(state, u, rng, note);
+  // Charge: a straight run into the nearest it can reach that way.
+  const ch = abs.find(a => a.kind === "charge");
+  if (ch && u.ap >= 2 && u.attacks === 0 && !u.moveLeft && !u.demoralized) {
+    for (const t of [...pcs].sort((x, y) => gap(u, x) - gap(u, y))) {
+      const path = chargeLine(state, u, t, speed);
+      const atk = c.attacks.find(a => ch.attack.test(a.name) && !rangeOf(a)) || melee;
+      if (!path || !atk) continue;
+      u.ap -= 2; u.attacks += 1;
+      u.attack = c.attacks.indexOf(atk);
+      note(`${u.name} charges ${t.name}.`, "event");
+      b.queue.push({ op: "move", id: u.id, path, asked: [] });
+      b.queue.push({ op: "attack", by: u.id, target: t.id, ranged: false, edge: 1, charge: true });
+      return;
+    }
   }
   // Out of reach: close in, or throw if it can't get there.
   const routes = pcs.map(t => ({ t, path: pathToReach(b, u, t, reach) })).filter(r => r.path).sort((x, y) => x.path.length - y.path.length);
@@ -902,20 +1468,39 @@ function aiStep(state, rng, note, u) {
   if (ranged && mayAttack && (!melee || !reachable || u.demoralized >= 1)) {
     const rr = rangeOf(ranged);
     const shot = pcs.filter(t => gap(u, t) <= rr[2]).sort((x, y) => gap(u, x) - gap(u, y))[0];
-    if (shot) { u.attack = c.attacks.indexOf(ranged); attack(b, u, shot, true); return; }
+    if (shot) {
+      u.attack = c.attacks.indexOf(ranged);
+      attack(b, u, shot, true);
+      const rider = abs.find(a => a.kind === "rider" && a.attack.test(ranged.name));
+      if (rider) Object.assign(b.queue[b.queue.length - 1], { rider: rider.name, edge: rider.edge || 0, inf: !!rider.inf });
+      return;
+    }
   }
-  if (!best || u.demoralized >= 1 || !melee) return finishTurn(state, u);
-  // Don't spend the last AP walking when that leaves nothing to fight or defend with, unless it gets there.
+  if (!best || u.demoralized >= 1 || !melee) return finishTurn(state, u, rng, note);
   let steps = u.moveLeft;
+  if (cond(u, "tainted") >= 2) steps = Math.min(steps, Math.floor(speed / 2));
   if (steps < best.path.length) {
-    if (u.ap < 1) return finishTurn(state, u);
+    if (u.ap < 1) return finishTurn(state, u, rng, note);
     u.ap -= 1;
-    steps += moveStep(u, speed);
+    steps += cond(u, "tainted") >= 2 ? Math.floor(moveStep(u, speed) / 2) : moveStep(u, speed);
   }
   const go = best.path.slice(0, steps);
   u.moveLeft = steps - go.length;
   u.lastMove = true;
   b.queue.push({ op: "move", id: u.id, path: go, asked: [] });
+}
+
+/** Which rider, if any, the creature uses on this attack: one whose effect the target doesn't already carry. */
+function riderFor(state, u, c, t, ranged) {
+  for (const ab of abilitiesOf(c).filter(a => a.kind === "rider")) {
+    const atk = c.attacks.find(a => ab.attack.test(a.name) && !!rangeOf(a) === ranged);
+    if (!atk) continue;
+    if (ab.needsFlank && !flanking(state, u, t)) continue;
+    if (ab.cond && cond(t, ab.cond.name) >= 1) continue;
+    if (ab.attrition && t.attrition?.length) continue;
+    return { ab, atk };
+  }
+  return null;
 }
 
 function attack(b, u, t, ranged) {
@@ -1036,13 +1621,20 @@ export function conditionsOf(state, u) {
   const bits = [];
   if (u.impaired) bits.push(IMPAIRED[u.impaired]);
   if (u.demoralized) bits.push(DEMORALIZED[u.demoralized]);
+  for (const k of Object.keys(COND_LABELS)) if (cond(u, k)) bits.push(COND_LABELS[k][cond(u, k)]);
+  if (u.held) bits.push(`held (${u.held.name})`);
+  if (u.prone) bits.push("prone");
+  if (u.attrition?.length) bits.push(`bleeding ${u.attrition.reduce((n, a) => n + a.amount, 0)}`);
+  if (u.smashing) bits.push("winding up");
   if (u.pc) {
     const m = memberOf(state, u);
+    if (m.infected) bits.push(COND_LABELS.infected[m.infected]);
     if (m.dead) bits.push("dead");
     else if (m.dying != null) bits.push(`dying (${m.dying})`);
     else if (m.stable) bits.push("stable");
     if (m.down && !m.dead) bits.push("unconscious");
     if (m.fightingOn) bits.push("fighting on");
+    if (u.challenge && onField(unitById(state.battle, u.challenge) || {})) bits.push(`challenging ${unitById(state.battle, u.challenge).name}`);
   }
   if (u.minion) bits.push(groupBand(u.heads).label);
   return bits;

@@ -29,7 +29,7 @@ export function unpack(json) {
   // Saves from before a field existed pick it up from the starting roster.
   for (const m of s.party?.members || []) {
     const p = PREGENS.find(x => x.id === m.id);
-    if (p) for (const k of ["spells", "gear", "shieldAbsorbs"]) if (m[k] === undefined && p[k] !== undefined) m[k] = structuredClone(p[k]);
+    if (p) for (const k of ["spells", "gear", "shieldAbsorbs", "abilities", "immune"]) if (m[k] === undefined && p[k] !== undefined) m[k] = structuredClone(p[k]);
   }
   return s;
 }

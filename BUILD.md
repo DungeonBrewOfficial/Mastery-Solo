@@ -48,12 +48,25 @@ The game saves after every action: on the hosted page, to the player's own priva
 4. **Sites.** Lairs, caves, ruins, barrows: areas, contents, traps, the clock, the heart and its hoard. Clues and lost lore.
 5. **Combat.** Built in stages.
    - *Stage 1, built.* A 16 × 12 grid opens for each fight, with the encounter's whole group (generated from the tables, minion groups as one token whose footprint shrinks as heads fall). Startle carries in as Impaired. Each round: declarations (weapon and the three Untrained guards), the d6 for the first side, then Fast, Moderate, and Slow, winning side first. 2 AP; moves (half again for consecutive moves), melee and ranged attacks with the Aiming Trial, flanking, defense declared before the roll, counterattacks, reprisal attacks for leaving reach. Weapon Mastery Attack Dice by track, Single Weapon and Two-Handed styles, the shield soaking durability and stopping missiles. Damage through Foundry's `resolveDamage`. 0 health: Injury, the dying timer, the Endurance trial, Fighting On and Traumas, Triage. Creatures: written dice, size bonuses, rolled Health from Foundry's health plan, armor durability, Epic and Legendary phase AP. Morale on the Demoralized ladder. Running from a fight is a one-round break-away, then the chase, carrying or leaving the fallen. Winning pays the head's XP and spoils; anyone still dying is saved if the party has a kit or a healing spell, and must be triaged in further rounds if not; the healer tends wounds afterwards. A shield-bearer chooses at declaration whether the shield takes hits.
-   - *Stage 2.* Maneuvers and the guards past Untrained, Leaders' buffs, creature abilities and Mob traits.
+   - *Stage 2, built for Band I.* The chained conditions: Restricted with holds and breaking free, Tainted, Infected (which carries out of the fight and worsens rest), Inspired against Demoralized, and Invigorated. Also Prone and Attrition. Creature abilities live in `game/data/abilities.js`, written from each stat block with its text alongside:
+     - attack riders (Venomous Bite, Rend, Low Cut, Clamp, Gore, Hamstring, Hook, Diseased Bite, Hurl Rock);
+     - Mob traits (Cudgel, Venomous Swarm, Grave Rust, Harry, Gnawing, and Death Tick on presence);
+     - Pack and Swarm Frenzy, Riposte, and the Leader buffs Rally and Rally Howl;
+     - Charge and Stoop, Grab and Constrict with Squeeze, the declared Smash;
+     - Fire Aura, Living Flame, Aerial Evasion, and the immunities.
+     Abilities not built yet are named in the log at the start of a fight.
+     The party gets what a level-1 character can use:
+     - Charge and Snap Shot, the Untrained baseline maneuvers;
+     - Gerberga's shield bash, Avoid Death, and Challenge;
+     - Hamon's Opportunist with Backstab, and Danger Sense against ambushes;
+     - Corra's Hearten, offered on an ally's Defend prompt;
+     - Gisla's immunity to Profane damage.
+   - *Stage 2, next.* The Band II abilities (about forty: Command and Command Shout, Pride Roar, Roar, Intercept, Shield Punch, Half-Sword, Press, Pinning Shot, Constrict's kin, Web, Dive, and others). The maneuvers and guards past Untrained wait for advancement (milestone 3), since no one can learn them before then.
    - *Stage 3.* Spells (Flame Dart, Stoneskin, Mend, Sacred Ward) and the companions (Tallow, Clabber).
 
 ## Known gaps
 
-- **Combat has no maneuvers, spells, abilities, or companions yet** (stages 2 and 3). Gisla, Corra, and Gerberga fight with their weapons only, and creatures with their attacks only.
+- **Combat has no spells, class abilities, or companions yet** (stage 3): no Flame Dart, Stoneskin, Mend, or Sacred Ward, no Hard to Kill or Turn, no Tallow or Clabber. Band II creatures fight without most of their abilities.
 - The battlefield is open ground: no terrain, cover, or light yet.
 - **Healing is a stopgap until milestone 3.** Camp gives a Wilderness Rest (a Dungeon Rest in Deep country, one step worse if the night die brings something), and a night in a settlement gives a Good Night's Rest, free. After a fight the healer Heals each wounded character once without spending Wound Kits. Injuries and Traumas are recorded but nothing treats them yet.
 - When the whole party is down, the dynasty run ends; the next generation is milestone 3.

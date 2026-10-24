@@ -87,3 +87,6 @@ summary { cursor: pointer; font-size: 0.9rem; }
 .units .warn, .members .warn { color: #e07a5f; }
 .members li { flex-wrap: wrap; }
 .members li.dead { opacity: 0.55; }
+.modes button { padding: 3px 8px; font-size: 0.85rem; }
+.modes button.on { background: #5a2a22; border-color: #c0392b; }
+.units .good { color: #9fd18b; }

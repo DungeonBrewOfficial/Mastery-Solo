@@ -174,8 +174,13 @@ function contact(state, rng, e, note) {
 }
 
 /** Startle trials: Agility tier die + Perception tier die (Combat, Startle and Ambush). */
-function startle(state, rng, dc, note, e) {
+function startle(state, rng, dc, note, e, { ambush = false } = {}) {
   for (const m of alive(state)) {
+    // Danger Sense (Alertness): sensing the ambush as it's sprung means no Startle.
+    if (ambush && (m.abilities || []).includes("Danger Sense")) {
+      const t = trial(rng, [dieOfTier(attrTier(m, "perception")), dieOfTier(skill(m, "alertness"))]);
+      if (passes(t, dc)) { note(`${m.name} senses it coming (Danger Sense, ${t.text} against ${dc}) and isn't Startled.`); e.impaired[m.id] = 0; continue; }
+    }
     const t = trial(rng, [dieOfTier(attrTier(m, "agility")), dieOfTier(attrTier(m, "perception"))]);
     const miss = dc - t.total;
     e.impaired[m.id] = passes(t, dc) ? 0 : miss >= 5 ? 3 : miss >= 3 ? 2 : 1;
@@ -217,7 +222,7 @@ function disposition(state, rng, e, note) {
   if (["attack", "wait"].includes(mood) && e.creatureAware && !e.partyAware) {
     const c = CREATURES[e.head];
     note(`${c.abilities.includes("Ambusher") ? "An Ambusher in its element" : "They set an ambush"}: Startle trials against ${c.division + 1}.`, "event");
-    startle(state, rng, c.division + 1, note, e);
+    startle(state, rng, c.division + 1, note, e, { ambush: true });
     e.ambushed = true;
   }
   if (e.temper === "Raider" && mood === "toll") e.toll = e.xp * 5 * alive(state).length;

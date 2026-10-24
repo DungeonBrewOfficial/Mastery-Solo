@@ -6,6 +6,11 @@
  * Skills, weapon types, and styles are mastery levels: 1 Unskilled,
  * 2 Untrained, 3 Basic, and so on.
  *
+ * Abilities are the combat abilities each took from their skills (Stealth's
+ * Opportunist and the Thief's Backstab; Alertness's Danger Sense; Athletics's
+ * Avoid Death; Presence's Challenge and Hearten), from the build episodes.
+ * Gisla's Possessed hallmark makes her immune to Profane damage.
+ *
  * Weapons follow Equipment › Weapons Reference and Weapon Mastery › Weapon
  * Speed and Attribute by Category: track is the Weapon Mastery Attack Dice
  * column (I–VI). Ranges are in squares (5 ft). Light armor already includes
@@ -21,7 +26,7 @@ export const PREGENS = [
     weapons: [{ name: "Dagger", ...LIGHT_1H, type: "daggers", damage: "piercing" }],
     weaponSkill: { daggers: 2 }, styles: {},
     skills: { spellcraft: 2, lore: 2 },
-    spells: ["Flame Dart", "Demoralize"],
+    spells: ["Flame Dart", "Demoralize"], immune: ["profane"], abilities: [],
     notes: "Possessed. Flame Dart, Demoralize. Agathion: Tallow, a black goat."
   },
   {
@@ -36,7 +41,7 @@ export const PREGENS = [
     ],
     weaponSkill: { bludgeons: 2, axes: 2 }, styles: {},
     skills: { healer: 2, presence: 2, wilderness: 2 },
-    spells: ["Stoneskin", "Mend Flesh"], gear: ["Healer's Kit"],
+    spells: ["Stoneskin", "Mend Flesh"], gear: ["Healer's Kit"], abilities: ["Hearten"],
     notes: "Stoneskin, Mend Flesh. Puca: Clabber, a boar. Healer's Kit."
   },
   {
@@ -51,7 +56,7 @@ export const PREGENS = [
     ],
     weaponSkill: { daggers: 2, bludgeons: 2 }, styles: { single: 2 },
     skills: { thievery: 2, stealth: 2, presence: 2, alertness: 2, athletics: 2, lore: 2 },
-    stealthDC: 6,
+    stealthDC: 6, abilities: ["Opportunist", "Backstab", "Danger Sense"],
     notes: "Kunai, five war darts, a blackjack. Backstab."
   },
   {
@@ -63,7 +68,7 @@ export const PREGENS = [
     weapons: [{ name: "Swordbreaker", category: "Heavy One-Handed", track: 2, speed: "moderate", attribute: "strength", type: "daggers", damage: "cutting", defense: 1 }],
     weaponSkill: { daggers: 2 }, styles: { shield: 2, single: 2 },
     skills: { athletics: 2, presence: 2 },
-    spells: ["Mend", "Sacred Ward"], shieldAbsorbs: true,
+    spells: ["Mend", "Sacred Ward"], shieldAbsorbs: true, abilities: ["Avoid Death", "Challenge"],
     notes: "Swordbreaker (her holy focus), heater shield. Mend, Sacred Ward."
   }
 ];

@@ -7,7 +7,7 @@ import { choices, choose, signChoices, chooseSign, partyLevel, bandFor, ROMAN } 
 import { CREATURES } from "./data/creatures.js";
 import { squareAt, countryAt, findPath, moveCost, TERRAINS, SETTLEMENTS } from "./world.js";
 import { draw, drawBattle, battleLayout } from "./render.js";
-import { beginRound, retreat, runPlan, respond, currentPC, moveCost as stepCost, pcMove, pcAttack, pcEndTurn, triageTargets, pcTriage, canAttack, standing, onField, conditionsOf, memberFor, creatureFor, weaponOf, GUARDS, PHASES } from "./combat.js";
+import { attackModes, setMode, freeTargets, pcBreakFree, pcStand, challengeTargets, beginRound, retreat, runPlan, respond, currentPC, moveCost as stepCost, pcMove, pcAttack, pcEndTurn, triageTargets, pcTriage, canAttack, standing, onField, conditionsOf, memberFor, creatureFor, weaponOf, GUARDS, PHASES } from "./combat.js";
 import { BAND_LABELS } from "./vendor/foundry/module/helpers/weather-rules.mjs";
 import { openStorage, pack, unpack } from "./storage.js";
 
@@ -149,6 +149,8 @@ function paint() {
   else draw(canvas, state, view);
 }
 
+const GOOD = /^(Rallied|Emboldened|Fearless|Energized|Empowered|Tireless|challenging)/;
+const condHtml = (conds) => conds.length ? ` ${conds.map(c => `<span class="${GOOD.test(c) ? "good" : "warn"}">${c}</span>`).join(", ")}` : "";
 const describeHealth = (u) => u.hp >= u.hpMax ? "unhurt" : u.hp > u.hpMax / 2 ? "hurt" : u.hp > u.hpMax / 4 ? "bloodied" : "near death";
 
 function unitLine(u) {
@@ -156,10 +158,10 @@ function unitLine(u) {
   if (u.pc) {
     const m = memberFor(state, u), w = weaponOf(m, u);
     const gear = [m.armor ? `${m.armor.name} ${m.armor.durability}/${m.armor.max}` : "", m.shield ? `${m.shield.name} ${m.shield.durability}/${m.shield.max}` : ""].filter(Boolean).join(" · ");
-    return `<strong>${m.name}</strong> <span>${m.hp}/${m.health} hp</span> <span class="muted">${u.ap} AP · ${w ? w.name : "unarmed"} · ${GUARDS[u.guard].label}</span>${conds.length ? ` <span class="warn">${conds.join(", ")}</span>` : ""}${gear ? `<br><span class="muted small">${gear}</span>` : ""}`;
+    return `<strong>${m.name}</strong> <span>${m.hp}/${m.health} hp</span> <span class="muted">${u.ap} AP · ${w ? w.name : "unarmed"} · ${GUARDS[u.guard].label}</span>${condHtml(conds)}${gear ? `<br><span class="muted small">${gear}</span>` : ""}`;
   }
   const c = creatureFor(u);
-  return `<strong>${u.name}</strong> <span>${u.minion ? `${u.heads} of ${u.headsMax}` : describeHealth(u)}</span> <span class="muted">${c.rank}${u.armorMax ? ` · armor ${u.armorDur > 0 ? "holding" : "broken"}` : ""}</span>${conds.length ? ` <span class="warn">${conds.join(", ")}</span>` : ""}`;
+  return `<strong>${u.name}</strong> <span>${u.minion ? `${u.heads} of ${u.headsMax}` : describeHealth(u)}</span> <span class="muted">${c.rank}${u.armorMax ? ` · armor ${u.armorDur > 0 ? "holding" : "broken"}` : ""}</span>${condHtml(conds)}`;
 }
 
 function renderBattle(box) {
@@ -174,6 +176,7 @@ function renderBattle(box) {
     const [yes, no] = PROMPT_LABELS[p.kind] || [p.yes || "Yes", p.no || "No"];
     box.insertAdjacentHTML("beforeend", `<p class="prompt">${p.text}</p>`);
     row.appendChild(button(`${yes} (Y)`, () => battleAct((rng) => respond(state, rng, say, true))));
+    if (p.kind === "defend" && p.helper) row.appendChild(button(`Defend, ${p.helperName} heartens (H)`, () => battleAct((rng) => respond(state, rng, say, "hearten"))));
     row.appendChild(button(`${no} (N)`, () => battleAct((rng) => respond(state, rng, say, false))));
     row.firstChild.className = "primary";
   } else if (b.stage === "declare" && planningRun) {
@@ -221,6 +224,16 @@ function renderBattle(box) {
       gs.title = GUARDS[gs.value].text;
       gs.onchange = () => { picks[x.id].guard = gs.value; gs.title = GUARDS[gs.value].text; };
       line.append(ws, gs);
+      const foes = challengeTargets(state, x);
+      if (foes.length) {
+        const cs = document.createElement("select");
+        cs.title = "Challenge (once per encounter): the killing blow on this foe inspires you by its rank.";
+        cs.add(new Option("No challenge", ""));
+        for (const f of foes) cs.add(new Option(`Challenge ${f.name}`, f.id));
+        cs.value = picks[x.id].challenge || "";
+        cs.onchange = () => { picks[x.id].challenge = cs.value || null; };
+        line.append(cs);
+      }
       if (m.shield) {
         const lab = document.createElement("label");
         lab.className = "small";
@@ -244,7 +257,24 @@ function renderBattle(box) {
     row.appendChild(run);
   } else if (u) {
     const m = memberFor(state, u), w = weaponOf(m, u);
-    box.insertAdjacentHTML("beforeend", `<p><strong>${m.name}</strong>'s turn · ${u.ap} AP · ${w ? w.name : "unarmed"}${u.moveLeft ? ` · ${u.moveLeft} squares of movement left` : ""}</p><p class="small muted">Click a lit square to move, a ringed enemy to attack. AP you keep can defend, counter, and strike at enemies who leave your reach.</p>`);
+    box.insertAdjacentHTML("beforeend", `<p><strong>${m.name}</strong>'s turn · ${u.ap} AP · ${w ? w.name : "unarmed"}${u.moveLeft ? ` · ${u.moveLeft} squares of movement left` : ""}</p><p class="small muted">Click a lit square to move, a ringed enemy to attack. A ringed enemy 3 or more squares off in a straight line is a Charge (2 AP, Dominance). AP you keep can defend, counter, and strike at enemies who leave your reach.</p>`);
+    const modes = attackModes(state, u);
+    if (modes.length > 1) {
+      const mr = document.createElement("div");
+      mr.className = "buttons modes";
+      for (const md of modes) {
+        const mb = button(md.label, () => { setMode(state, md.id); render(); });
+        if ((u.mode || "strike") === md.id) mb.className = "on";
+        mr.appendChild(mb);
+      }
+      box.appendChild(mr);
+    }
+    if (u.prone) row.appendChild(button("Get up (1 AP)", () => battleAct((rng) => pcStand(state, rng, say))));
+    for (const t of freeTargets(state, u)) {
+      const fb = button(t === u ? `Break free (1 AP)` : `Help ${t.name} break free (1 AP)`, () => battleAct((rng) => pcBreakFree(state, rng, say, t.id)));
+      fb.disabled = u.ap < 1 || (t === u ? u.brokeFree : (t.helpedBy || []).includes(u.id));
+      row.appendChild(fb);
+    }
     for (const t of triageTargets(state, u)) {
       const tb = button(`Stop ${t.name}'s bleeding (2 AP)`, () => battleAct((rng) => pcTriage(state, rng, say, t.id)));
       tb.disabled = u.ap < 2;
@@ -272,7 +302,7 @@ function battleHover(sq) {
     if (u.pc) { const m = memberFor(state, u); return `${m.name} · ${m.hp}/${m.health} hp · ${u.ap} AP${conds.length ? " · " + conds.join(", ") : ""}`; }
     const c = creatureFor(u), me = currentPC(state);
     const can = me ? canAttack(state, me, u) : null;
-    return `${u.name} · Tier ${c.tier} ${c.rank} · ${u.minion ? `${u.heads} heads` : describeHealth(u)}${conds.length ? " · " + conds.join(", ") : ""}${can ? (can.ok ? ` · click to ${can.ranged ? "shoot" : "attack"} (1 AP)` : can.why ? ` · ${can.why}` : "") : ""}`;
+    return `${u.name} · Tier ${c.tier} ${c.rank} · ${u.minion ? `${u.heads} heads` : describeHealth(u)}${conds.length ? " · " + conds.join(", ") : ""}${can ? (can.ok ? ` · click to ${can.charge ? "charge" : can.ranged ? "shoot" : "attack"} (${can.cost} AP)` : can.why ? ` · ${can.why}` : "") : ""}`;
   }
   const me = currentPC(state);
   const cost = me && stepCost(state, me, sq.x, sq.y);
@@ -405,6 +435,7 @@ window.addEventListener("keydown", (ev) => {
   if (state.battle) {
     const b = state.battle;
     if (b.prompt && (ev.key === "y" || ev.key === "n")) battleAct((rng) => respond(state, rng, say, ev.key === "y"));
+    else if (b.prompt?.helper && ev.key === "h") battleAct((rng) => respond(state, rng, say, "hearten"));
     else if (b.stage === "declare" && ev.key === "Enter") battleAct((rng) => beginRound(state, rng, say, picks));
     else if (currentPC(state) && ev.key === "e") battleAct((rng) => pcEndTurn(state, rng, say));
     return;
