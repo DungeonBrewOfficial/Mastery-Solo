@@ -73,6 +73,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "sacred",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      6,
      2
@@ -81,6 +82,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Yazata (Sacred)",
    "Incorporeal",
@@ -160,6 +164,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      6,
      8
@@ -168,6 +173,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Charge",
    "Gore"
@@ -243,6 +251,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "cutting",
     "attribute": "physique",
+    "style": "twoWeapon",
     "dice": [
      3,
      3
@@ -251,6 +260,44 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [
+   {
+    "label": "Defense",
+    "attribute": "physique",
+    "style": "twoWeapon",
+    "dice": [
+     2,
+     2
+    ]
+   }
+  ],
+  "armor": [
+   {
+    "name": "Jack of Plate Hauberk (Jack of Plate)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 3,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 11,
+    "max": 30
+   },
+   {
+    "name": "Jack of Plate Greaves, Cuisses (Jack of Plate)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 0,
+     "puncturing": 0
+    },
+    "durability": 3,
+    "max": 8
+   }
+  ],
+  "shield": null,
   "abilities": [
    "Low Cut"
   ],
@@ -325,6 +372,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "single",
     "dice": [
      4,
      4
@@ -337,6 +385,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      4,
      4
@@ -345,6 +394,56 @@ export const CREATURES = {
     "range": "Light Thrown, 25/50/75"
    }
   ],
+  "grips": [
+   {
+    "label": "Kunai, Single",
+    "attribute": "physique",
+    "style": "single",
+    "dice": [
+     4,
+     4
+    ]
+   }
+  ],
+  "armor": [
+   {
+    "name": "Aketon (Hide Armor)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 2,
+    "max": 4
+   },
+   {
+    "name": "Hide Hauberk (Hide Armor)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 0,
+     "crushing": 1,
+     "piercing": 3,
+     "puncturing": 2
+    },
+    "durability": 13,
+    "max": 30
+   },
+   {
+    "name": "Hide Greaves, Cuisses (Hide Armor)",
+    "resistance": {
+     "cleaving": 0,
+     "cutting": 0,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 4,
+    "max": 8
+   }
+  ],
+  "shield": null,
   "abilities": [
    "Riposte",
    "Rally"
@@ -420,6 +519,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "crushing",
     "attribute": "strength",
+    "style": "single",
     "dice": [
      2
     ],
@@ -431,6 +531,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "crushing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      2
     ],
@@ -438,6 +539,9 @@ export const CREATURES = {
     "range": "Thrown 30/60/90"
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Cudgel"
   ],
@@ -512,6 +616,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "crushing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      6,
      6,
@@ -526,6 +631,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "crushing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      6,
      6,
@@ -536,6 +642,9 @@ export const CREATURES = {
     "range": "Thrown 30/90/150"
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Behemoth (Stone)",
    "Stomp",
@@ -617,6 +726,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      6,
      8
@@ -629,6 +739,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "cutting",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      6,
      8
@@ -637,6 +748,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Charge (Bite)",
    "Charge (Claw)",
@@ -715,6 +829,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      4,
      4
@@ -723,6 +838,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Charge",
    "Gore"
@@ -800,6 +918,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      10,
      10
@@ -812,6 +931,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "cutting",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      10,
      10
@@ -820,6 +940,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Charge (Bite)",
    "Charge (Claw)",
@@ -897,6 +1020,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "cutting",
     "attribute": "physique",
+    "style": "shield",
     "dice": [
      4,
      3
@@ -909,6 +1033,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "shield",
     "dice": [
      4,
      3
@@ -921,6 +1046,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "shield",
     "dice": [
      4,
      3
@@ -929,6 +1055,72 @@ export const CREATURES = {
     "range": "Thrown 30/60/90"
    }
   ],
+  "grips": [
+   {
+    "label": "Defense",
+    "attribute": "physique",
+    "style": "shield",
+    "dice": [
+     8,
+     6
+    ]
+   }
+  ],
+  "armor": [
+   {
+    "name": "Aketon (Byrnie)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 2,
+    "max": 4
+   },
+   {
+    "name": "Chain Haubergeon (Byrnie)",
+    "resistance": {
+     "cleaving": 2,
+     "cutting": 5,
+     "crushing": 1,
+     "piercing": 2,
+     "puncturing": 3
+    },
+    "durability": 17,
+    "max": 30
+   },
+   {
+    "name": "Chain Chausses, Sabatons (Byrnie)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 2,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 5,
+    "max": 8
+   },
+   {
+    "name": "Chain Sleeves, Mittons (Byrnie)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 2,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 5,
+    "max": 8
+   }
+  ],
+  "shield": {
+   "name": "Kite",
+   "durability": 12,
+   "max": 24
+  },
   "abilities": [
    "Riposte",
    "Command Shout"
@@ -1006,6 +1198,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      6,
      6,
@@ -1019,6 +1212,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "cutting",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      6,
      6,
@@ -1028,6 +1222,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Charge (Bite)",
    "Charge (Claw)",
@@ -1107,6 +1304,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "cutting",
     "attribute": "physique",
+    "style": "single",
     "dice": [
      10,
      6
@@ -1115,6 +1313,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Yazata (Sacred)",
    "Flaming Blade",
@@ -1193,22 +1394,18 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      8,
      6
     ],
     "bonus": 0,
     "range": ""
-   },
-   {
-    "name": "Squeeze",
-    "phase": "moderate",
-    "damageType": "crushing",
-    "attribute": "strength",
-    "bonus": 0,
-    "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Constrict"
   ],
@@ -1285,6 +1482,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "crushing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      8,
      4
@@ -1297,6 +1495,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      8,
      4
@@ -1305,6 +1504,70 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [
+   {
+    "name": "Chain Peytral (Chain Barding)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 5,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 3
+    },
+    "durability": 21,
+    "max": 30
+   },
+   {
+    "name": "Chain Chanfron (Chain Barding)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 2,
+     "crushing": 0,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 4,
+    "max": 6
+   },
+   {
+    "name": "Chain Crinet (Chain Barding)",
+    "resistance": {
+     "cleaving": 0,
+     "cutting": 1,
+     "crushing": 0,
+     "piercing": 0,
+     "puncturing": 1
+    },
+    "durability": 4,
+    "max": 6
+   },
+   {
+    "name": "Chain Crupper (Chain Barding)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 3,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 4,
+    "max": 6
+   },
+   {
+    "name": "Chain Flanchards (Chain Barding)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 4,
+    "max": 6
+   }
+  ],
+  "shield": null,
   "abilities": [
    "Leap",
    "Battle Trained",
@@ -1383,6 +1646,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "crushing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      3,
      4
@@ -1391,6 +1655,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Leap"
   ],
@@ -1467,6 +1734,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      6,
      8
@@ -1475,6 +1743,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Ambusher",
    "Grab",
@@ -1554,6 +1825,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      2
     ],
@@ -1561,6 +1833,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Death Tick"
   ],
@@ -1637,6 +1912,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "crushing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      3,
      2
@@ -1645,6 +1921,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Flight Response"
   ],
@@ -1721,6 +2000,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "crushing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      10,
      8
@@ -1733,6 +2013,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      10,
      8
@@ -1741,6 +2022,70 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [
+   {
+    "name": "Double Mail Peytral (Plate and Mail Barding)",
+    "resistance": {
+     "cleaving": 2,
+     "cutting": 4,
+     "crushing": 1,
+     "piercing": 2,
+     "puncturing": 4
+    },
+    "durability": 28,
+    "max": 30
+   },
+   {
+    "name": "Plate Chanfron (Plate and Mail Barding)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 8,
+    "max": 8
+   },
+   {
+    "name": "Plate Crinet (Plate and Mail Barding)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 7,
+    "max": 8
+   },
+   {
+    "name": "Plate Crupper (Plate and Mail Barding)",
+    "resistance": {
+     "cleaving": 3,
+     "cutting": 4,
+     "crushing": 4,
+     "piercing": 4,
+     "puncturing": 3
+    },
+    "durability": 7,
+    "max": 8
+   },
+   {
+    "name": "Plate Flanchards (Plate and Mail Barding)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 2,
+     "crushing": 2,
+     "piercing": 2,
+     "puncturing": 1
+    },
+    "durability": 7,
+    "max": 8
+   }
+  ],
+  "shield": null,
   "abilities": [
    "Stagger",
    "Battle Trained",
@@ -1820,6 +2165,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "crushing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      3,
      4
@@ -1828,6 +2174,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Stagger"
   ],
@@ -1904,6 +2253,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "crushing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      4,
      8
@@ -1912,6 +2262,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Heavy Pull",
    "Sure-Footed"
@@ -1987,6 +2340,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "crushing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      12,
      4
@@ -1995,6 +2349,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Tree-Bound",
    "Woodland Meld",
@@ -2075,6 +2432,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      4,
      4
@@ -2083,6 +2441,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Dive",
    "Aerial Evasion"
@@ -2158,6 +2519,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "crushing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      10,
      10
@@ -2170,6 +2532,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "crushing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      10,
      10
@@ -2178,6 +2541,9 @@ export const CREATURES = {
     "range": "Heavy Thrown 30/60/90"
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Autochthon (Stone)",
    "Absorb Stone",
@@ -2258,6 +2624,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "void",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      8,
      4
@@ -2266,6 +2633,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Incorporeal",
    "Relentless Chase",
@@ -2344,6 +2714,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      4,
      4
@@ -2356,6 +2727,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "crushing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      4,
      4
@@ -2364,6 +2736,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Charge",
    "Gore"
@@ -2441,6 +2816,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "fire",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      2
     ],
@@ -2448,6 +2824,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Autochthon (Fire)",
    "Flame Touch",
@@ -2526,6 +2905,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      8,
      8,
@@ -2536,6 +2916,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Charge",
    "Gore",
@@ -2614,6 +2997,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "crushing",
     "attribute": "strength",
+    "style": "single",
     "dice": [
      6,
      6,
@@ -2628,6 +3012,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "crushing",
     "attribute": "strength",
+    "style": "twoHanded",
     "dice": [
      8,
      8,
@@ -2642,6 +3027,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "crushing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      6,
      6,
@@ -2652,6 +3038,20 @@ export const CREATURES = {
     "range": "Thrown 30/60/90"
    }
   ],
+  "grips": [
+   {
+    "label": "2H",
+    "attribute": "strength",
+    "style": "twoHanded",
+    "dice": [
+     12,
+     6,
+     6
+    ]
+   }
+  ],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Behemoth (Stone)",
    "Three Heads",
@@ -2731,6 +3131,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "void",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      4,
      3
@@ -2739,6 +3140,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "False Form",
    "Whisper"
@@ -2816,6 +3220,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "crushing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      4,
      3
@@ -2824,6 +3229,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Autochthon (Fire)",
    "Fire Aura",
@@ -2900,6 +3308,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "perception",
+    "style": "natural",
     "dice": [
      2
     ],
@@ -2911,6 +3320,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "cutting",
     "attribute": "strength",
+    "style": "single",
     "dice": [
      2
     ],
@@ -2918,6 +3328,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Blood Up"
   ],
@@ -2994,6 +3407,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      3,
      4
@@ -3002,6 +3416,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Knockdown"
   ],
@@ -3078,6 +3495,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      6,
      6
@@ -3086,6 +3504,58 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [
+   {
+    "name": "Gambeson Peytral (Gambeson Barding)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 20,
+    "max": 30
+   },
+   {
+    "name": "Gambeson Chanfron (Gambeson Barding)",
+    "resistance": {
+     "cleaving": 0,
+     "cutting": 0,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 3,
+    "max": 4
+   },
+   {
+    "name": "Gambeson Crinet (Gambeson Barding)",
+    "resistance": {
+     "cleaving": 0,
+     "cutting": 0,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 3,
+    "max": 4
+   },
+   {
+    "name": "Gambeson Flanchards (Gambeson Barding)",
+    "resistance": {
+     "cleaving": 0,
+     "cutting": 0,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 3,
+    "max": 4
+   }
+  ],
+  "shield": null,
   "abilities": [
    "Knockdown",
    "Deter",
@@ -3164,6 +3634,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      3,
      3
@@ -3172,6 +3643,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Diseased Bite"
   ],
@@ -3248,6 +3722,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      8,
      8,
@@ -3262,6 +3737,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "cutting",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      8,
      8,
@@ -3272,6 +3748,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Charge (Bite)",
    "Charge (Claw)",
@@ -3352,6 +3831,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      6,
      6
@@ -3360,6 +3840,58 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [
+   {
+    "name": "Boiled Leather Peytral (Boiled Leather Barding)",
+    "resistance": {
+     "cleaving": 0,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 26,
+    "max": 30
+   },
+   {
+    "name": "Boiled Leather Chanfron (Boiled Leather Barding)",
+    "resistance": {
+     "cleaving": 0,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 4,
+    "max": 4
+   },
+   {
+    "name": "Boiled Leather Crinet (Boiled Leather Barding)",
+    "resistance": {
+     "cleaving": 0,
+     "cutting": 1,
+     "crushing": 0,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 4,
+    "max": 4
+   },
+   {
+    "name": "Boiled Leather Flanchards (Boiled Leather Barding)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 0,
+     "piercing": 0,
+     "puncturing": 0
+    },
+    "durability": 3,
+    "max": 4
+   }
+  ],
+  "shield": null,
   "abilities": [
    "Knockdown",
    "Charge",
@@ -3439,6 +3971,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "cutting",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      10,
      4
@@ -3447,6 +3980,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Morphon (Sora)",
    "Through the Wall",
@@ -3525,6 +4061,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "shield",
     "dice": [
      3,
      4
@@ -3537,6 +4074,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "single",
     "dice": [
      4,
      6
@@ -3549,6 +4087,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "twoHanded",
     "dice": [
      6,
      8
@@ -3561,6 +4100,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "shield",
     "dice": [
      3,
      4
@@ -3573,6 +4113,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      4,
      6
@@ -3581,6 +4122,90 @@ export const CREATURES = {
     "range": "Heavy Thrown"
    }
   ],
+  "grips": [
+   {
+    "label": "with Shield",
+    "attribute": "strength",
+    "style": "shield",
+    "dice": [
+     6,
+     8
+    ]
+   },
+   {
+    "label": "1H",
+    "attribute": "strength",
+    "style": "single",
+    "dice": [
+     4,
+     6
+    ]
+   },
+   {
+    "label": "2H",
+    "attribute": "strength",
+    "style": "twoHanded",
+    "dice": [
+     3,
+     4
+    ]
+   }
+  ],
+  "armor": [
+   {
+    "name": "Aketon (Gambeson Padded Armor)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 2,
+    "max": 4
+   },
+   {
+    "name": "Padded Hauberk (Gambeson Padded Armor)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 2,
+     "piercing": 2,
+     "puncturing": 1
+    },
+    "durability": 12,
+    "max": 30
+   },
+   {
+    "name": "Padded Coif (Gambeson Padded Armor)",
+    "resistance": {
+     "cleaving": 0,
+     "cutting": 1,
+     "crushing": 2,
+     "piercing": 2,
+     "puncturing": 0
+    },
+    "durability": 2,
+    "max": 4
+   },
+   {
+    "name": "Padded Greaves, Cuisses (Gambeson Padded Armor)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 0,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 3,
+    "max": 8
+   }
+  ],
+  "shield": {
+   "name": "Kite",
+   "durability": 12,
+   "max": 24
+  },
   "abilities": [
    "Set Spear"
   ],
@@ -3657,6 +4282,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      6,
      4
@@ -3665,6 +4291,58 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [
+   {
+    "name": "Boiled Leather Peytral (Boiled Leather Barding)",
+    "resistance": {
+     "cleaving": 0,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 20,
+    "max": 30
+   },
+   {
+    "name": "Boiled Leather Chanfron (Boiled Leather Barding)",
+    "resistance": {
+     "cleaving": 0,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 3,
+    "max": 4
+   },
+   {
+    "name": "Boiled Leather Crinet (Boiled Leather Barding)",
+    "resistance": {
+     "cleaving": 0,
+     "cutting": 1,
+     "crushing": 0,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 3,
+    "max": 4
+   },
+   {
+    "name": "Boiled Leather Flanchards (Boiled Leather Barding)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 0,
+     "piercing": 0,
+     "puncturing": 0
+    },
+    "durability": 3,
+    "max": 4
+   }
+  ],
+  "shield": null,
   "abilities": [
    "Pack",
    "Steadfast",
@@ -3743,6 +4421,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      8,
      4
@@ -3751,6 +4430,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Dive",
    "Mark",
@@ -3828,6 +4510,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "crushing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      6,
      6,
@@ -3837,6 +4520,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Autochthon (Fire)",
    "Fire Aura",
@@ -3919,6 +4605,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      2
     ],
@@ -3926,6 +4613,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Mimicry"
   ],
@@ -4000,6 +4690,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "cutting",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      3,
      3
@@ -4012,6 +4703,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      3,
      3
@@ -4020,6 +4712,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Fear of Fire and Light",
    "Solstice Bound",
@@ -4097,6 +4792,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "cutting",
     "attribute": "strength",
+    "style": "shield",
     "dice": [
      6,
      3
@@ -4109,6 +4805,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "cutting",
     "attribute": "strength",
+    "style": "single",
     "dice": [
      8,
      4
@@ -4121,6 +4818,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "cutting",
     "attribute": "strength",
+    "style": "twoHanded",
     "dice": [
      10,
      6
@@ -4129,6 +4827,102 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [
+   {
+    "label": "with Shield",
+    "attribute": "strength",
+    "style": "shield",
+    "dice": [
+     10,
+     6
+    ]
+   },
+   {
+    "label": "1H",
+    "attribute": "strength",
+    "style": "single",
+    "dice": [
+     8,
+     4
+    ]
+   },
+   {
+    "label": "2H",
+    "attribute": "strength",
+    "style": "twoHanded",
+    "dice": [
+     6,
+     3
+    ]
+   }
+  ],
+  "armor": [
+   {
+    "name": "Aketon (Brigandine)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 2,
+    "max": 4
+   },
+   {
+    "name": "Riveted Leather Splinted Cuirass (Brigandine)",
+    "resistance": {
+     "cleaving": 3,
+     "cutting": 3,
+     "crushing": 3,
+     "piercing": 2,
+     "puncturing": 2
+    },
+    "durability": 16,
+    "max": 30
+   },
+   {
+    "name": "Splinted Coif, Camail (Brigandine)",
+    "resistance": {
+     "cleaving": 2,
+     "cutting": 2,
+     "crushing": 2,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 5,
+    "max": 8
+   },
+   {
+    "name": "Plate Sabatons (Brigandine)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 2,
+    "max": 4
+   },
+   {
+    "name": "Plate Arm Harness, Pauldrons (Brigandine)",
+    "resistance": {
+     "cleaving": 2,
+     "cutting": 2,
+     "crushing": 2,
+     "piercing": 2,
+     "puncturing": 2
+    },
+    "durability": 4,
+    "max": 8
+   }
+  ],
+  "shield": {
+   "name": "Heater",
+   "durability": 9,
+   "max": 18
+  },
   "abilities": [
    "Riposte",
    "Intercept",
@@ -4208,6 +5002,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      3,
      3
@@ -4216,6 +5011,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Pack",
    "Steadfast"
@@ -4293,6 +5091,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      6,
      3
@@ -4301,6 +5100,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Stoop",
    "Mark",
@@ -4380,6 +5182,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      6,
      3
@@ -4388,6 +5191,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Pack",
    "Steadfast",
@@ -4466,6 +5272,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      3,
      3
@@ -4474,6 +5281,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Stoop",
    "Aerial Evasion"
@@ -4551,6 +5361,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      8,
      8
@@ -4563,6 +5374,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "cutting",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      8,
      8
@@ -4571,6 +5383,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Charge (Bite)",
    "Charge (Claw)",
@@ -4648,6 +5463,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "crushing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      4,
      6
@@ -4660,6 +5476,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "crushing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      4,
      4
@@ -4668,6 +5485,9 @@ export const CREATURES = {
     "range": "Heavy Thrown 20/40/60"
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Autochthon (Stone)",
    "Hurl Rock",
@@ -4746,6 +5566,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      10,
      3
@@ -4754,6 +5575,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Morphon (Sora)",
    "Name-Taker",
@@ -4834,6 +5658,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      3,
      4
@@ -4842,6 +5667,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Nimble",
    "Pack"
@@ -4919,6 +5747,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      6,
      4
@@ -4927,6 +5756,58 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [
+   {
+    "name": "Gambeson Peytral (Gambeson Barding)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 15,
+    "max": 30
+   },
+   {
+    "name": "Gambeson Chanfron (Gambeson Barding)",
+    "resistance": {
+     "cleaving": 0,
+     "cutting": 0,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 2,
+    "max": 4
+   },
+   {
+    "name": "Gambeson Crinet (Gambeson Barding)",
+    "resistance": {
+     "cleaving": 0,
+     "cutting": 0,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 2,
+    "max": 4
+   },
+   {
+    "name": "Gambeson Flanchards (Gambeson Barding)",
+    "resistance": {
+     "cleaving": 0,
+     "cutting": 0,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 2,
+    "max": 4
+   }
+  ],
+  "shield": null,
   "abilities": [
    "Nimble",
    "Pack",
@@ -5005,6 +5886,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      6,
      4
@@ -5013,6 +5895,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Nimble",
    "Pack",
@@ -5091,6 +5976,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      6,
      2
@@ -5099,6 +5985,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Stoop",
    "Mark",
@@ -5177,6 +6066,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      3,
      2
@@ -5185,6 +6075,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Stoop",
    "Aerial Evasion"
@@ -5260,6 +6153,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "twoHanded",
     "dice": [
      2
     ],
@@ -5267,6 +6161,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Pitchforks and Hooks"
   ],
@@ -5344,6 +6241,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      8,
      4
@@ -5352,6 +6250,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Ambusher",
    "Web Walker",
@@ -5432,6 +6333,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      4,
      4
@@ -5444,6 +6346,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "cutting",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      4,
      4
@@ -5452,6 +6355,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Ambusher",
    "Charge (Bite)",
@@ -5529,6 +6435,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "crushing",
     "attribute": "strength",
+    "style": "twoHanded",
     "dice": [
      12,
      8,
@@ -5542,6 +6449,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "crushing",
     "attribute": "strength",
+    "style": "single",
     "dice": [
      10,
      6,
@@ -5555,6 +6463,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "crushing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      10,
      6,
@@ -5568,6 +6477,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "puncturing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      10,
      6,
@@ -5577,6 +6487,38 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [
+   {
+    "label": "with Club",
+    "attribute": "strength",
+    "style": "twoHanded",
+    "dice": [
+     8,
+     12
+    ]
+   },
+   {
+    "label": "with Club 1H",
+    "attribute": "strength",
+    "style": "single",
+    "dice": [
+     10,
+     6,
+     6
+    ]
+   },
+   {
+    "label": "unarmed",
+    "attribute": "physique",
+    "style": "single",
+    "dice": [
+     10,
+     12
+    ]
+   }
+  ],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Behemoth (Stone)",
    "Grab",
@@ -5654,6 +6596,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "void",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      2
     ],
@@ -5661,6 +6604,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Morphon (Sora)",
    "Starlight Bite",
@@ -5737,6 +6683,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "cleaving",
     "attribute": "strength",
+    "style": "single",
     "dice": [
      4,
      4
@@ -5749,6 +6696,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "cleaving",
     "attribute": "strength",
+    "style": "twoHanded",
     "dice": [
      6,
      6
@@ -5761,6 +6709,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "cutting",
     "attribute": "physique",
+    "style": "single",
     "dice": [
      4,
      4
@@ -5773,6 +6722,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "cutting",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      4,
      4
@@ -5781,6 +6731,77 @@ export const CREATURES = {
     "range": "Thrown 15/30/45"
    }
   ],
+  "grips": [
+   {
+    "label": "1H",
+    "attribute": "strength",
+    "style": "single",
+    "dice": [
+     4,
+     4
+    ]
+   },
+   {
+    "label": "2H",
+    "attribute": "strength",
+    "style": "twoHanded",
+    "dice": [
+     3,
+     3
+    ]
+   }
+  ],
+  "armor": [
+   {
+    "name": "Aketon (Hide Armor)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 2,
+    "max": 4
+   },
+   {
+    "name": "Hide Hauberk (Hide Armor)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 0,
+     "crushing": 1,
+     "piercing": 3,
+     "puncturing": 2
+    },
+    "durability": 16,
+    "max": 30
+   },
+   {
+    "name": "Hide Coif (Hide Armor)",
+    "resistance": {
+     "cleaving": 0,
+     "cutting": 0,
+     "crushing": 1,
+     "piercing": 2,
+     "puncturing": 2
+    },
+    "durability": 2,
+    "max": 4
+   },
+   {
+    "name": "Hide Greaves, Cuisses (Hide Armor)",
+    "resistance": {
+     "cleaving": 0,
+     "cutting": 0,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 5,
+    "max": 8
+   }
+  ],
+  "shield": null,
   "abilities": [
    "Hook"
   ],
@@ -5855,6 +6876,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "cleaving",
     "attribute": "strength",
+    "style": "twoHanded",
     "dice": [
      12,
      8
@@ -5867,6 +6889,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "cutting",
     "attribute": "physique",
+    "style": "single",
     "dice": [
      10,
      4
@@ -5879,6 +6902,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "cutting",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      10,
      4
@@ -5887,6 +6911,89 @@ export const CREATURES = {
     "range": "Thrown 15/30/45"
    }
   ],
+  "grips": [
+   {
+    "label": "with Labrys",
+    "attribute": "strength",
+    "style": "twoHanded",
+    "dice": [
+     8,
+     4
+    ]
+   },
+   {
+    "label": "with Francisca",
+    "attribute": "physique",
+    "style": "single",
+    "dice": [
+     10,
+     4
+    ]
+   }
+  ],
+  "armor": [
+   {
+    "name": "Aketon (Scale Mail)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 2,
+    "max": 4
+   },
+   {
+    "name": "Scale Hauberk (Scale Mail)",
+    "resistance": {
+     "cleaving": 2,
+     "cutting": 4,
+     "crushing": 2,
+     "piercing": 2,
+     "puncturing": 3
+    },
+    "durability": 21,
+    "max": 36
+   },
+   {
+    "name": "Scale Coif, Camail (Scale Mail)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 3,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 5,
+    "max": 8
+   },
+   {
+    "name": "Scale Greaves, Cuisses (Scale Mail)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 2,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 4,
+    "max": 8
+   },
+   {
+    "name": "Scale Vambraces, Pauldrons, Gauntlets (Scale Mail)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 2,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 2
+    },
+    "durability": 7,
+    "max": 12
+   }
+  ],
+  "shield": null,
   "abilities": [
    "Grief Fury",
    "Breaker",
@@ -5966,6 +7073,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      10,
      10,
@@ -5980,6 +7088,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "cutting",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      10,
      10,
@@ -5990,6 +7099,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Charge (Bite)",
    "Charge (Claw)",
@@ -6071,6 +7183,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      4,
      6
@@ -6079,6 +7192,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Charge"
   ],
@@ -6155,6 +7271,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "crushing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      4,
      4
@@ -6163,6 +7280,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Enduring Pace"
   ],
@@ -6239,6 +7359,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "crushing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      3,
      4
@@ -6247,6 +7368,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [],
   "senses": "<p>Crepuscular sight.</p>"
  },
@@ -6321,6 +7445,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "crushing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      3,
      3
@@ -6329,6 +7454,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Sure-Footed",
    "Stubborn"
@@ -6404,6 +7532,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      6,
      4
@@ -6416,6 +7545,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "cutting",
     "attribute": "physique",
+    "style": "single",
     "dice": [
      6,
      4
@@ -6424,6 +7554,68 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [
+   {
+    "label": "Shepherd's Axe",
+    "attribute": "physique",
+    "style": "single",
+    "dice": [
+     6,
+     4
+    ]
+   }
+  ],
+  "armor": [
+   {
+    "name": "Aketon (Byrnie)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 2,
+    "max": 4
+   },
+   {
+    "name": "Chain Haubergeon (Byrnie)",
+    "resistance": {
+     "cleaving": 2,
+     "cutting": 5,
+     "crushing": 1,
+     "piercing": 2,
+     "puncturing": 3
+    },
+    "durability": 15,
+    "max": 30
+   },
+   {
+    "name": "Chain Chausses, Sabatons (Byrnie)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 2,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 4,
+    "max": 8
+   },
+   {
+    "name": "Chain Sleeves, Mittons (Byrnie)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 2,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 4,
+    "max": 8
+   }
+  ],
+  "shield": null,
   "abilities": [
    "Pinning Shot",
    "Mark Quarry"
@@ -6501,6 +7693,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      2
     ],
@@ -6508,6 +7701,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Gnawing"
   ],
@@ -6582,6 +7778,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "puncturing",
     "attribute": "strength",
+    "style": "twoHanded",
     "dice": [
      6,
      6
@@ -6594,6 +7791,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "crushing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      4,
      4
@@ -6602,6 +7800,19 @@ export const CREATURES = {
     "range": "Heavy Thrown 10/20/30"
    }
   ],
+  "grips": [
+   {
+    "label": "with Pike",
+    "attribute": "strength",
+    "style": "twoHanded",
+    "dice": [
+     3,
+     3
+    ]
+   }
+  ],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Unnatural Strength",
    "Iron-Shod"
@@ -6677,6 +7888,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "cleaving",
     "attribute": "strength",
+    "style": "twoHanded",
     "dice": [
      6,
      6,
@@ -6686,6 +7898,80 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [
+   {
+    "label": "2H",
+    "attribute": "strength",
+    "style": "twoHanded",
+    "dice": [
+     10,
+     6
+    ]
+   }
+  ],
+  "armor": [
+   {
+    "name": "Aketon (Brigandine)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 4,
+    "max": 4
+   },
+   {
+    "name": "Riveted Leather Splinted Cuirass (Brigandine)",
+    "resistance": {
+     "cleaving": 3,
+     "cutting": 3,
+     "crushing": 3,
+     "piercing": 2,
+     "puncturing": 2
+    },
+    "durability": 27,
+    "max": 30
+   },
+   {
+    "name": "Splinted Coif, Camail (Brigandine)",
+    "resistance": {
+     "cleaving": 2,
+     "cutting": 2,
+     "crushing": 2,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 7,
+    "max": 8
+   },
+   {
+    "name": "Plate Sabatons (Brigandine)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 4,
+    "max": 4
+   },
+   {
+    "name": "Plate Arm Harness, Pauldrons (Brigandine)",
+    "resistance": {
+     "cleaving": 2,
+     "cutting": 2,
+     "crushing": 2,
+     "piercing": 2,
+     "puncturing": 2
+    },
+    "durability": 7,
+    "max": 8
+   }
+  ],
+  "shield": null,
   "abilities": [
    "Gestalt (Undead)",
    "Undead Resilience",
@@ -6764,6 +8050,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "cutting",
     "attribute": "strength",
+    "style": "single",
     "dice": [
      8,
      6
@@ -6776,6 +8063,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "cutting",
     "attribute": "strength",
+    "style": "twoHanded",
     "dice": [
      10,
      8
@@ -6788,6 +8076,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "single",
     "dice": [
      8,
      6
@@ -6800,6 +8089,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "twoHanded",
     "dice": [
      10,
      8
@@ -6812,6 +8102,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      8,
      6
@@ -6820,6 +8111,77 @@ export const CREATURES = {
     "range": "Heavy Thrown 20/40/60"
    }
   ],
+  "grips": [
+   {
+    "label": "1H",
+    "attribute": "strength",
+    "style": "single",
+    "dice": [
+     8,
+     6
+    ]
+   },
+   {
+    "label": "2H",
+    "attribute": "strength",
+    "style": "twoHanded",
+    "dice": [
+     6,
+     4
+    ]
+   }
+  ],
+  "armor": [
+   {
+    "name": "Aketon (Byrnie)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 3,
+    "max": 4
+   },
+   {
+    "name": "Chain Haubergeon (Byrnie)",
+    "resistance": {
+     "cleaving": 2,
+     "cutting": 5,
+     "crushing": 1,
+     "piercing": 2,
+     "puncturing": 3
+    },
+    "durability": 22,
+    "max": 30
+   },
+   {
+    "name": "Chain Coif, Camail (Byrnie)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 3,
+     "crushing": 0,
+     "piercing": 1,
+     "puncturing": 2
+    },
+    "durability": 6,
+    "max": 8
+   },
+   {
+    "name": "Chain Chausses, Sabatons (Byrnie)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 2,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 6,
+    "max": 8
+   }
+  ],
+  "shield": null,
   "abilities": [
    "Gestalt (Undead)",
    "Undead Resilience",
@@ -6900,6 +8262,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "crushing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      6,
      4
@@ -6912,6 +8275,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      6,
      4
@@ -6920,6 +8284,58 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [
+   {
+    "name": "Boiled Leather Peytral (Boiled Leather Barding)",
+    "resistance": {
+     "cleaving": 0,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 19,
+    "max": 30
+   },
+   {
+    "name": "Boiled Leather Chanfron (Boiled Leather Barding)",
+    "resistance": {
+     "cleaving": 0,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 3,
+    "max": 4
+   },
+   {
+    "name": "Boiled Leather Crinet (Boiled Leather Barding)",
+    "resistance": {
+     "cleaving": 0,
+     "cutting": 1,
+     "crushing": 0,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 3,
+    "max": 4
+   },
+   {
+    "name": "Boiled Leather Flanchards (Boiled Leather Barding)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 0,
+     "piercing": 0,
+     "puncturing": 0
+    },
+    "durability": 2,
+    "max": 4
+   }
+  ],
+  "shield": null,
   "abilities": [
    "Hardy",
    "Battle Trained",
@@ -6999,6 +8415,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "crushing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      3,
      3
@@ -7007,6 +8424,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Hardy"
   ],
@@ -7081,6 +8501,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "cutting",
     "attribute": "strength",
+    "style": "shield",
     "dice": [
      4,
      3
@@ -7093,6 +8514,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "cutting",
     "attribute": "strength",
+    "style": "single",
     "dice": [
      6,
      4
@@ -7105,6 +8527,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "cutting",
     "attribute": "strength",
+    "style": "twoHanded",
     "dice": [
      8,
      6
@@ -7113,6 +8536,90 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [
+   {
+    "label": "with Shield",
+    "attribute": "strength",
+    "style": "shield",
+    "dice": [
+     8,
+     6
+    ]
+   },
+   {
+    "label": "1H",
+    "attribute": "strength",
+    "style": "single",
+    "dice": [
+     6,
+     4
+    ]
+   },
+   {
+    "label": "2H",
+    "attribute": "strength",
+    "style": "twoHanded",
+    "dice": [
+     4,
+     3
+    ]
+   }
+  ],
+  "armor": [
+   {
+    "name": "Aketon (Byrnie)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 2,
+    "max": 4
+   },
+   {
+    "name": "Chain Haubergeon (Byrnie)",
+    "resistance": {
+     "cleaving": 2,
+     "cutting": 5,
+     "crushing": 1,
+     "piercing": 2,
+     "puncturing": 3
+    },
+    "durability": 15,
+    "max": 30
+   },
+   {
+    "name": "Chain Chausses, Sabatons (Byrnie)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 2,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 4,
+    "max": 8
+   },
+   {
+    "name": "Chain Sleeves, Mittons (Byrnie)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 2,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 4,
+    "max": 8
+   }
+  ],
+  "shield": {
+   "name": "Kite",
+   "durability": 12,
+   "max": 24
+  },
   "abilities": [
    "Riposte",
    "Command"
@@ -7188,6 +8695,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "void",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      12,
      4
@@ -7196,6 +8704,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Morphon (Sora)",
    "Peripheral",
@@ -7275,6 +8786,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "cutting",
     "attribute": "physique",
+    "style": "single",
     "dice": [
      3,
      3
@@ -7287,6 +8799,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "single",
     "dice": [
      3,
      3
@@ -7299,6 +8812,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "twoHanded",
     "dice": [
      4,
      4
@@ -7307,6 +8821,44 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [
+   {
+    "label": "2H",
+    "attribute": "strength",
+    "style": "twoHanded",
+    "dice": [
+     2,
+     2
+    ]
+   }
+  ],
+  "armor": [
+   {
+    "name": "Padded Hauberk (Gambeson Padded Armor)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 2,
+     "piercing": 2,
+     "puncturing": 1
+    },
+    "durability": 14,
+    "max": 30
+   },
+   {
+    "name": "Padded Greaves, Cuisses (Gambeson Padded Armor)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 0,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 4,
+    "max": 8
+   }
+  ],
+  "shield": null,
   "abilities": [
    "Gestalt (Undead)",
    "Undead Resilience"
@@ -7382,6 +8934,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "cutting",
     "attribute": "strength",
+    "style": "single",
     "dice": [
      2
     ],
@@ -7389,6 +8942,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Gestalt (Undead)",
    "Grave Rust"
@@ -7466,6 +9022,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      6,
      2
@@ -7474,6 +9031,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Stoop",
    "Mark",
@@ -7552,6 +9112,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      3,
      2
@@ -7560,6 +9121,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Stoop",
    "Aerial Evasion"
@@ -7638,6 +9202,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      2
     ],
@@ -7645,6 +9210,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Venomous Swarm"
   ],
@@ -7719,6 +9287,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "cutting",
     "attribute": "physique",
+    "style": "single",
     "dice": [
      3,
      3
@@ -7727,6 +9296,34 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [
+   {
+    "name": "Padded Hauberk (Gambeson Padded Armor)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 2,
+     "piercing": 2,
+     "puncturing": 1
+    },
+    "durability": 14,
+    "max": 30
+   },
+   {
+    "name": "Padded Greaves, Cuisses (Gambeson Padded Armor)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 0,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 4,
+    "max": 8
+   }
+  ],
+  "shield": null,
   "abilities": [
    "Riposte"
   ],
@@ -7803,6 +9400,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      10,
      10
@@ -7815,6 +9413,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "cutting",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      10,
      10
@@ -7823,6 +9422,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Ambusher",
    "Charge (Bite)",
@@ -7901,6 +9503,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "crushing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      8,
      8
@@ -7909,6 +9512,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Deep Roots",
    "Root Snare",
@@ -7987,6 +9593,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "crushing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      6,
      6,
@@ -7996,6 +9603,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Autochthon (Sea)",
    "Aquatic",
@@ -8077,6 +9687,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "twoHanded",
     "dice": [
      10,
      8
@@ -8089,6 +9700,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "cutting",
     "attribute": "physique",
+    "style": "single",
     "dice": [
      8,
      6
@@ -8097,6 +9709,89 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [
+   {
+    "label": "with Pike",
+    "attribute": "strength",
+    "style": "twoHanded",
+    "dice": [
+     6,
+     4
+    ]
+   },
+   {
+    "label": "with Backsword",
+    "attribute": "physique",
+    "style": "single",
+    "dice": [
+     8,
+     6
+    ]
+   }
+  ],
+  "armor": [
+   {
+    "name": "Aketon (Brigandine)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 3,
+    "max": 4
+   },
+   {
+    "name": "Riveted Leather Splinted Cuirass (Brigandine)",
+    "resistance": {
+     "cleaving": 3,
+     "cutting": 3,
+     "crushing": 3,
+     "piercing": 2,
+     "puncturing": 2
+    },
+    "durability": 21,
+    "max": 30
+   },
+   {
+    "name": "Splinted Coif, Camail (Brigandine)",
+    "resistance": {
+     "cleaving": 2,
+     "cutting": 2,
+     "crushing": 2,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 5,
+    "max": 8
+   },
+   {
+    "name": "Plate Sabatons (Brigandine)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 3,
+    "max": 4
+   },
+   {
+    "name": "Plate Arm Harness, Pauldrons (Brigandine)",
+    "resistance": {
+     "cleaving": 2,
+     "cutting": 2,
+     "crushing": 2,
+     "piercing": 2,
+     "puncturing": 2
+    },
+    "durability": 5,
+    "max": 8
+   }
+  ],
+  "shield": null,
   "abilities": [
    "Set Spear",
    "Trip",
@@ -8173,6 +9868,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      3,
      2
@@ -8181,6 +9877,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Venomous Bite"
   ],
@@ -8257,6 +9956,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      8,
      6
@@ -8265,6 +9965,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Charge",
    "Gore",
@@ -8341,6 +10044,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "cutting",
     "attribute": "physique",
+    "style": "shield",
     "dice": [
      8,
      3
@@ -8353,6 +10057,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "shield",
     "dice": [
      8,
      3
@@ -8365,6 +10070,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "shield",
     "dice": [
      8,
      3
@@ -8373,6 +10079,84 @@ export const CREATURES = {
     "range": "Thrown 30/60/90"
    }
   ],
+  "grips": [
+   {
+    "label": "Defense",
+    "attribute": "physique",
+    "style": "shield",
+    "dice": [
+     12,
+     6
+    ]
+   }
+  ],
+  "armor": [
+   {
+    "name": "Aketon (Scale Mail)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 2,
+    "max": 4
+   },
+   {
+    "name": "Scale Hauberk (Scale Mail)",
+    "resistance": {
+     "cleaving": 2,
+     "cutting": 4,
+     "crushing": 2,
+     "piercing": 2,
+     "puncturing": 3
+    },
+    "durability": 17,
+    "max": 36
+   },
+   {
+    "name": "Scale Coif, Camail (Scale Mail)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 3,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 4,
+    "max": 8
+   },
+   {
+    "name": "Scale Greaves, Cuisses (Scale Mail)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 2,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 4,
+    "max": 8
+   },
+   {
+    "name": "Scale Vambraces, Pauldrons, Gauntlets (Scale Mail)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 2,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 2
+    },
+    "durability": 6,
+    "max": 12
+   }
+  ],
+  "shield": {
+   "name": "Kite",
+   "durability": 12,
+   "max": 24
+  },
   "abilities": [
    "Riposte",
    "Empty Fade",
@@ -8450,6 +10234,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "cutting",
     "attribute": "physique",
+    "style": "single",
     "dice": [
      4,
      4
@@ -8462,6 +10247,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "single",
     "dice": [
      4,
      4
@@ -8474,6 +10260,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      4,
      4
@@ -8482,6 +10269,58 @@ export const CREATURES = {
     "range": "Thrown 30/60/90"
    }
   ],
+  "grips": [],
+  "armor": [
+   {
+    "name": "Aketon (Jack of Plate)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 2,
+    "max": 4
+   },
+   {
+    "name": "Jack of Plate Hauberk (Jack of Plate)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 3,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 18,
+    "max": 30
+   },
+   {
+    "name": "Jack of Plate Coif (Jack of Plate)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 2,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 0
+    },
+    "durability": 2,
+    "max": 4
+   },
+   {
+    "name": "Jack of Plate Greaves, Cuisses (Jack of Plate)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 0,
+     "puncturing": 0
+    },
+    "durability": 5,
+    "max": 8
+   }
+  ],
+  "shield": null,
   "abilities": [
    "False"
   ],
@@ -8558,6 +10397,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      3,
      3
@@ -8566,6 +10406,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Pack"
   ],
@@ -8642,6 +10485,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      10,
      6
@@ -8650,6 +10494,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Hamstring",
    "Pack",
@@ -8729,6 +10576,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      6,
      6,
@@ -8738,6 +10586,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Hamstring",
    "Charge",
@@ -8819,6 +10670,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      6,
      4
@@ -8827,6 +10679,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Hamstring",
    "Pack",
@@ -8905,6 +10760,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      12,
      8
@@ -8913,6 +10769,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Hamstring",
    "Charge",
@@ -8992,6 +10851,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      4,
      4
@@ -9000,6 +10860,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Hamstring",
    "Pack"
@@ -9077,6 +10940,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      2
     ],
@@ -9084,6 +10948,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Harry"
   ],
@@ -9160,6 +11027,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      8,
      6
@@ -9168,6 +11036,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Hamstring",
    "Pack",
@@ -9247,6 +11118,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      3,
      2
@@ -9255,6 +11127,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Ambusher",
    "Venomous Bite"
@@ -9330,6 +11205,7 @@ export const CREATURES = {
     "phase": "moderate",
     "damageType": "piercing",
     "attribute": "physique",
+    "style": "natural",
     "dice": [
      4,
      4
@@ -9342,6 +11218,7 @@ export const CREATURES = {
     "phase": "fast",
     "damageType": "cutting",
     "attribute": "physique",
+    "style": "single",
     "dice": [
      4,
      4
@@ -9350,6 +11227,68 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [
+   {
+    "label": "Seax",
+    "attribute": "physique",
+    "style": "single",
+    "dice": [
+     4,
+     4
+    ]
+   }
+  ],
+  "armor": [
+   {
+    "name": "Aketon (Hide Armor)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 1,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 2,
+    "max": 4
+   },
+   {
+    "name": "Hide Hauberk (Hide Armor)",
+    "resistance": {
+     "cleaving": 1,
+     "cutting": 0,
+     "crushing": 1,
+     "piercing": 3,
+     "puncturing": 2
+    },
+    "durability": 12,
+    "max": 30
+   },
+   {
+    "name": "Hide Coif (Hide Armor)",
+    "resistance": {
+     "cleaving": 0,
+     "cutting": 0,
+     "crushing": 1,
+     "piercing": 2,
+     "puncturing": 2
+    },
+    "durability": 2,
+    "max": 4
+   },
+   {
+    "name": "Hide Greaves, Cuisses (Hide Armor)",
+    "resistance": {
+     "cleaving": 0,
+     "cutting": 0,
+     "crushing": 1,
+     "piercing": 1,
+     "puncturing": 1
+    },
+    "durability": 3,
+    "max": 8
+   }
+  ],
+  "shield": null,
   "abilities": [
    "Pinning Shot"
   ],
@@ -9424,6 +11363,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "crushing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      4,
      10
@@ -9432,6 +11372,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Gestalt (Undead)",
    "Undead Resilience"
@@ -9507,6 +11450,7 @@ export const CREATURES = {
     "phase": "slow",
     "damageType": "crushing",
     "attribute": "strength",
+    "style": "natural",
     "dice": [
      3,
      4
@@ -9515,6 +11459,9 @@ export const CREATURES = {
     "range": ""
    }
   ],
+  "grips": [],
+  "armor": [],
+  "shield": null,
   "abilities": [
    "Gestalt (Undead)",
    "Undead Resilience"

@@ -1,4 +1,5 @@
 import { test } from "node:test";
+import { playBattle } from "./autoplay.mjs";
 import assert from "node:assert/strict";
 import { makeRng } from "../game/rng.js";
 import { startDynasty, getTile, squareAt, findPath, EDGES, OPPOSITE, TILE, generateTile } from "../game/world.js";
@@ -51,7 +52,7 @@ test("a journey runs for days without breaking", () => {
   setTarget(s, 3, -40);
   const say = (t, k) => note(s, t, k);
   for (let i = 0; i < 60; i++) {
-    if (s.encounter) { runWithDice(s, (rng) => choose(s, rng, "fight", say)); afterEvent(s); continue; }
+    if (s.encounter) { runWithDice(s, (rng) => choose(s, rng, "fight", say)); afterEvent(s); if (s.battle) { playBattle(s); afterEvent(s); } if (s.over) break; continue; }
     if (s.sign) { runWithDice(s, (rng) => chooseSign(s, rng, "leave", say)); afterEvent(s); continue; }
     if (s.pending) travelLeg(s, i % 2 ? "stop" : "push");
     else if (!s.target) setTarget(s, s.party.x + 30, s.party.y + (i % 3) * 10);

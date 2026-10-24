@@ -76,3 +76,14 @@ button.primary:hover:not(:disabled) { background: #6e342a; }
 summary { cursor: pointer; font-size: 0.9rem; }
 .log li.reward { color: #9fd18b; }
 [hidden] { display: none !important; }
+#event .prompt { color: var(--ink); font-size: 1rem; }
+.declare { display: flex; flex-direction: column; gap: 6px; }
+.declare-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.declare-row strong { min-width: 74px; }
+.declare-row select { padding: 4px 6px; }
+.units { list-style: none; margin: 4px 0 0; padding: 0; font-size: 0.85rem; display: flex; flex-direction: column; gap: 3px; }
+.units li { padding: 2px 6px; border-left: 2px solid transparent; }
+.units li.now { border-left-color: var(--target, #f4e2b8); background: rgba(244,226,184,0.06); }
+.units .warn, .members .warn { color: #e07a5f; }
+.members li { flex-wrap: wrap; }
+.members li.dead { opacity: 0.55; }

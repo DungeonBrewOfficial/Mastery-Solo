@@ -190,3 +190,76 @@ function settlementIcon(ctx, st, cx, cy, s) {
   }
   if (st.home) { ctx.fillStyle = "#c0392b"; ctx.beginPath(); ctx.arc(cx, cy + r * 0.2, Math.max(1.5, r * 0.3), 0, Math.PI * 2); ctx.fill(); }
 }
+
+/* ------------------------------------------------------------------ */
+/* The battle grid                                                      */
+
+/** Where the grid sits on the canvas: { cell, ox, oy }. */
+export function battleLayout(canvas, b) {
+  const W = canvas.clientWidth, H = canvas.clientHeight;
+  const cell = Math.max(12, Math.floor(Math.min((W - 24) / b.w, (H - 24) / b.h)));
+  return { cell, ox: Math.floor((W - cell * b.w) / 2), oy: Math.floor((H - cell * b.h) / 2) };
+}
+
+const shade = (hex, f) => {
+  const n = parseInt(hex.slice(1), 16);
+  const c = [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.round(v * f));
+  return `rgb(${c.join(",")})`;
+};
+
+/**
+ * Draws the fight: the ground, the grid, tokens with health bars, and what
+ * the current character can do (squares they can reach, foes they can hit).
+ * marks: { current, moves: Set("x,y"), targets: Set(id), hover, units: [{u, label, color, hpFrac, dim}] }
+ */
+export function drawBattle(canvas, b, marks) {
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.clientWidth, H = canvas.clientHeight;
+  if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+  }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = COLORS.blank;
+  ctx.fillRect(0, 0, W, H);
+  const { cell, ox, oy } = battleLayout(canvas, b);
+  const ground = COLORS[b.terrain] || COLORS.plains;
+  ctx.fillStyle = shade(ground, b.night ? 0.35 : 0.62);
+  ctx.fillRect(ox, oy, cell * b.w, cell * b.h);
+  for (const k of marks.moves || []) {
+    const [x, y] = k.split(",").map(Number);
+    ctx.fillStyle = "rgba(244,226,184,0.16)";
+    ctx.fillRect(ox + x * cell, oy + y * cell, cell, cell);
+  }
+  ctx.strokeStyle = "rgba(0,0,0,0.28)"; ctx.lineWidth = 1;
+  for (let x = 0; x <= b.w; x++) { ctx.beginPath(); ctx.moveTo(ox + x * cell + 0.5, oy); ctx.lineTo(ox + x * cell + 0.5, oy + b.h * cell); ctx.stroke(); }
+  for (let y = 0; y <= b.h; y++) { ctx.beginPath(); ctx.moveTo(ox, oy + y * cell + 0.5); ctx.lineTo(ox + b.w * cell, oy + y * cell + 0.5); ctx.stroke(); }
+  if (marks.hover && marks.moves?.has(`${marks.hover.x},${marks.hover.y}`)) {
+    ctx.strokeStyle = COLORS.target; ctx.lineWidth = 2;
+    ctx.strokeRect(ox + marks.hover.x * cell + 1, oy + marks.hover.y * cell + 1, cell - 2, cell - 2);
+  }
+  for (const t of marks.units) {
+    const u = t.u;
+    const px = ox + u.x * cell, py = oy + u.y * cell, w = u.w * cell, h = u.h * cell;
+    const pad = Math.max(2, cell * 0.1);
+    ctx.globalAlpha = t.dim ? 0.45 : 1;
+    ctx.fillStyle = t.color;
+    ctx.strokeStyle = u.id === marks.current ? COLORS.target : marks.targets?.has(u.id) ? "#e8b04a" : "#1a1410";
+    ctx.lineWidth = u.id === marks.current || marks.targets?.has(u.id) ? 3 : 1.5;
+    ctx.beginPath();
+    if (u.pc) ctx.arc(px + w / 2, py + h / 2, Math.min(w, h) / 2 - pad, 0, Math.PI * 2);
+    else ctx.roundRect(px + pad, py + pad, w - pad * 2, h - pad * 2, Math.max(3, cell * 0.15));
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = u.pc ? "#fff6e6" : "#f3e6c8";
+    ctx.font = `bold ${Math.max(9, Math.floor(cell * 0.36))}px "Alegreya Sans", sans-serif`;
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(t.label, px + w / 2, py + h / 2 + 1);
+    if (t.hpFrac != null) {
+      const bw = w - pad * 2, by = py + h - pad - Math.max(3, cell * 0.1);
+      ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.fillRect(px + pad, by, bw, Math.max(3, cell * 0.1));
+      ctx.fillStyle = t.hpFrac > 0.5 ? "#7fb069" : t.hpFrac > 0.25 ? "#e8b04a" : "#e07a5f";
+      ctx.fillRect(px + pad, by, bw * Math.max(0, Math.min(1, t.hpFrac)), Math.max(3, cell * 0.1));
+    }
+    ctx.globalAlpha = 1;
+  }
+}

@@ -82,4 +82,12 @@ Jon is still building monsters. His current guess at the party levels each creat
 - The hoard multiplier (40 sp per point of the guardian's XP value), waiting on play.
 - The site questions at the top of `design/05-sites.md`: areas instead of grid maps, site sizes, default DCs by band, the clock inside, the guardian's group spread through the site, cleared sites refilling, magic treasure, and lost-place guardians.
 - The settlement questions at the top of `design/06-settlements.md`: recruit level, who's available, hiring a smith, rumors, libraries, and a hamlet's hospitality.
+- **Combat stage 1 stand-ins, waiting on Jon** (2026-10-24):
+  - When the whole party is down, the run ends and everyone dies, whatever the enemy. Raiders might rob and leave the party; beasts might drag one off.
+  - If the party wins while someone is still dying, the survivors stop the bleeding in time.
+  - Running from a fight is the chase. Anyone still dying is left to die on the way, so stop the bleeding first. A failed chase costs the party the round.
+  - Morale counts each head of a minion group as one body when comparing numbers.
+  - Enemy health shows as words (unhurt, hurt, bloodied, near death), minion groups as heads left.
+  - The shield soaks durability damage before the armor.
+  - Changing weapons at declaration drops the old one (picked up after a won fight) and draws the new for 1 AP.
 - Metals. The five-metal ladder (Iron, Steel, Silver, Gold, Mithril) needs a purpose. Candidates so far: Durability grades on armor and shields, or the substrate for permanent enchantment (which waits on Mastery's magic items).

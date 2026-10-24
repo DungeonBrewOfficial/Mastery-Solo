@@ -1,4 +1,5 @@
 import { test } from "node:test";
+import { playBattle } from "./autoplay.mjs";
 import assert from "node:assert/strict";
 import { newGame, travelLeg, setTarget, afterEvent, runWithDice, note } from "../game/journey.js";
 import { choices, choose, signChoices, chooseSign, aboveBand, partyLevel } from "../game/events.js";
@@ -41,6 +42,8 @@ test("a long journey resolves every event without getting stuck", () => {
         const pick = ch[(i + seed) % ch.length].id;
         runWithDice(s, (rng) => choose(s, rng, pick === "toll" && s.party.coin < s.encounter.toll ? "fight" : pick, say));
         afterEvent(s);
+        if (s.battle) { playBattle(s); afterEvent(s); }
+        if (s.over) break;
         continue;
       }
       if (s.sign) {

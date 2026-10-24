@@ -16,9 +16,12 @@ import { FURS } from "./vendor/foundry/module/data/treasure-data.mjs";
 
 /** Lowest party level each creature Tier serves [Jon's guess, 2026-10-24]. */
 const TIER_FROM = { 1: 1, 2: 3, 3: 4, 4: 7, 5: 10, 6: 15, 7: 20 };
-export const alive = (state) => state.party.members.filter(m => m.hp > 0);
+/** Conscious characters: the ones who can keep watch, run, or fight. */
+export const alive = (state) => state.party.members.filter(m => m.hp > 0 && !m.dead);
+/** Everyone not dead, conscious or not. */
+export const living = (state) => state.party.members.filter(m => !m.dead);
 export function partyLevel(state) {
-  const ms = alive(state);
+  const ms = living(state);
   return ms.length ? Math.floor(ms.reduce((n, m) => n + m.level, 0) / ms.length) : 1;
 }
 export const bandFor = (level) => level <= 2 ? 1 : level <= 5 ? 2 : 3;
@@ -47,9 +50,9 @@ export function creatureSpeed(c) {
   return 3 + agi + SIZE_MOD(c.size.width * c.size.height) + (c.locomotion.includes("quadruped") ? 4 : 0);
 }
 /** A creature's trial dice: rank die + attribute tier die; minions roll d2 + creature Tier die. */
-function creatureTrial(rng, c, attr) {
-  if (c.rank === "minion") return trial(rng, [[1, 2], dieOfTier(c.tier)]);
-  return trial(rng, [dieOfTier(RANK_DIE[c.rank]), dieOfTier(c.attributes?.[attr]?.tier || 1)]);
+export function creatureTrial(rng, c, attr, opts = {}) {
+  if (c.rank === "minion") return trial(rng, [[1, 2], dieOfTier(c.tier)], opts);
+  return trial(rng, [dieOfTier(RANK_DIE[c.rank]), dieOfTier(c.attributes?.[attr]?.tier || 1)], opts);
 }
 const member = (state, id) => state.party.members.find(m => m.id === id && m.hp > 0);
 function spotter(state, night) {
@@ -129,7 +132,7 @@ export function startEncounter(state, rng, note, { night = false } = {}) {
   const c = CREATURES[o.head];
   const e = {
     head: o.head, text: o.text, temper: o.temper, xp: o.xp, division: c.division, band, terrain, night, above, apex: r.cell.apex,
-    lines: []
+    group: o.group, impaired: {}
   };
   state.encounter = e;
   note(`${night ? "In the night: " : "Encounter: "}${o.text.replace(/\s*\[[^\]]*\]/g, "")} (${where}).`, "event");
@@ -165,15 +168,17 @@ function contact(state, rng, e, note) {
   e.distance = partyAware && creatureAware ? "Far" : partyAware ? "Far" : creatureAware ? "Close" : "Near";
   if (!partyAware && !creatureAware) {
     note("You walk into each other. Both sides make Startle trials (DC 6).", "event");
-    startle(state, rng, 6, note);
+    startle(state, rng, 6, note, e);
+    e.enemyStartle = 6;
   }
 }
 
 /** Startle trials: Agility tier die + Perception tier die (Combat, Startle and Ambush). */
-function startle(state, rng, dc, note) {
+function startle(state, rng, dc, note, e) {
   for (const m of alive(state)) {
     const t = trial(rng, [dieOfTier(attrTier(m, "agility")), dieOfTier(attrTier(m, "perception"))]);
     const miss = dc - t.total;
+    e.impaired[m.id] = passes(t, dc) ? 0 : miss >= 5 ? 3 : miss >= 3 ? 2 : 1;
     const result = passes(t, dc) ? "keeps their head" : miss >= 5 ? "is Paralyzed (Impaired 3)" : miss >= 3 ? "is Stunned (Impaired 2)" : "is Dazed (Impaired 1)";
     note(`${m.name}: Startle ${t.text}, ${result}.`);
   }
@@ -212,7 +217,7 @@ function disposition(state, rng, e, note) {
   if (["attack", "wait"].includes(mood) && e.creatureAware && !e.partyAware) {
     const c = CREATURES[e.head];
     note(`${c.abilities.includes("Ambusher") ? "An Ambusher in its element" : "They set an ambush"}: Startle trials against ${c.division + 1}.`, "event");
-    startle(state, rng, c.division + 1, note);
+    startle(state, rng, c.division + 1, note, e);
     e.ambushed = true;
   }
   if (e.temper === "Raider" && mood === "toll") e.toll = e.xp * 5 * alive(state).length;
@@ -223,7 +228,7 @@ function disposition(state, rng, e, note) {
 
 export function choices(state) {
   const e = state.encounter;
-  if (!e) return [];
+  if (!e || e.toBattle || state.battle) return [];
   const list = [];
   const calm = !e.creatureAware || ["watch", "warn", "defend", "guard", "question", "talk", "stalk"].includes(e.mood);
   if (e.mood === "wait" && e.partyAware) list.push({ id: "avoid", label: "Go around their ambush" });
@@ -258,13 +263,9 @@ export function choose(state, rng, id, note) {
   }
 }
 
-/** Stand-in until combat is built (milestone 5). */
+/** The fight itself is combat.js; journey.afterEvent opens it. */
 function fight(state, rng, note) {
-  const e = state.encounter;
-  note("Combat isn't built yet (milestone 5). Stand-in: the party wins, unharmed.", "todo");
-  awardCombatXp(state, e.xp, note);
-  spoils(state, rng, e, note);
-  end(state);
+  state.encounter.toBattle = true;
 }
 
 /* ------------------------------------------------------------------ */
@@ -277,13 +278,18 @@ const CHASE_SKILLS = [
 ];
 
 function flee(state, rng, note) {
-  const e = state.encounter;
-  const c = CREATURES[e.head];
-  if (e.head === "Eidolon of the Hunt") {
+  if (chase(state, rng, state.encounter.head, note)) end(state);
+  else caught(state, rng, note);
+}
+
+/** The chase: three successes before two failures. → true if the party gets away. */
+export function chase(state, rng, head, note, ms = alive(state)) {
+  const c = CREATURES[head];
+  if (head === "Eidolon of the Hunt") {
     note("You run. Running is what the Eidolon of the Hunt is for. It catches you.", "event");
-    return caught(state, rng, note);
+    return false;
   }
-  const ms = alive(state);
+  if (!ms.length) return false;
   // The best way to run is the party's best skill for it; one Helper adds 2.
   const best = CHASE_SKILLS.map(k => {
     const leader = [...ms].sort((a, b) => (skill(b, k.skill) + attrTier(b, k.attr)) - (skill(a, k.skill) + attrTier(a, k.attr)))[0];
@@ -301,12 +307,14 @@ function flee(state, rng, note) {
     p ? ok++ : bad++;
     note(`${t.text} against ${dc}: ${p ? "you gain ground" : "it gains on you"}.`);
   }
-  if (ok >= 3) { note("You get away.", "event"); end(state); }
-  else { note("It catches you.", "event"); caught(state, rng, note); }
+  note(ok >= 3 ? "You get away." : "It catches you.", "event");
+  return ok >= 3;
 }
 
 function caught(state, rng, note) {
+  const e = state.encounter;
   note("The fight starts at close quarters. You saw it coming, so no one is Startled.");
+  e.impaired = {}; e.enemyStartle = 0; e.distance = "Close";
   fight(state, rng, note);
 }
 
@@ -315,7 +323,7 @@ function caught(state, rng, note) {
 
 export function awardCombatXp(state, xp, note) {
   if (!xp) return;
-  for (const m of alive(state)) m.xp += xp;
+  for (const m of living(state)) m.xp += xp;
   note(`Each character earns ${xp} XP.`, "reward");
   checkLevels(state, note);
 }
@@ -335,7 +343,7 @@ const PELTS = { "Wolf": "Wolf", "Bear": null, "Black Bear": "Bear, Black", "Brow
   "Mountain Lion": "Cougar", "Lion": "Lion", "Tiger": "Tiger", "Deer": "Deer", "Elk": "Moose / Elk", "Wild Dog": "Dog" };
 const peltFor = (name) => PELTS[name] ?? (/^Wolf/.test(name) ? "Wolf" : null);
 
-function spoils(state, rng, e, note) {
+export function spoils(state, rng, e, note) {
   const c = CREATURES[e.head];
   if (c.classification === "mortal" && c.kingdom === "folk") {
     const n = Math.max(1, c.division);

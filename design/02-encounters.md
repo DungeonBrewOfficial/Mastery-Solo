@@ -294,7 +294,7 @@ At party level 3, Tier 3 results (the Aurochs, the Lion) are above band and arri
 | 8 | Two Living Stones [Guardian] | 6 |
 | 9 | A Ranger Captain with two Woodsmen: outlaws [Raider] | 10 |
 | 10 | A Black Bear [Territorial] | 10 |
-| 11 | d6: 1–3 a Wolf Alpha's pack, as Band III's 6 [Predator]; 4–6 an Orc War Chief with four Raiders [Raider] | 30 |
+| 11 | d6: 1–3 a Wolf Alpha's pack, as Band III's 5 [Predator]; 4–6 an Orc War Chief with four Raiders [Raider] | 30 |
 | 12 | **Apex, Sign first:** d6, 1–2 a Dire Wolf; 3–4 an Ettin; 5 a Cave Bear; 6 the Amarok | 40–60 |
 
 At party level 3, Tier 3 results (the Black Bear) are above band and arrive as Signs first.
@@ -361,7 +361,7 @@ Mountains are hard country for a new party: a third of this table is above band.
 | 3 | An Earth Guardian [Guardian] | 30 |
 | 4 | A Brown Bear [Territorial] | 30 |
 | 5 | An Ogre [Raider] | 30 |
-| 6 | A Wolf Alpha's pack [Predator] | 30 |
+| 6 | A Wolf Alpha with a Sigma, a Beta, two Gammas, and a Brood of Runts [Predator] | 30 |
 | 7 | An Orc War Chief with four Raiders [Raider] | 30 |
 | 8 | An Earth Guardian with two Living Stones [Guardian] | 30 |
 | 9 | A Revenant Knight with two Revenant Soldiers, at a cairn [Restless dead] | 40 |

@@ -33,7 +33,10 @@ for (const f of readdirSync(src).sort()) {
     attributes: attrs,
     armored: !!s.armored,
     resistance: s.resistance,
-    attacks: (s.attacks || []).map(a => ({ name: a.name, phase: a.phase, damageType: a.damageType, attribute: a.attribute, dice: a.writtenDice, bonus: a.bonusFlat || 0, range: a.rangeNote || "" })),
+    attacks: (s.attacks || []).filter(a => a.writtenDice?.length).map(a => ({ name: a.name, phase: a.phase, damageType: a.damageType, attribute: a.attribute, style: a.style, dice: a.writtenDice, bonus: a.bonusFlat || 0, range: a.rangeNote || "" })),
+    grips: (s.grips || []).map(g => ({ label: g.label, attribute: g.attribute, style: g.style, dice: g.writtenDice })),
+    armor: (d.items || []).filter(i => i.type === "armor" && i.system.equipped !== false).map(i => ({ name: i.name, resistance: i.system.resistance, durability: i.system.currentDurability ?? i.system.durabilityMax, max: i.system.durabilityMax })),
+    shield: (d.items || []).filter(i => i.type === "shield").map(i => ({ name: i.name, durability: i.system.currentDurability ?? i.system.durabilityMax, max: i.system.durabilityMax }))[0] || null,
     abilities: (s.abilities || []).map(a => a.name),
     senses: s.details?.senses || ""
   };

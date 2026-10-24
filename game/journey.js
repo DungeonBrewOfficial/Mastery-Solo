@@ -8,7 +8,9 @@ import { startDynasty, generateTile, getTile, tileOf, squareAt, moveCost, countr
 import { PACES } from "./vendor/foundry/module/helpers/travel-rules.mjs";
 import { WEATHER_TABLES } from "./vendor/foundry/module/data/weather-data.mjs";
 import { PREGENS } from "./data/party.js";
-import { startSign, startEncounter, discover, checkLevels, alive } from "./events.js";
+import { startSign, startEncounter, discover, checkLevels, alive, living } from "./events.js";
+import { startBattle } from "./combat.js";
+import { tierOf, dieOfTier } from "./mastery.js";
 import { rowFor, weatherFrom, BAND_LABELS } from "./vendor/foundry/module/helpers/weather-rules.mjs";
 
 export const DAY_HOURS = 8;
@@ -114,7 +116,7 @@ export function setPace(state, pace) {
  * travelLeg(state, "stop") or travelLeg(state, "push").
  */
 export function travelLeg(state, choice = null) {
-  if (state.encounter || state.sign) return state;
+  if (state.encounter || state.sign || state.over) return state;
   if (state.pending?.type === "nightfall" && !choice) return state;
   if (!state.target && !state.pending) { note(state, "Choose where to go: click the map."); return state; }
   withDice(state, (rng) => {
@@ -191,7 +193,7 @@ function move(state, rng, hours) {
 function reachSafety(state) {
   const xp = state.party.bankedXp;
   if (!xp) return;
-  for (const m of alive(state)) m.xp += xp;
+  for (const m of living(state)) m.xp += xp;
   state.party.bankedXp = 0;
   note(state, `Safe in a settlement: each character earns ${xp} banked exploration XP.`, "reward");
   checkLevels(state, (t, k) => note(state, t, k));
@@ -215,7 +217,7 @@ function eventDie(state, rng) {
 /* Camp                                                                 */
 
 export function campNow(state) {
-  if (state.pending || state.encounter || state.sign) return state;
+  if (state.pending || state.encounter || state.sign || state.over) return state;
   withDice(state, (rng) => {
     if (!state.morningDone) morning(state, rng);
     camp(state, rng);
@@ -227,11 +229,15 @@ function camp(state, rng) {
   const country = countryAt(state.world, state.party.x, state.party.y);
   const sq = squareAt(state.world, state.party.x, state.party.y);
   if (sq?.settlement) {
-    // TODO(town): settlements are milestone 3.
+    // TODO(town): settlements are milestone 3, with lodging costs and the healer.
     note(state, `You spend the night in the ${sq.settlement.home ? "home village" : sq.settlement.size}.`, "camp");
+    rest(state, rng, "good");
   } else {
     const n = rng.d(6);
     note(state, `You make camp. Night die ${n}${n === 6 ? ": something finds the camp." : ": the night passes."}`, n === 6 ? "event" : "camp");
+    // Deep country is never safe: a Dungeon Rest. A night attack spoils the rest one step.
+    const safe = country !== "deep";
+    rest(state, rng, n === 6 ? (safe ? "dungeon" : "none") : safe ? "wilderness" : "dungeon");
     if (n === 6) {
       state.night = true;
       startEncounter(state, rng, (t, k) => note(state, t, k), { night: true });
@@ -248,11 +254,31 @@ function camp(state, rng) {
   state.campDue = false;
 }
 
+/**
+ * A night's rest (General Rules, Resting). Druids treat a safe Wilderness
+ * Rest as a Good Night's Rest.
+ */
+const RESTS = { none: "No Rest", dungeon: "Dungeon Rest", wilderness: "Wilderness Rest", good: "Good Night's Rest" };
+function rest(state, rng, kind) {
+  const bits = [];
+  for (const m of living(state)) {
+    const k = kind === "wilderness" && m.cls === "Druid" ? "good" : kind;
+    if (m.hp >= m.health || k === "none" || (k === "dungeon" && m.hp < 1)) continue;
+    const gain = k === "dungeon" ? 1 : k === "wilderness" ? rng.d(3) : total(rng, `1d${dieOfTier(tierOf(m.attributes.endurance))[1]}`);
+    const before = m.hp;
+    m.hp = Math.min(m.health, m.hp + gain);
+    if (m.hp > 0) m.down = false;
+    bits.push(`${m.name} ${before} → ${m.hp}`);
+  }
+  if (bits.length) note(state, `${RESTS[kind]}: ${bits.join(", ")} health.`, "camp");
+}
+
 /* ------------------------------------------------------------------ */
 
 /** After an encounter or sign is settled, finish the day if it was over. */
 export function afterEvent(state) {
-  if (!state.encounter && !state.sign && state.campDue) withDice(state, (rng) => camp(state, rng));
+  if (state.encounter?.toBattle && !state.battle) withDice(state, (rng) => startBattle(state, rng, (t, k) => note(state, t, k)));
+  if (!state.encounter && !state.sign && !state.over && state.campDue) withDice(state, (rng) => camp(state, rng));
   return state;
 }
 

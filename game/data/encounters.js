@@ -22,7 +22,17 @@ export const ENCOUNTERS = {
       "head": "Skeleton Warrior",
       "division": 2,
       "temper": "Restless dead",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Skeleton Warrior",
+        "count": 1
+       },
+       {
+        "name": "Skeleton",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -48,7 +58,13 @@ export const ENCOUNTERS = {
        "head": "Zombie",
        "division": 2,
        "temper": "Restless dead",
-       "xp": 4
+       "xp": 4,
+       "group": [
+        {
+         "name": "Zombie",
+         "count": 1
+        }
+       ]
       },
       "creatures": [
        "Kallikantzaros"
@@ -56,7 +72,13 @@ export const ENCOUNTERS = {
       "head": "Kallikantzaros",
       "division": 2,
       "temper": "Raider",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Kallikantzaros",
+        "count": "1d3+1"
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -77,7 +99,13 @@ export const ENCOUNTERS = {
       "head": "Viper",
       "division": 2,
       "temper": "Territorial",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Viper",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -99,7 +127,17 @@ export const ENCOUNTERS = {
       "head": "Wolf Spider",
       "division": 2,
       "temper": "Predator",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Wolf Spider",
+        "count": 1
+       },
+       {
+        "name": "Spider Swarm",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -120,7 +158,13 @@ export const ENCOUNTERS = {
       "head": "Wild Dog",
       "division": 2,
       "temper": "Predator",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Wild Dog",
+        "count": "1d2+1"
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -141,7 +185,13 @@ export const ENCOUNTERS = {
       "head": "Deer",
       "division": 2,
       "temper": "Prey",
-      "xp": 0
+      "xp": 0,
+      "group": [
+       {
+        "name": "Deer",
+        "count": "1d4"
+       }
+      ]
      }
     ],
     "xpColumn": "—"
@@ -163,7 +213,17 @@ export const ENCOUNTERS = {
       "head": "Bandit Cutthroat",
       "division": 2,
       "temper": "Raider",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Bandit Cutthroat",
+        "count": 2
+       },
+       {
+        "name": "Bandit Thug",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -180,12 +240,27 @@ export const ENCOUNTERS = {
       "text": "A Bandit Leader with two Cutthroats and a Cluster of Thugs [Raider]",
       "creatures": [
        "Bandit Leader",
+       "Bandit Cutthroat",
        "Bandit Thug"
       ],
       "head": "Bandit Leader",
       "division": 3,
       "temper": "Raider",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Bandit Leader",
+        "count": 1
+       },
+       {
+        "name": "Bandit Cutthroat",
+        "count": 2
+       },
+       {
+        "name": "Bandit Thug",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -206,7 +281,13 @@ export const ENCOUNTERS = {
       "head": "Large Hunting Dog",
       "division": 4,
       "temper": "Predator",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Large Hunting Dog",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "10"
@@ -227,7 +308,13 @@ export const ENCOUNTERS = {
       "head": "Boar",
       "division": 3,
       "temper": "Territorial",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Boar",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -250,7 +337,21 @@ export const ENCOUNTERS = {
       "head": "Wolf, Beta",
       "division": 4,
       "temper": "Predator",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Wolf, Beta",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Gamma",
+        "count": 2
+       },
+       {
+        "name": "Wolf, Runt",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "10"
@@ -273,7 +374,13 @@ export const ENCOUNTERS = {
       "head": "Magpie",
       "division": 6,
       "temper": "Strange",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Magpie",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 4,
@@ -289,7 +396,13 @@ export const ENCOUNTERS = {
       "head": "Eidolon of the Hunt",
       "division": 5,
       "temper": "Strange",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Eidolon of the Hunt",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "30 / 20"
@@ -313,7 +426,13 @@ export const ENCOUNTERS = {
       "head": "Redcap",
       "division": 3,
       "temper": "Raider",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Redcap",
+        "count": "1d2+1"
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -334,7 +453,13 @@ export const ENCOUNTERS = {
       "head": "Mountain Lion",
       "division": 3,
       "temper": "Predator",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Mountain Lion",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -355,7 +480,13 @@ export const ENCOUNTERS = {
       "head": "Boar",
       "division": 3,
       "temper": "Territorial",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Boar",
+        "count": "1d2"
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -378,7 +509,21 @@ export const ENCOUNTERS = {
       "head": "Wolf, Beta",
       "division": 4,
       "temper": "Predator",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Wolf, Beta",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Gamma",
+        "count": 2
+       },
+       {
+        "name": "Wolf, Runt",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "10"
@@ -403,7 +548,17 @@ export const ENCOUNTERS = {
       "head": "Elk",
       "division": 3,
       "temper": null,
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Elk",
+        "count": 1
+       },
+       {
+        "name": "Elk",
+        "count": "1d4"
+       }
+      ]
      }
     ],
     "xpColumn": "6 / —"
@@ -425,7 +580,17 @@ export const ENCOUNTERS = {
       "head": "Ranger Captain",
       "division": 4,
       "temper": "Raider",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Ranger Captain",
+        "count": 1
+       },
+       {
+        "name": "Woodsman",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "10"
@@ -446,7 +611,13 @@ export const ENCOUNTERS = {
       "head": "Orc Raider",
       "division": 3,
       "temper": "Raider",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Orc Raider",
+        "count": 3
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -467,7 +638,13 @@ export const ENCOUNTERS = {
       "head": "Black Bear",
       "division": 4,
       "temper": "Territorial",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Black Bear",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 4,
@@ -479,7 +656,13 @@ export const ENCOUNTERS = {
       "head": "Treow",
       "division": 5,
       "temper": "Guardian",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Treow",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "10 / 20"
@@ -504,7 +687,29 @@ export const ENCOUNTERS = {
       "head": "Wolf, Alpha",
       "division": 6,
       "temper": "Predator",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Wolf, Alpha",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Sigma",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Beta",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Gamma",
+        "count": 2
+       },
+       {
+        "name": "Wolf, Runt",
+        "heads": 12
+       }
+      ]
      },
      {
       "lo": 4,
@@ -517,7 +722,17 @@ export const ENCOUNTERS = {
       "head": "Orc War Chief",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Orc War Chief",
+        "count": 1
+       },
+       {
+        "name": "Orc Raider",
+        "count": 4
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -538,7 +753,13 @@ export const ENCOUNTERS = {
       "head": "Wolf, Dire",
       "division": 7,
       "temper": "Predator",
-      "xp": 40
+      "xp": 40,
+      "group": [
+       {
+        "name": "Wolf, Dire",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 3,
@@ -550,7 +771,13 @@ export const ENCOUNTERS = {
       "head": "Dryad",
       "division": 7,
       "temper": "Guardian",
-      "xp": 40
+      "xp": 40,
+      "group": [
+       {
+        "name": "Dryad",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 5,
@@ -562,7 +789,13 @@ export const ENCOUNTERS = {
       "head": "Cave Bear",
       "division": 8,
       "temper": "Predator",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Cave Bear",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 6,
@@ -574,7 +807,13 @@ export const ENCOUNTERS = {
       "head": "Wolf, Amarok",
       "division": 8,
       "temper": "Predator",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Wolf, Amarok",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "40–60"
@@ -602,7 +841,13 @@ export const ENCOUNTERS = {
       "head": "Shadow-Man",
       "division": 7,
       "temper": "Strange",
-      "xp": 40
+      "xp": 40,
+      "group": [
+       {
+        "name": "Shadow-Man",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "40"
@@ -624,7 +869,17 @@ export const ENCOUNTERS = {
       "head": "Revenant Soldier",
       "division": 5,
       "temper": "Restless dead",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Revenant Soldier",
+        "count": 1
+       },
+       {
+        "name": "Skeleton",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "20"
@@ -645,7 +900,13 @@ export const ENCOUNTERS = {
       "head": "Aurochs",
       "division": 4,
       "temper": "Territorial",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Aurochs",
+        "count": "1d3"
+       }
+      ]
      }
     ],
     "xpColumn": "10"
@@ -666,7 +927,13 @@ export const ENCOUNTERS = {
       "head": "Brown Bear",
       "division": 6,
       "temper": "Territorial",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Brown Bear",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -687,7 +954,29 @@ export const ENCOUNTERS = {
       "head": "Wolf, Alpha",
       "division": 6,
       "temper": "Predator",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Wolf, Alpha",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Sigma",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Beta",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Gamma",
+        "count": 2
+       },
+       {
+        "name": "Wolf, Runt",
+        "heads": 12
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -709,7 +998,17 @@ export const ENCOUNTERS = {
       "head": "Orc War Chief",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Orc War Chief",
+        "count": 1
+       },
+       {
+        "name": "Orc Raider",
+        "count": 4
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -730,7 +1029,13 @@ export const ENCOUNTERS = {
       "head": "Ogre",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Ogre",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -753,7 +1058,21 @@ export const ENCOUNTERS = {
       "head": "Warlord",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Warlord",
+        "count": 1
+       },
+       {
+        "name": "Veteran",
+        "count": 2
+       },
+       {
+        "name": "Footsoldier",
+        "heads": 12
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -774,7 +1093,13 @@ export const ENCOUNTERS = {
       "head": "Treow",
       "division": 5,
       "temper": "Guardian",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Treow",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "20"
@@ -796,7 +1121,17 @@ export const ENCOUNTERS = {
       "head": "Revenant Knight",
       "division": 7,
       "temper": "Restless dead",
-      "xp": 40
+      "xp": 40,
+      "group": [
+       {
+        "name": "Revenant Knight",
+        "count": 1
+       },
+       {
+        "name": "Revenant Soldier",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "40"
@@ -817,7 +1152,13 @@ export const ENCOUNTERS = {
       "head": "Cave Bear",
       "division": 8,
       "temper": "Predator",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Cave Bear",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 3,
@@ -829,7 +1170,13 @@ export const ENCOUNTERS = {
       "head": "Ettin",
       "division": 8,
       "temper": "Raider",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Ettin",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 5,
@@ -841,7 +1188,13 @@ export const ENCOUNTERS = {
       "head": "Erymanthian Boar",
       "division": 9,
       "temper": "Predator",
-      "xp": 80
+      "xp": 80,
+      "group": [
+       {
+        "name": "Erymanthian Boar",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 6,
@@ -853,7 +1206,13 @@ export const ENCOUNTERS = {
       "head": "Otso",
       "division": 10,
       "temper": "Predator",
-      "xp": 100
+      "xp": 100,
+      "group": [
+       {
+        "name": "Otso",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "60–100"
@@ -878,7 +1237,13 @@ export const ENCOUNTERS = {
       "head": "Zombie",
       "division": 2,
       "temper": "Restless dead",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Zombie",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -899,7 +1264,13 @@ export const ENCOUNTERS = {
       "head": "Viper",
       "division": 2,
       "temper": "Territorial",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Viper",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -920,7 +1291,13 @@ export const ENCOUNTERS = {
       "head": "Wild Dog",
       "division": 2,
       "temper": "Predator",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Wild Dog",
+        "count": "1d2+1"
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -941,7 +1318,13 @@ export const ENCOUNTERS = {
       "head": "Rouncey",
       "division": 2,
       "temper": "Prey",
-      "xp": 0
+      "xp": 0,
+      "group": [
+       {
+        "name": "Rouncey",
+        "count": "1d4+2"
+       }
+      ]
      }
     ],
     "xpColumn": "—"
@@ -963,7 +1346,17 @@ export const ENCOUNTERS = {
       "head": "Bandit Cutthroat",
       "division": 2,
       "temper": "Raider",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Bandit Cutthroat",
+        "count": 2
+       },
+       {
+        "name": "Bandit Thug",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -984,7 +1377,13 @@ export const ENCOUNTERS = {
       "head": "Deer",
       "division": 2,
       "temper": "Prey",
-      "xp": 0
+      "xp": 0,
+      "group": [
+       {
+        "name": "Deer",
+        "count": "1d4"
+       }
+      ]
      }
     ],
     "xpColumn": "—"
@@ -1001,12 +1400,27 @@ export const ENCOUNTERS = {
       "text": "A Bandit Leader with two Cutthroats and a Cluster of Thugs [Raider]",
       "creatures": [
        "Bandit Leader",
+       "Bandit Cutthroat",
        "Bandit Thug"
       ],
       "head": "Bandit Leader",
       "division": 3,
       "temper": "Raider",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Bandit Leader",
+        "count": 1
+       },
+       {
+        "name": "Bandit Cutthroat",
+        "count": 2
+       },
+       {
+        "name": "Bandit Thug",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -1027,7 +1441,13 @@ export const ENCOUNTERS = {
       "head": "Thug",
       "division": 2,
       "temper": "Patrol",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Thug",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -1048,7 +1468,13 @@ export const ENCOUNTERS = {
       "head": "Large Hunting Dog",
       "division": 4,
       "temper": "Predator",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Large Hunting Dog",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "10"
@@ -1069,7 +1495,13 @@ export const ENCOUNTERS = {
       "head": "Orc Raider",
       "division": 3,
       "temper": "Raider",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Orc Raider",
+        "count": 3
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -1092,7 +1524,21 @@ export const ENCOUNTERS = {
       "head": "Wolf, Beta",
       "division": 4,
       "temper": "Predator",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Wolf, Beta",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Gamma",
+        "count": 2
+       },
+       {
+        "name": "Wolf, Runt",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "10"
@@ -1115,7 +1561,13 @@ export const ENCOUNTERS = {
       "head": "Magpie",
       "division": 6,
       "temper": "Strange",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Magpie",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 4,
@@ -1131,7 +1583,13 @@ export const ENCOUNTERS = {
       "head": "Eidolon of the Hunt",
       "division": 5,
       "temper": "Strange",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Eidolon of the Hunt",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "30 / 20"
@@ -1153,7 +1611,17 @@ export const ENCOUNTERS = {
       "head": "Sergeant",
       "division": 4,
       "temper": "Patrol",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Sergeant",
+        "count": 1
+       },
+       {
+        "name": "Militia",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "10"
@@ -1174,7 +1642,13 @@ export const ENCOUNTERS = {
       "head": "Boar",
       "division": 3,
       "temper": "Territorial",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Boar",
+        "count": "1d2"
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -1197,7 +1671,21 @@ export const ENCOUNTERS = {
       "head": "Wolf, Beta",
       "division": 4,
       "temper": "Predator",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Wolf, Beta",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Gamma",
+        "count": 2
+       },
+       {
+        "name": "Wolf, Runt",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "10"
@@ -1218,7 +1706,13 @@ export const ENCOUNTERS = {
       "head": "Orc Raider",
       "division": 3,
       "temper": "Raider",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Orc Raider",
+        "count": 3
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -1239,7 +1733,13 @@ export const ENCOUNTERS = {
       "head": "Rouncey",
       "division": 2,
       "temper": "Prey",
-      "xp": 0
+      "xp": 0,
+      "group": [
+       {
+        "name": "Rouncey",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 4,
@@ -1251,7 +1751,13 @@ export const ENCOUNTERS = {
       "head": "Aurochs",
       "division": 4,
       "temper": "Territorial",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Aurochs",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "— / 10"
@@ -1274,7 +1780,21 @@ export const ENCOUNTERS = {
       "head": "Captain",
       "division": 4,
       "temper": "Raider",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Captain",
+        "count": 1
+       },
+       {
+        "name": "Warrior",
+        "count": 2
+       },
+       {
+        "name": "Footsoldier",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "10"
@@ -1291,12 +1811,27 @@ export const ENCOUNTERS = {
       "text": "A Bandit Leader with two Cutthroats and a Brood of Thugs [Raider]",
       "creatures": [
        "Bandit Leader",
+       "Bandit Cutthroat",
        "Bandit Thug"
       ],
       "head": "Bandit Leader",
       "division": 3,
       "temper": "Raider",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Bandit Leader",
+        "count": 1
+       },
+       {
+        "name": "Bandit Cutthroat",
+        "count": 2
+       },
+       {
+        "name": "Bandit Thug",
+        "heads": 12
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -1319,7 +1854,21 @@ export const ENCOUNTERS = {
       "head": "Knight-Servile",
       "division": 5,
       "temper": "Patrol",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Knight-Servile",
+        "count": 1
+       },
+       {
+        "name": "Sergeant",
+        "count": 1
+       },
+       {
+        "name": "Militia",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "20"
@@ -1340,7 +1889,13 @@ export const ENCOUNTERS = {
       "head": "Lion",
       "division": 5,
       "temper": "Predator",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Lion",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 4,
@@ -1353,7 +1908,17 @@ export const ENCOUNTERS = {
       "head": "Orc War Chief",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Orc War Chief",
+        "count": 1
+       },
+       {
+        "name": "Orc Raider",
+        "count": 4
+       }
+      ]
      }
     ],
     "xpColumn": "20 / 30"
@@ -1374,7 +1939,13 @@ export const ENCOUNTERS = {
       "head": "Wolf, Dire",
       "division": 7,
       "temper": "Predator",
-      "xp": 40
+      "xp": 40,
+      "group": [
+       {
+        "name": "Wolf, Dire",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 4,
@@ -1386,7 +1957,13 @@ export const ENCOUNTERS = {
       "head": "Ettin",
       "division": 8,
       "temper": "Raider",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Ettin",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 6,
@@ -1398,7 +1975,13 @@ export const ENCOUNTERS = {
       "head": "Wolf, Amarok",
       "division": 8,
       "temper": "Predator",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Wolf, Amarok",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "40–60"
@@ -1424,7 +2007,13 @@ export const ENCOUNTERS = {
       "head": "Shadow-Man",
       "division": 7,
       "temper": "Strange",
-      "xp": 40
+      "xp": 40,
+      "group": [
+       {
+        "name": "Shadow-Man",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "40"
@@ -1446,7 +2035,17 @@ export const ENCOUNTERS = {
       "head": "Revenant Soldier",
       "division": 5,
       "temper": "Restless dead",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Revenant Soldier",
+        "count": 1
+       },
+       {
+        "name": "Skeleton",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "20"
@@ -1467,7 +2066,13 @@ export const ENCOUNTERS = {
       "head": "Aurochs",
       "division": 4,
       "temper": "Territorial",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Aurochs",
+        "count": "1d3"
+       }
+      ]
      }
     ],
     "xpColumn": "10"
@@ -1488,7 +2093,13 @@ export const ENCOUNTERS = {
       "head": "Lion",
       "division": 5,
       "temper": "Predator",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Lion",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "20"
@@ -1513,7 +2124,29 @@ export const ENCOUNTERS = {
       "head": "Wolf, Alpha",
       "division": 6,
       "temper": "Predator",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Wolf, Alpha",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Sigma",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Beta",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Gamma",
+        "count": 2
+       },
+       {
+        "name": "Wolf, Runt",
+        "heads": 12
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -1535,7 +2168,17 @@ export const ENCOUNTERS = {
       "head": "Orc War Chief",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Orc War Chief",
+        "count": 1
+       },
+       {
+        "name": "Orc Raider",
+        "count": 4
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -1558,7 +2201,21 @@ export const ENCOUNTERS = {
       "head": "Warlord",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Warlord",
+        "count": 1
+       },
+       {
+        "name": "Veteran",
+        "count": 2
+       },
+       {
+        "name": "Footsoldier",
+        "heads": 12
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -1579,7 +2236,13 @@ export const ENCOUNTERS = {
       "head": "Ogre",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Ogre",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -1602,7 +2265,21 @@ export const ENCOUNTERS = {
       "head": "Knight-Servile",
       "division": 5,
       "temper": "Patrol",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Knight-Servile",
+        "count": 1
+       },
+       {
+        "name": "Veteran",
+        "count": 1
+       },
+       {
+        "name": "Militia",
+        "heads": 12
+       }
+      ]
      }
     ],
     "xpColumn": "20"
@@ -1624,7 +2301,17 @@ export const ENCOUNTERS = {
       "head": "Revenant Knight",
       "division": 7,
       "temper": "Restless dead",
-      "xp": 40
+      "xp": 40,
+      "group": [
+       {
+        "name": "Revenant Knight",
+        "count": 1
+       },
+       {
+        "name": "Revenant Soldier",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "40"
@@ -1645,7 +2332,13 @@ export const ENCOUNTERS = {
       "head": "Ettin",
       "division": 8,
       "temper": "Raider",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Ettin",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 3,
@@ -1657,7 +2350,13 @@ export const ENCOUNTERS = {
       "head": "Wolf, Amarok",
       "division": 8,
       "temper": "Predator",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Wolf, Amarok",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 5,
@@ -1669,7 +2368,13 @@ export const ENCOUNTERS = {
       "head": "Bergrisar",
       "division": 8,
       "temper": "Raider",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Bergrisar",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "60"
@@ -1695,7 +2400,17 @@ export const ENCOUNTERS = {
       "head": "Skeleton Warrior",
       "division": 2,
       "temper": "Restless dead",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Skeleton Warrior",
+        "count": 1
+       },
+       {
+        "name": "Skeleton",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -1716,7 +2431,13 @@ export const ENCOUNTERS = {
       "head": "Viper",
       "division": 2,
       "temper": "Territorial",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Viper",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -1738,7 +2459,17 @@ export const ENCOUNTERS = {
       "head": "Wolf Spider",
       "division": 2,
       "temper": "Predator",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Wolf Spider",
+        "count": 1
+       },
+       {
+        "name": "Spider Swarm",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -1759,7 +2490,13 @@ export const ENCOUNTERS = {
       "head": "Wild Dog",
       "division": 2,
       "temper": "Predator",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Wild Dog",
+        "count": "1d2+1"
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -1781,7 +2518,17 @@ export const ENCOUNTERS = {
       "head": "Bandit Cutthroat",
       "division": 2,
       "temper": "Raider",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Bandit Cutthroat",
+        "count": 2
+       },
+       {
+        "name": "Bandit Thug",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -1802,7 +2549,13 @@ export const ENCOUNTERS = {
       "head": "Deer",
       "division": 2,
       "temper": "Prey",
-      "xp": 0
+      "xp": 0,
+      "group": [
+       {
+        "name": "Deer",
+        "count": "1d4"
+       }
+      ]
      }
     ],
     "xpColumn": "—"
@@ -1819,12 +2572,27 @@ export const ENCOUNTERS = {
       "text": "A Bandit Leader with two Cutthroats and a Cluster of Thugs [Raider]",
       "creatures": [
        "Bandit Leader",
+       "Bandit Cutthroat",
        "Bandit Thug"
       ],
       "head": "Bandit Leader",
       "division": 3,
       "temper": "Raider",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Bandit Leader",
+        "count": 1
+       },
+       {
+        "name": "Bandit Cutthroat",
+        "count": 2
+       },
+       {
+        "name": "Bandit Thug",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -1845,7 +2613,13 @@ export const ENCOUNTERS = {
       "head": "Kallikantzaros",
       "division": 2,
       "temper": "Raider",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Kallikantzaros",
+        "count": "1d3+1"
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -1866,7 +2640,13 @@ export const ENCOUNTERS = {
       "head": "Large Hunting Dog",
       "division": 4,
       "temper": "Predator",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Large Hunting Dog",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "10"
@@ -1887,7 +2667,13 @@ export const ENCOUNTERS = {
       "head": "Mountain Lion",
       "division": 3,
       "temper": "Predator",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Mountain Lion",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -1910,7 +2696,21 @@ export const ENCOUNTERS = {
       "head": "Wolf, Beta",
       "division": 4,
       "temper": "Predator",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Wolf, Beta",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Gamma",
+        "count": 2
+       },
+       {
+        "name": "Wolf, Runt",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "10"
@@ -1933,7 +2733,13 @@ export const ENCOUNTERS = {
       "head": "Magpie",
       "division": 6,
       "temper": "Strange",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Magpie",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 4,
@@ -1948,7 +2754,13 @@ export const ENCOUNTERS = {
       "head": "Eidolon of the Hunt",
       "division": 5,
       "temper": "Strange",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Eidolon of the Hunt",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "30 / 20"
@@ -1972,7 +2784,13 @@ export const ENCOUNTERS = {
       "head": "Redcap",
       "division": 3,
       "temper": "Raider",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Redcap",
+        "count": "1d2+1"
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -1993,7 +2811,13 @@ export const ENCOUNTERS = {
       "head": "Mountain Lion",
       "division": 3,
       "temper": "Predator",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Mountain Lion",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -2014,7 +2838,13 @@ export const ENCOUNTERS = {
       "head": "Boar",
       "division": 3,
       "temper": "Territorial",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Boar",
+        "count": "1d2"
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -2037,7 +2867,21 @@ export const ENCOUNTERS = {
       "head": "Wolf, Beta",
       "division": 4,
       "temper": "Predator",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Wolf, Beta",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Gamma",
+        "count": 2
+       },
+       {
+        "name": "Wolf, Runt",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "10"
@@ -2058,7 +2902,13 @@ export const ENCOUNTERS = {
       "head": "Orc Raider",
       "division": 3,
       "temper": "Raider",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Orc Raider",
+        "count": 3
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -2079,7 +2929,13 @@ export const ENCOUNTERS = {
       "head": "Living Stone",
       "division": 3,
       "temper": "Guardian",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Living Stone",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -2101,7 +2957,17 @@ export const ENCOUNTERS = {
       "head": "Ranger Captain",
       "division": 4,
       "temper": "Raider",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Ranger Captain",
+        "count": 1
+       },
+       {
+        "name": "Woodsman",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "10"
@@ -2122,13 +2988,19 @@ export const ENCOUNTERS = {
       "head": "Black Bear",
       "division": 4,
       "temper": "Territorial",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Black Bear",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "10"
    },
    "11": {
-    "text": "d6: 1–3 a Wolf Alpha's pack, as Band III's 6 [Predator]; 4–6 an Orc War Chief with four Raiders [Raider]",
+    "text": "d6: 1–3 a Wolf Alpha's pack, as Band III's 5 [Predator]; 4–6 an Orc War Chief with four Raiders [Raider]",
     "signFirst": false,
     "apex": false,
     "strange": false,
@@ -2136,14 +3008,36 @@ export const ENCOUNTERS = {
      {
       "lo": 1,
       "hi": 3,
-      "text": "a Wolf Alpha's pack, as Band III's 6 [Predator]",
+      "text": "a Wolf Alpha's pack, as Band III's 5 [Predator]",
       "creatures": [
        "Wolf, Alpha"
       ],
       "head": "Wolf, Alpha",
       "division": 6,
       "temper": "Predator",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Wolf, Alpha",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Sigma",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Beta",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Gamma",
+        "count": 2
+       },
+       {
+        "name": "Wolf, Runt",
+        "heads": 12
+       }
+      ]
      },
      {
       "lo": 4,
@@ -2156,7 +3050,17 @@ export const ENCOUNTERS = {
       "head": "Orc War Chief",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Orc War Chief",
+        "count": 1
+       },
+       {
+        "name": "Orc Raider",
+        "count": 4
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -2177,7 +3081,13 @@ export const ENCOUNTERS = {
       "head": "Wolf, Dire",
       "division": 7,
       "temper": "Predator",
-      "xp": 40
+      "xp": 40,
+      "group": [
+       {
+        "name": "Wolf, Dire",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 3,
@@ -2189,7 +3099,13 @@ export const ENCOUNTERS = {
       "head": "Ettin",
       "division": 8,
       "temper": "Raider",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Ettin",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 5,
@@ -2201,7 +3117,13 @@ export const ENCOUNTERS = {
       "head": "Cave Bear",
       "division": 8,
       "temper": "Predator",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Cave Bear",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 6,
@@ -2213,7 +3135,13 @@ export const ENCOUNTERS = {
       "head": "Wolf, Amarok",
       "division": 8,
       "temper": "Predator",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Wolf, Amarok",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "40–60"
@@ -2239,7 +3167,13 @@ export const ENCOUNTERS = {
       "head": "Shadow-Man",
       "division": 7,
       "temper": "Strange",
-      "xp": 40
+      "xp": 40,
+      "group": [
+       {
+        "name": "Shadow-Man",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "40"
@@ -2261,7 +3195,17 @@ export const ENCOUNTERS = {
       "head": "Revenant Soldier",
       "division": 5,
       "temper": "Restless dead",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Revenant Soldier",
+        "count": 1
+       },
+       {
+        "name": "Skeleton",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "20"
@@ -2282,7 +3226,13 @@ export const ENCOUNTERS = {
       "head": "Brown Bear",
       "division": 6,
       "temper": "Territorial",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Brown Bear",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -2307,7 +3257,29 @@ export const ENCOUNTERS = {
       "head": "Wolf, Alpha",
       "division": 6,
       "temper": "Predator",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Wolf, Alpha",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Sigma",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Beta",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Gamma",
+        "count": 2
+       },
+       {
+        "name": "Wolf, Runt",
+        "heads": 12
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -2328,7 +3300,13 @@ export const ENCOUNTERS = {
       "head": "Ogre",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Ogre",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -2350,7 +3328,17 @@ export const ENCOUNTERS = {
       "head": "Orc War Chief",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Orc War Chief",
+        "count": 1
+       },
+       {
+        "name": "Orc Raider",
+        "count": 4
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -2371,7 +3359,13 @@ export const ENCOUNTERS = {
       "head": "Earth Guardian",
       "division": 6,
       "temper": "Guardian",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Earth Guardian",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -2394,7 +3388,21 @@ export const ENCOUNTERS = {
       "head": "Warlord",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Warlord",
+        "count": 1
+       },
+       {
+        "name": "Veteran",
+        "count": 2
+       },
+       {
+        "name": "Footsoldier",
+        "heads": 12
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -2415,7 +3423,13 @@ export const ENCOUNTERS = {
       "head": "Ogre",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Ogre",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -2437,7 +3451,17 @@ export const ENCOUNTERS = {
       "head": "Revenant Knight",
       "division": 7,
       "temper": "Restless dead",
-      "xp": 40
+      "xp": 40,
+      "group": [
+       {
+        "name": "Revenant Knight",
+        "count": 1
+       },
+       {
+        "name": "Revenant Soldier",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "40"
@@ -2458,7 +3482,13 @@ export const ENCOUNTERS = {
       "head": "Ettin",
       "division": 8,
       "temper": "Raider",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Ettin",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 3,
@@ -2470,7 +3500,13 @@ export const ENCOUNTERS = {
       "head": "Bergrisar",
       "division": 8,
       "temper": "Raider",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Bergrisar",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 5,
@@ -2482,7 +3518,13 @@ export const ENCOUNTERS = {
       "head": "Cave Bear",
       "division": 8,
       "temper": "Predator",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Cave Bear",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 6,
@@ -2494,7 +3536,13 @@ export const ENCOUNTERS = {
       "head": "Erymanthian Boar",
       "division": 9,
       "temper": "Predator",
-      "xp": 80
+      "xp": 80,
+      "group": [
+       {
+        "name": "Erymanthian Boar",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "60–80"
@@ -2520,7 +3568,17 @@ export const ENCOUNTERS = {
       "head": "Skeleton Warrior",
       "division": 2,
       "temper": "Restless dead",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Skeleton Warrior",
+        "count": 1
+       },
+       {
+        "name": "Skeleton",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -2541,7 +3599,13 @@ export const ENCOUNTERS = {
       "head": "Viper",
       "division": 2,
       "temper": "Territorial",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Viper",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -2562,7 +3626,13 @@ export const ENCOUNTERS = {
       "head": "Large Raptor",
       "division": 2,
       "temper": "Territorial",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Large Raptor",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -2583,7 +3653,13 @@ export const ENCOUNTERS = {
       "head": "Kallikantzaros",
       "division": 2,
       "temper": "Raider",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Kallikantzaros",
+        "count": "1d3+1"
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -2605,7 +3681,17 @@ export const ENCOUNTERS = {
       "head": "Bandit Cutthroat",
       "division": 2,
       "temper": "Raider",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Bandit Cutthroat",
+        "count": 2
+       },
+       {
+        "name": "Bandit Thug",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -2624,7 +3710,8 @@ export const ENCOUNTERS = {
       "head": null,
       "division": 0,
       "temper": "Prey",
-      "xp": 0
+      "xp": 0,
+      "group": []
      }
     ],
     "xpColumn": "—"
@@ -2641,12 +3728,27 @@ export const ENCOUNTERS = {
       "text": "A Bandit Leader with two Cutthroats and a Cluster of Thugs [Raider]",
       "creatures": [
        "Bandit Leader",
+       "Bandit Cutthroat",
        "Bandit Thug"
       ],
       "head": "Bandit Leader",
       "division": 3,
       "temper": "Raider",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Bandit Leader",
+        "count": 1
+       },
+       {
+        "name": "Bandit Cutthroat",
+        "count": 2
+       },
+       {
+        "name": "Bandit Thug",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -2667,7 +3769,13 @@ export const ENCOUNTERS = {
       "head": "Mountain Lion",
       "division": 3,
       "temper": "Predator",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Mountain Lion",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -2688,7 +3796,13 @@ export const ENCOUNTERS = {
       "head": "Living Stone",
       "division": 3,
       "temper": "Guardian",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Living Stone",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -2711,7 +3825,21 @@ export const ENCOUNTERS = {
       "head": "Wolf, Beta",
       "division": 4,
       "temper": "Predator",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Wolf, Beta",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Gamma",
+        "count": 2
+       },
+       {
+        "name": "Wolf, Runt",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "10"
@@ -2732,7 +3860,13 @@ export const ENCOUNTERS = {
       "head": "Orc Raider",
       "division": 3,
       "temper": "Raider",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Orc Raider",
+        "count": 3
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -2758,7 +3892,13 @@ export const ENCOUNTERS = {
       "head": "Eidolon of the Hunt",
       "division": 5,
       "temper": "Strange",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Eidolon of the Hunt",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "20"
@@ -2779,7 +3919,13 @@ export const ENCOUNTERS = {
       "head": "Eagle",
       "division": 3,
       "temper": "Territorial",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Eagle",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -2800,7 +3946,13 @@ export const ENCOUNTERS = {
       "head": "Mountain Lion",
       "division": 3,
       "temper": "Predator",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Mountain Lion",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -2821,7 +3973,13 @@ export const ENCOUNTERS = {
       "head": "Living Stone",
       "division": 3,
       "temper": "Guardian",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Living Stone",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -2844,7 +4002,21 @@ export const ENCOUNTERS = {
       "head": "Wolf, Beta",
       "division": 4,
       "temper": "Predator",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Wolf, Beta",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Gamma",
+        "count": 2
+       },
+       {
+        "name": "Wolf, Runt",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "10"
@@ -2865,7 +4037,13 @@ export const ENCOUNTERS = {
       "head": "Orc Raider",
       "division": 3,
       "temper": "Raider",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Orc Raider",
+        "count": 3
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -2886,7 +4064,13 @@ export const ENCOUNTERS = {
       "head": "Redcap",
       "division": 3,
       "temper": "Raider",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Redcap",
+        "count": "1d2+1"
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -2907,7 +4091,13 @@ export const ENCOUNTERS = {
       "head": "Black Bear",
       "division": 4,
       "temper": "Territorial",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Black Bear",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "10"
@@ -2929,7 +4119,17 @@ export const ENCOUNTERS = {
       "head": "Orc War Chief",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Orc War Chief",
+        "count": 1
+       },
+       {
+        "name": "Orc Raider",
+        "count": 4
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -2954,7 +4154,29 @@ export const ENCOUNTERS = {
       "head": "Wolf, Alpha",
       "division": 6,
       "temper": "Predator",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Wolf, Alpha",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Sigma",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Beta",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Gamma",
+        "count": 2
+       },
+       {
+        "name": "Wolf, Runt",
+        "heads": 12
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -2975,7 +4197,13 @@ export const ENCOUNTERS = {
       "head": "Ettin",
       "division": 8,
       "temper": "Raider",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Ettin",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 3,
@@ -2987,7 +4215,13 @@ export const ENCOUNTERS = {
       "head": "Bergrisar",
       "division": 8,
       "temper": "Raider",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Bergrisar",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 5,
@@ -2999,7 +4233,13 @@ export const ENCOUNTERS = {
       "head": "Cave Bear",
       "division": 8,
       "temper": "Predator",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Cave Bear",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 6,
@@ -3011,7 +4251,13 @@ export const ENCOUNTERS = {
       "head": "Wolf, Amarok",
       "division": 8,
       "temper": "Predator",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Wolf, Amarok",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "60"
@@ -3037,7 +4283,13 @@ export const ENCOUNTERS = {
       "head": "Shadow-Man",
       "division": 7,
       "temper": "Strange",
-      "xp": 40
+      "xp": 40,
+      "group": [
+       {
+        "name": "Shadow-Man",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "40"
@@ -3058,7 +4310,13 @@ export const ENCOUNTERS = {
       "head": "Earth Guardian",
       "division": 6,
       "temper": "Guardian",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Earth Guardian",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -3079,7 +4337,13 @@ export const ENCOUNTERS = {
       "head": "Brown Bear",
       "division": 6,
       "temper": "Territorial",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Brown Bear",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -3100,13 +4364,19 @@ export const ENCOUNTERS = {
       "head": "Ogre",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Ogre",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "30"
    },
    "6": {
-    "text": "A Wolf Alpha's pack [Predator]",
+    "text": "A Wolf Alpha with a Sigma, a Beta, two Gammas, and a Brood of Runts [Predator]",
     "signFirst": false,
     "apex": false,
     "strange": false,
@@ -3114,14 +4384,40 @@ export const ENCOUNTERS = {
      {
       "lo": 1,
       "hi": 6,
-      "text": "A Wolf Alpha's pack [Predator]",
+      "text": "A Wolf Alpha with a Sigma, a Beta, two Gammas, and a Brood of Runts [Predator]",
       "creatures": [
-       "Wolf, Alpha"
+       "Wolf, Alpha",
+       "Wolf, Sigma",
+       "Wolf, Beta",
+       "Wolf, Gamma",
+       "Wolf, Runt"
       ],
       "head": "Wolf, Alpha",
       "division": 6,
       "temper": "Predator",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Wolf, Alpha",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Sigma",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Beta",
+        "count": 1
+       },
+       {
+        "name": "Wolf, Gamma",
+        "count": 2
+       },
+       {
+        "name": "Wolf, Runt",
+        "heads": 12
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -3143,7 +4439,17 @@ export const ENCOUNTERS = {
       "head": "Orc War Chief",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Orc War Chief",
+        "count": 1
+       },
+       {
+        "name": "Orc Raider",
+        "count": 4
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -3165,7 +4471,17 @@ export const ENCOUNTERS = {
       "head": "Earth Guardian",
       "division": 6,
       "temper": "Guardian",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Earth Guardian",
+        "count": 1
+       },
+       {
+        "name": "Living Stone",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -3187,7 +4503,17 @@ export const ENCOUNTERS = {
       "head": "Revenant Knight",
       "division": 7,
       "temper": "Restless dead",
-      "xp": 40
+      "xp": 40,
+      "group": [
+       {
+        "name": "Revenant Knight",
+        "count": 1
+       },
+       {
+        "name": "Revenant Soldier",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "40"
@@ -3208,7 +4534,13 @@ export const ENCOUNTERS = {
       "head": "Ogre",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Ogre",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -3229,7 +4561,13 @@ export const ENCOUNTERS = {
       "head": "Giant Short-Faced Bear",
       "division": 9,
       "temper": "Predator",
-      "xp": 80
+      "xp": 80,
+      "group": [
+       {
+        "name": "Giant Short-Faced Bear",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "80"
@@ -3250,7 +4588,13 @@ export const ENCOUNTERS = {
       "head": "Bergrisar",
       "division": 8,
       "temper": "Raider",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Bergrisar",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 3,
@@ -3262,7 +4606,13 @@ export const ENCOUNTERS = {
       "head": "Ettin",
       "division": 8,
       "temper": "Raider",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Ettin",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 5,
@@ -3274,7 +4624,13 @@ export const ENCOUNTERS = {
       "head": "Giant Short-Faced Bear",
       "division": 9,
       "temper": "Predator",
-      "xp": 80
+      "xp": 80,
+      "group": [
+       {
+        "name": "Giant Short-Faced Bear",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 6,
@@ -3286,7 +4642,13 @@ export const ENCOUNTERS = {
       "head": "Otso",
       "division": 10,
       "temper": "Predator",
-      "xp": 100
+      "xp": 100,
+      "group": [
+       {
+        "name": "Otso",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "60–100"
@@ -3312,7 +4674,17 @@ export const ENCOUNTERS = {
       "head": "Skeleton Warrior",
       "division": 2,
       "temper": "Restless dead",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Skeleton Warrior",
+        "count": 1
+       },
+       {
+        "name": "Skeleton",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -3333,7 +4705,13 @@ export const ENCOUNTERS = {
       "head": "Death-Watch",
       "division": 1,
       "temper": "Predator",
-      "xp": 2
+      "xp": 2,
+      "group": [
+       {
+        "name": "Death-Watch",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "2"
@@ -3354,7 +4732,13 @@ export const ENCOUNTERS = {
       "head": "Viper",
       "division": 2,
       "temper": "Territorial",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Viper",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -3376,7 +4760,17 @@ export const ENCOUNTERS = {
       "head": "Wolf Spider",
       "division": 2,
       "temper": "Predator",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Wolf Spider",
+        "count": 1
+       },
+       {
+        "name": "Spider Swarm",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -3398,7 +4792,17 @@ export const ENCOUNTERS = {
       "head": "Giant Rat",
       "division": 2,
       "temper": "Predator",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Giant Rat",
+        "count": 3
+       },
+       {
+        "name": "Rat Swarm",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -3419,7 +4823,13 @@ export const ENCOUNTERS = {
       "head": "Zombie",
       "division": 2,
       "temper": "Restless dead",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Zombie",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -3441,7 +4851,17 @@ export const ENCOUNTERS = {
       "head": "Bandit Cutthroat",
       "division": 2,
       "temper": "Raider",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Bandit Cutthroat",
+        "count": 2
+       },
+       {
+        "name": "Bandit Thug",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -3458,12 +4878,27 @@ export const ENCOUNTERS = {
       "text": "A Bandit Leader with two Cutthroats and a Cluster of Thugs [Raider]",
       "creatures": [
        "Bandit Leader",
+       "Bandit Cutthroat",
        "Bandit Thug"
       ],
       "head": "Bandit Leader",
       "division": 3,
       "temper": "Raider",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Bandit Leader",
+        "count": 1
+       },
+       {
+        "name": "Bandit Cutthroat",
+        "count": 2
+       },
+       {
+        "name": "Bandit Thug",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -3485,7 +4920,17 @@ export const ENCOUNTERS = {
       "head": "Zombie",
       "division": 2,
       "temper": "Restless dead",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Zombie",
+        "count": 1
+       },
+       {
+        "name": "Rat Swarm",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -3506,7 +4951,13 @@ export const ENCOUNTERS = {
       "head": "Zombie Brute",
       "division": 3,
       "temper": "Restless dead",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Zombie Brute",
+        "count": 3
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -3527,7 +4978,13 @@ export const ENCOUNTERS = {
       "head": "Constrictor",
       "division": 5,
       "temper": "Predator",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Constrictor",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "20"
@@ -3553,7 +5010,13 @@ export const ENCOUNTERS = {
       "head": "Eidolon of the Hunt",
       "division": 5,
       "temper": "Strange",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Eidolon of the Hunt",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "20"
@@ -3574,7 +5037,13 @@ export const ENCOUNTERS = {
       "head": "Zombie Brute",
       "division": 3,
       "temper": "Restless dead",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Zombie Brute",
+        "count": 3
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -3595,7 +5064,13 @@ export const ENCOUNTERS = {
       "head": "Constrictor",
       "division": 5,
       "temper": "Predator",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Constrictor",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "20"
@@ -3616,7 +5091,13 @@ export const ENCOUNTERS = {
       "head": "Boar",
       "division": 3,
       "temper": "Territorial",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Boar",
+        "count": "1d2"
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -3637,7 +5118,13 @@ export const ENCOUNTERS = {
       "head": "Monstrous Widow",
       "division": 5,
       "temper": "Predator",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Monstrous Widow",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "20"
@@ -3659,7 +5146,17 @@ export const ENCOUNTERS = {
       "head": "Revenant Soldier",
       "division": 5,
       "temper": "Restless dead",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Revenant Soldier",
+        "count": 1
+       },
+       {
+        "name": "Skeleton",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "20"
@@ -3681,7 +5178,17 @@ export const ENCOUNTERS = {
       "head": "Ranger Captain",
       "division": 4,
       "temper": "Raider",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Ranger Captain",
+        "count": 1
+       },
+       {
+        "name": "Woodsman",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "10"
@@ -3702,7 +5209,13 @@ export const ENCOUNTERS = {
       "head": "Orc Raider",
       "division": 3,
       "temper": "Raider",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Orc Raider",
+        "count": 3
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -3723,7 +5236,13 @@ export const ENCOUNTERS = {
       "head": "Redcap",
       "division": 3,
       "temper": "Raider",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Redcap",
+        "count": "1d2+1"
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -3744,7 +5263,13 @@ export const ENCOUNTERS = {
       "head": "Crocodile",
       "division": 4,
       "temper": "Predator",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Crocodile",
+        "count": "1d2"
+       }
+      ]
      }
     ],
     "xpColumn": "10"
@@ -3765,7 +5290,13 @@ export const ENCOUNTERS = {
       "head": "Undine",
       "division": 8,
       "temper": "Guardian",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Undine",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 4,
@@ -3777,7 +5308,13 @@ export const ENCOUNTERS = {
       "head": "Dryad",
       "division": 7,
       "temper": "Guardian",
-      "xp": 40
+      "xp": 40,
+      "group": [
+       {
+        "name": "Dryad",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "40–60"
@@ -3803,7 +5340,13 @@ export const ENCOUNTERS = {
       "head": "Shadow-Man",
       "division": 7,
       "temper": "Strange",
-      "xp": 40
+      "xp": 40,
+      "group": [
+       {
+        "name": "Shadow-Man",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "40"
@@ -3824,7 +5367,13 @@ export const ENCOUNTERS = {
       "head": "Crocodile",
       "division": 4,
       "temper": "Predator",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Crocodile",
+        "count": "1d3"
+       }
+      ]
      }
     ],
     "xpColumn": "10"
@@ -3845,7 +5394,13 @@ export const ENCOUNTERS = {
       "head": "Constrictor",
       "division": 5,
       "temper": "Predator",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Constrictor",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "20"
@@ -3866,7 +5421,13 @@ export const ENCOUNTERS = {
       "head": "Monstrous Widow",
       "division": 5,
       "temper": "Predator",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Monstrous Widow",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "20"
@@ -3888,7 +5449,17 @@ export const ENCOUNTERS = {
       "head": "Revenant Soldier",
       "division": 5,
       "temper": "Restless dead",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Revenant Soldier",
+        "count": 2
+       },
+       {
+        "name": "Skeleton",
+        "heads": 12
+       }
+      ]
      }
     ],
     "xpColumn": "20"
@@ -3909,7 +5480,13 @@ export const ENCOUNTERS = {
       "head": "Ogre",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Ogre",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -3932,7 +5509,21 @@ export const ENCOUNTERS = {
       "head": "Warlord",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Warlord",
+        "count": 1
+       },
+       {
+        "name": "Veteran",
+        "count": 2
+       },
+       {
+        "name": "Footsoldier",
+        "heads": 12
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -3954,7 +5545,17 @@ export const ENCOUNTERS = {
       "head": "Orc War Chief",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Orc War Chief",
+        "count": 1
+       },
+       {
+        "name": "Orc Raider",
+        "count": 4
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -3975,7 +5576,13 @@ export const ENCOUNTERS = {
       "head": "Zombie Brute",
       "division": 3,
       "temper": "Restless dead",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Zombie Brute",
+        "count": 4
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -3997,7 +5604,17 @@ export const ENCOUNTERS = {
       "head": "Revenant Knight",
       "division": 7,
       "temper": "Restless dead",
-      "xp": 40
+      "xp": 40,
+      "group": [
+       {
+        "name": "Revenant Knight",
+        "count": 1
+       },
+       {
+        "name": "Revenant Soldier",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "40"
@@ -4018,7 +5635,13 @@ export const ENCOUNTERS = {
       "head": "Undine",
       "division": 8,
       "temper": "Guardian",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Undine",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "60"
@@ -4044,7 +5667,17 @@ export const ENCOUNTERS = {
       "head": "Skeleton Warrior",
       "division": 2,
       "temper": "Restless dead",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Skeleton Warrior",
+        "count": 1
+       },
+       {
+        "name": "Skeleton",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -4065,7 +5698,13 @@ export const ENCOUNTERS = {
       "head": "Viper",
       "division": 2,
       "temper": "Territorial",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Viper",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -4087,7 +5726,17 @@ export const ENCOUNTERS = {
       "head": "Wolf Spider",
       "division": 2,
       "temper": "Predator",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Wolf Spider",
+        "count": 1
+       },
+       {
+        "name": "Spider Swarm",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -4108,7 +5757,13 @@ export const ENCOUNTERS = {
       "head": "Wild Dog",
       "division": 2,
       "temper": "Predator",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Wild Dog",
+        "count": "1d2+1"
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -4130,7 +5785,17 @@ export const ENCOUNTERS = {
       "head": "Bandit Cutthroat",
       "division": 2,
       "temper": "Raider",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Bandit Cutthroat",
+        "count": 2
+       },
+       {
+        "name": "Bandit Thug",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -4151,7 +5816,13 @@ export const ENCOUNTERS = {
       "head": "Deer",
       "division": 2,
       "temper": "Prey",
-      "xp": 0
+      "xp": 0,
+      "group": [
+       {
+        "name": "Deer",
+        "count": "1d4"
+       }
+      ]
      }
     ],
     "xpColumn": "—"
@@ -4168,12 +5839,27 @@ export const ENCOUNTERS = {
       "text": "A Bandit Leader with two Cutthroats and a Cluster of Thugs [Raider]",
       "creatures": [
        "Bandit Leader",
+       "Bandit Cutthroat",
        "Bandit Thug"
       ],
       "head": "Bandit Leader",
       "division": 3,
       "temper": "Raider",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Bandit Leader",
+        "count": 1
+       },
+       {
+        "name": "Bandit Cutthroat",
+        "count": 2
+       },
+       {
+        "name": "Bandit Thug",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -4194,7 +5880,13 @@ export const ENCOUNTERS = {
       "head": "Large Raptor",
       "division": 2,
       "temper": "Territorial",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Large Raptor",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -4215,7 +5907,13 @@ export const ENCOUNTERS = {
       "head": "Thug",
       "division": 2,
       "temper": "Patrol",
-      "xp": 4
+      "xp": 4,
+      "group": [
+       {
+        "name": "Thug",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "4"
@@ -4236,7 +5934,13 @@ export const ENCOUNTERS = {
       "head": "Fire Elemental",
       "division": 3,
       "temper": "Guardian",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Fire Elemental",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -4257,7 +5961,13 @@ export const ENCOUNTERS = {
       "head": "Orc Raider",
       "division": 3,
       "temper": "Raider",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Orc Raider",
+        "count": 3
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -4280,7 +5990,13 @@ export const ENCOUNTERS = {
       "head": "Magpie",
       "division": 6,
       "temper": "Strange",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Magpie",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -4301,7 +6017,13 @@ export const ENCOUNTERS = {
       "head": "Fire Elemental",
       "division": 3,
       "temper": "Guardian",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Fire Elemental",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -4322,7 +6044,13 @@ export const ENCOUNTERS = {
       "head": "Living Stone",
       "division": 3,
       "temper": "Guardian",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Living Stone",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -4343,7 +6071,13 @@ export const ENCOUNTERS = {
       "head": "Orc Raider",
       "division": 3,
       "temper": "Raider",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Orc Raider",
+        "count": 3
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -4360,12 +6094,27 @@ export const ENCOUNTERS = {
       "text": "A Bandit Leader with two Cutthroats and a Brood of Thugs [Raider]",
       "creatures": [
        "Bandit Leader",
+       "Bandit Cutthroat",
        "Bandit Thug"
       ],
       "head": "Bandit Leader",
       "division": 3,
       "temper": "Raider",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Bandit Leader",
+        "count": 1
+       },
+       {
+        "name": "Bandit Cutthroat",
+        "count": 2
+       },
+       {
+        "name": "Bandit Thug",
+        "heads": 12
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -4388,7 +6137,21 @@ export const ENCOUNTERS = {
       "head": "Captain",
       "division": 4,
       "temper": "Raider",
-      "xp": 10
+      "xp": 10,
+      "group": [
+       {
+        "name": "Captain",
+        "count": 1
+       },
+       {
+        "name": "Warrior",
+        "count": 2
+       },
+       {
+        "name": "Footsoldier",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "10"
@@ -4409,7 +6172,13 @@ export const ENCOUNTERS = {
       "head": "Monstrous Widow",
       "division": 5,
       "temper": "Predator",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Monstrous Widow",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "20"
@@ -4431,7 +6200,17 @@ export const ENCOUNTERS = {
       "head": "Revenant Soldier",
       "division": 5,
       "temper": "Restless dead",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Revenant Soldier",
+        "count": 1
+       },
+       {
+        "name": "Skeleton",
+        "heads": 6
+       }
+      ]
      }
     ],
     "xpColumn": "20"
@@ -4452,7 +6231,13 @@ export const ENCOUNTERS = {
       "head": "Lion",
       "division": 5,
       "temper": "Predator",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Lion",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "20"
@@ -4474,7 +6259,17 @@ export const ENCOUNTERS = {
       "head": "Orc War Chief",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Orc War Chief",
+        "count": 1
+       },
+       {
+        "name": "Orc Raider",
+        "count": 4
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -4495,7 +6290,13 @@ export const ENCOUNTERS = {
       "head": "Inferno",
       "division": 8,
       "temper": "Guardian",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Inferno",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 4,
@@ -4507,7 +6308,13 @@ export const ENCOUNTERS = {
       "head": "Ettin",
       "division": 8,
       "temper": "Raider",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Ettin",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "60"
@@ -4533,7 +6340,13 @@ export const ENCOUNTERS = {
       "head": "Shadow-Man",
       "division": 7,
       "temper": "Strange",
-      "xp": 40
+      "xp": 40,
+      "group": [
+       {
+        "name": "Shadow-Man",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "40"
@@ -4555,7 +6368,17 @@ export const ENCOUNTERS = {
       "head": "Fire Elemental",
       "division": 3,
       "temper": "Guardian",
-      "xp": 6
+      "xp": 6,
+      "group": [
+       {
+        "name": "Fire Elemental",
+        "count": 2
+       },
+       {
+        "name": "Ember Sprite",
+        "heads": 12
+       }
+      ]
      }
     ],
     "xpColumn": "6"
@@ -4576,7 +6399,13 @@ export const ENCOUNTERS = {
       "head": "Lion",
       "division": 5,
       "temper": "Predator",
-      "xp": 20
+      "xp": 20,
+      "group": [
+       {
+        "name": "Lion",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "20"
@@ -4597,7 +6426,13 @@ export const ENCOUNTERS = {
       "head": "Earth Guardian",
       "division": 6,
       "temper": "Guardian",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Earth Guardian",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -4620,7 +6455,21 @@ export const ENCOUNTERS = {
       "head": "Warlord",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Warlord",
+        "count": 1
+       },
+       {
+        "name": "Veteran",
+        "count": 2
+       },
+       {
+        "name": "Footsoldier",
+        "heads": 12
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -4641,7 +6490,13 @@ export const ENCOUNTERS = {
       "head": "Ogre",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Ogre",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -4663,7 +6518,17 @@ export const ENCOUNTERS = {
       "head": "Revenant Knight",
       "division": 7,
       "temper": "Restless dead",
-      "xp": 40
+      "xp": 40,
+      "group": [
+       {
+        "name": "Revenant Knight",
+        "count": 1
+       },
+       {
+        "name": "Revenant Soldier",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "40"
@@ -4685,7 +6550,17 @@ export const ENCOUNTERS = {
       "head": "Orc War Chief",
       "division": 6,
       "temper": "Raider",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Orc War Chief",
+        "count": 1
+       },
+       {
+        "name": "Orc Raider",
+        "count": 4
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -4707,7 +6582,17 @@ export const ENCOUNTERS = {
       "head": "Earth Guardian",
       "division": 6,
       "temper": "Guardian",
-      "xp": 30
+      "xp": 30,
+      "group": [
+       {
+        "name": "Earth Guardian",
+        "count": 1
+       },
+       {
+        "name": "Living Stone",
+        "count": 2
+       }
+      ]
      }
     ],
     "xpColumn": "30"
@@ -4728,7 +6613,13 @@ export const ENCOUNTERS = {
       "head": "Inferno",
       "division": 8,
       "temper": "Guardian",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Inferno",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "60"
@@ -4749,7 +6640,13 @@ export const ENCOUNTERS = {
       "head": "Inferno",
       "division": 8,
       "temper": "Guardian",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Inferno",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 4,
@@ -4761,7 +6658,13 @@ export const ENCOUNTERS = {
       "head": "Bergrisar",
       "division": 8,
       "temper": "Raider",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Bergrisar",
+        "count": 1
+       }
+      ]
      },
      {
       "lo": 6,
@@ -4773,7 +6676,13 @@ export const ENCOUNTERS = {
       "head": "Ettin",
       "division": 8,
       "temper": "Raider",
-      "xp": 60
+      "xp": 60,
+      "group": [
+       {
+        "name": "Ettin",
+        "count": 1
+       }
+      ]
      }
     ],
     "xpColumn": "60"

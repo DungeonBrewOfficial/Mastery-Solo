@@ -33,12 +33,13 @@ for (const name of Object.keys(CREATURES)) {
 alias("Kallikantzaroi", "Kallikantzaros");
 alias("Woodsmen", "Woodsman");
 alias("antelope", "Deer");
-alias("jackals", "Wild Dog");
 alias("Raiders", "Orc Raider");
 alias("Bandit Thugs", "Bandit Thug");
 alias("Cluster of Thugs", "Bandit Thug");
 alias("Brood of Thugs", "Bandit Thug");
 alias("Treow", "Treow");
+alias("cows", "Elk");
+alias("Cutthroats", "Bandit Cutthroat");
 ALIASES.sort((a, b) => b[0].length - a[0].length);
 
 function creaturesIn(text) {
@@ -60,6 +61,34 @@ function defaultTemper(head) {
   if (c.kingdom === "behemoth") return "Raider";
   if (c.classification === "mortal" && c.kingdom === "beast") return "Predator";
   return "Guardian";
+}
+
+/* ---------------- who's in an encounter */
+
+const NUMBER = { a: 1, an: 1, the: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6 };
+const GROUP = { cluster: 6, brood: 12, swarm: 16 };
+/** "A Bandit Leader with two Cutthroats and a Cluster of Thugs" → [{ name, count, heads }] */
+export function compose(text) {
+  const clean = text.replace(/\[[^\]]*\]/g, "").replace(/\([^)]*\)/g, "").replace(/:\s.*$/, "").replace(/,\s*(at|in|near|on|out|holding|hiding|riding|ticking|feeding|risen|run off|guarding|half|over|come|from|a free|deserters|part of|the lost)\b.*$/i, "");
+  const chunks = clean.split(/,|\bwith\b|\band\b/i).map(c => c.trim()).filter(Boolean);
+  const out = [];
+  for (const chunk of chunks) {
+    const names = creaturesIn(chunk);
+    if (!names.length) continue;
+    const name = names[0];
+    const lower = chunk.toLowerCase();
+    // where the creature's name starts, so counts and group words are read from before it
+    const spot = ALIASES.filter(([a, n]) => n === name).map(([a]) => lower.indexOf(a)).filter(i => i >= 0).sort((x, y) => x - y)[0] ?? lower.length;
+    const before = lower.slice(0, spot);
+    const group = Object.keys(GROUP).find(g => new RegExp(`\\b${g}\\b`).test(before)) || Object.keys(GROUP).find(g => new RegExp(`\\b${g}\\b`).test(lower.slice(spot)) && !new RegExp(g, "i").test(name));
+    const dice = /(\d+d\d+(?:\s*\+\s*\d+)?)\s*[a-z' ]*$/.exec(before);
+    const words = [...before.matchAll(/\b(a|an|the|one|two|three|four|five|six)\b/g)];
+    const entry = { name };
+    if (CREATURES[name].rank === "minion") entry.heads = group ? GROUP[group] : 6;
+    else entry.count = dice ? dice[1].replace(/\s+/g, "") : words.length ? NUMBER[words[words.length - 1][1]] : 1;
+    out.push(entry);
+  }
+  return out;
 }
 
 /* ---------------- one option of a cell */
@@ -91,6 +120,9 @@ function readOption(text, strange = false) {
   opt.temper = seasonal ? null : (tempers[0] || (strange ? "Strange" : defaultTemper(head)));
   if (tempers.includes("Prey") && !seasonal) opt.temper = "Prey";
   opt.xp = opt.temper === "Prey" ? 0 : xpForDivision(opt.division);
+  opt.group = compose(main);
+  const ref = /as Band (I+)'s (\d+)/.exec(main);
+  if (ref) opt.ref = { band: ref[1].length, n: Number(ref[2]) };
   return opt;
 }
 
@@ -134,6 +166,16 @@ for (const line of md.split("\n")) {
     for (const o of cell.options) {
       if (!o.head && o.temper !== "Prey") problems.push(`${terrain} ${band} ${row[1]}: no creature found in "${o.text}"`);
     }
+  }
+}
+
+// "A Wolf Alpha's pack, as Band III's 6": take the group from the row it points to.
+for (const bands of Object.values(out)) for (const rows of Object.values(bands)) for (const cell of Object.values(rows)) {
+  for (const o of cell.options) {
+    if (!o.ref) continue;
+    const src = bands[o.ref.band]?.[o.ref.n]?.options.find(x => x.head === o.head);
+    if (src) o.group = src.group;
+    delete o.ref;
   }
 }
 

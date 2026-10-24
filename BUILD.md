@@ -8,7 +8,7 @@ It's a static site with no build step. Serve the repository root and open it in 
 
 ```bash
 npm run serve        # python3 -m http.server 8000, then open http://localhost:8000
-npm test             # rules and generator tests (Node 22)
+npm test             # rules, generator, and combat tests (Node 22)
 npm run sync         # copy Mastery's rules modules from ../Mastery-Foundry
 node tools/build-creatures.mjs ../Mastery-Foundry   # creatures from the Foundry pack
 node tools/build-encounters.mjs                     # terrain tables from design/02-encounters.md
@@ -24,7 +24,8 @@ The game saves after every action: on the hosted page, to the player's own priva
 |:---|:---|
 | `index.html`, `game/style.css` | The page |
 | `game/main.js` | Wires the page to the game state; input; saving |
-| `game/render.js` | Draws the map on a canvas |
+| `game/render.js` | Draws the map, and the battle grid, on a canvas |
+| `game/combat.js` | Battles: the grid, rounds and phases, attacks, defense, damage, dying, morale, the enemy AI (Mastery's Combat and Weapon Mastery chapters; `design/02-encounters.md` for morale) |
 | `game/journey.js` | The turn: the day, legs, the travel and event dice, camp (`design/01-the-turn.md`) |
 | `game/events.js` | Signs, Discoveries, Encounters, contact, disposition, choices, the chase, rewards (`design/02-encounters.md`, `design/04-the-map.md`) |
 | `game/mastery.js` | Mastery's trial dice: tiers, the Die Progression Chart, Dominance and Impotence |
@@ -45,12 +46,18 @@ The game saves after every action: on the hosted page, to the player's own priva
 2. **Events.** *Built.* Signs, Discoveries, and Encounters, rolled on the terrain tables generated from `design/02-encounters.md` (`tools/build-encounters.mjs`) with creatures from the Foundry pack (`tools/build-creatures.mjs`). Contact, Startle, ambushes, disposition by temper, the party's choices (leave, go around, pay the toll, answer a patrol, leave food, throw coin, fight, run), the chase, reading and following signs to a lair, the Discovery table with places marked on the map, combat XP, exploration XP banked until a settlement, purses and pelts.
 3. **The party and town.** Characters with real Mastery stats, health, Durability, rations, kits, weather and Pushing the Pace trials, rest, settlements, buying and selling, recruiting.
 4. **Sites.** Lairs, caves, ruins, barrows: areas, contents, traps, the clock, the heart and its hoard. Clues and lost lore.
-5. **Combat.** Mastery's combat on a tactical screen, with enemy AI. Until then, fights are resolved by a stand-in that is clearly labeled as one.
+5. **Combat.** Built in stages.
+   - *Stage 1, built.* A 16 × 12 grid opens for each fight, with the encounter's whole group (generated from the tables, minion groups as one token whose footprint shrinks as heads fall). Startle carries in as Impaired. Each round: declarations (weapon and the three Untrained guards), the d6 for the first side, then Fast, Moderate, and Slow, winning side first. 2 AP; moves (half again for consecutive moves), melee and ranged attacks with the Aiming Trial, flanking, defense declared before the roll, counterattacks, reprisal attacks for leaving reach. Weapon Mastery Attack Dice by track, Single Weapon and Two-Handed styles, the shield soaking durability and stopping missiles. Damage through Foundry's `resolveDamage`. 0 health: Injury, the dying timer, the Endurance trial, Fighting On and Traumas, Triage. Creatures: written dice, size bonuses, rolled Health from Foundry's health plan, armor durability, Epic and Legendary phase AP. Morale on the Demoralized ladder. Running from a fight is the chase. Winning pays the head's XP and spoils; the healer tends wounds afterwards.
+   - *Stage 2.* Maneuvers and the guards past Untrained, Leaders' buffs, creature abilities and Mob traits.
+   - *Stage 3.* Spells (Flame Dart, Stoneskin, Mend, Sacred Ward) and the companions (Tallow, Clabber).
 
 ## Known gaps
 
-- **Fights are a stand-in.** Choosing Fight, or being caught, wins the fight without harm and pays XP and spoils. Real combat is milestone 5.
-- Leaving food doesn't cost rations yet, and conditions from Startle aren't carried into anything.
+- **Combat has no maneuvers, spells, abilities, or companions yet** (stages 2 and 3). Gisla, Corra, and Gerberga fight with their weapons only, and creatures with their attacks only.
+- The battlefield is open ground: no terrain, cover, or light yet.
+- **Healing is a stopgap until milestone 3.** Camp gives a Wilderness Rest (a Dungeon Rest in Deep country, one step worse if the night die brings something), and a night in a settlement gives a Good Night's Rest, free. After a fight the healer Heals each wounded character once without spending Wound Kits. Injuries and Traumas are recorded but nothing treats them yet.
+- When the whole party is down, the dynasty run ends; the next generation is milestone 3.
+- Leaving food doesn't cost rations yet.
 - Sites (lairs, caves, ruins, barrows) are marked on the map but can't be entered (milestone 4).
 - Characters level up in name only; advancement is milestone 3.
 
