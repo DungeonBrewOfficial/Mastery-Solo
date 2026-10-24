@@ -8,19 +8,16 @@ import { CREATURES } from "./data/creatures.js";
 import { squareAt, countryAt, findPath, moveCost, TERRAINS, SETTLEMENTS } from "./world.js";
 import { draw } from "./render.js";
 import { BAND_LABELS } from "./vendor/foundry/module/helpers/weather-rules.mjs";
+import { openStorage, pack, unpack } from "./storage.js";
 
-const SAVE_KEY = "mastery-solo-save-v2";
 const $ = (id) => document.getElementById(id);
 const canvas = $("map");
 
-let state = loadSaved() || newGame();
-const view = { cx: state.party.x + 0.5, cy: state.party.y + 0.5, scale: 22, path: null, hover: null };
+let state = null, storage = null;
+const view = { cx: 0, cy: 0, scale: 22, path: null, hover: null };
 
-function loadSaved() {
-  try { const s = localStorage.getItem(SAVE_KEY); return s ? JSON.parse(s) : null; } catch { return null; }
-}
 function persist() {
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch { /* private window: play on without saving */ }
+  storage?.save(state);
 }
 
 function refreshPath() {
@@ -149,10 +146,12 @@ $("quiet").onchange = (e) => act(() => { state.party.quiet = e.target.checked; }
 $("center").onclick = () => { view.cx = state.party.x + 0.5; view.cy = state.party.y + 0.5; render(); };
 $("zoom-in").onclick = () => { view.scale = Math.min(48, view.scale * 1.25); render(); };
 $("zoom-out").onclick = () => { view.scale = Math.max(6, view.scale / 1.25); render(); };
-$("new").onclick = () => {
-  if (!confirm("Start a new dynasty? The current world will be lost.")) return;
-  const seedText = prompt("Seed (leave blank for a random world):", "");
-  const seed = seedText && /^\d+$/.test(seedText.trim()) ? Number(seedText.trim()) : undefined;
+$("new").onclick = () => { $("newgame").hidden = false; $("seed-input").value = ""; $("seed-input").focus(); };
+$("cancel-new").onclick = () => { $("newgame").hidden = true; };
+$("start-new").onclick = () => {
+  const text = $("seed-input").value.trim();
+  const seed = /^\d+$/.test(text) ? Number(text) : undefined;
+  $("newgame").hidden = true;
   state = newGame(seed);
   act(() => {});
 };
@@ -167,6 +166,7 @@ const squareUnder = (ev) => {
 let drag = null;
 canvas.addEventListener("pointerdown", (ev) => { drag = { x: ev.clientX, y: ev.clientY, cx: view.cx, cy: view.cy, moved: false }; canvas.setPointerCapture(ev.pointerId); });
 canvas.addEventListener("pointermove", (ev) => {
+  if (!state) return;
   if (drag) {
     const dx = ev.clientX - drag.x, dy = ev.clientY - drag.y;
     if (Math.abs(dx) + Math.abs(dy) > 4) drag.moved = true;
@@ -199,6 +199,18 @@ window.addEventListener("keydown", (ev) => {
   if (ev.key === " " && free) { ev.preventDefault(); act(() => travelLeg(state)); }
   if (ev.key === "c" && free) act(() => campNow(state));
 });
-window.addEventListener("resize", render);
+window.addEventListener("resize", () => state && render());
 
-render();
+/* ---------------- start */
+
+async function start(data = {}) {
+  storage = await openStorage();
+  state = (data.state && unpack(data.state)) || (await storage.load()) || newGame();
+  view.cx = state.party.x + 0.5; view.cy = state.party.y + 0.5;
+  $("saves").textContent = `Saved to ${storage.where}`;
+  render();
+  // Keep the game going if the page is updated while it's open.
+  window.claude?.hot?.snapshot?.(() => ({ state: pack(state) }));
+}
+const hot = window.claude?.hot;
+if (hot?.ready) hot.ready(start); else start(hot?.data ?? {});

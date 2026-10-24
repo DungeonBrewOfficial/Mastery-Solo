@@ -4,14 +4,23 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mastery Solo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:ital,wght@0,400;0,700;1,400&family=IM+Fell+English&display=swap">
   <link rel="stylesheet" href="game/style.css">
 </head>
 <body>
   <header>
     <h1>Mastery Solo</h1>
     <span id="seed" class="muted"></span>
+    <span id="saves" class="muted small"></span>
     <button id="new" class="quiet">New dynasty</button>
   </header>
+  <div id="newgame" class="newgame" hidden>
+    <p>Start a new dynasty? The current world and party will be lost.</p>
+    <label for="seed-input">Seed (leave blank for a random world)</label>
+    <input id="seed-input" inputmode="numeric" autocomplete="off">
+    <div class="buttons"><button id="start-new" class="primary">Start a new dynasty</button><button id="cancel-new">Keep playing</button></div>
+  </div>
   <main>
     <section class="map-wrap">
       <canvas id="map" aria-label="The map"></canvas>

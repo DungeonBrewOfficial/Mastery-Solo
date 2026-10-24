@@ -1,4 +1,6 @@
+/* A lamp-lit map table: dark wood, parchment ink, a sealing-wax red. One deliberate dark look. */
 :root {
+  color-scheme: dark;
   --bg: #15120f;
   --panel: #221d18;
   --ink: #efe3c8;
@@ -8,13 +10,20 @@
   --event: #e8b04a;
   --map: #7fb069;
   --todo: #8f86b8;
-  font-family: Georgia, "Iowan Old Style", serif;
+  --display: "IM Fell English", Georgia, "Iowan Old Style", serif;
+  --ui: "Alegreya Sans", "Gill Sans", "Segoe UI", system-ui, sans-serif;
+  font-family: var(--ui);
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); }
-body { display: flex; flex-direction: column; }
-header { display: flex; align-items: center; gap: 12px; padding: 8px 16px; border-bottom: 1px solid var(--line); }
-header h1 { font-size: 1.15rem; margin: 0; letter-spacing: 0.04em; }
+body { display: flex; flex-direction: column; font-family: var(--ui); font-size: 15px; padding-left: max(0px, env(safe-area-inset-left, 0px)); padding-right: max(0px, env(safe-area-inset-right, 0px)); }
+header { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding-block: 8px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); border-bottom: 1px solid var(--line); }
+header h1 { font-family: var(--display); font-weight: 400; font-size: 1.4rem; margin: 0; letter-spacing: 0.02em; }
+#event h2 { font-family: var(--display); font-weight: 400; font-size: 1.15rem; }
+.newgame { display: flex; flex-direction: column; gap: 8px; padding-block: 12px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); background: var(--panel); border-bottom: 1px solid var(--line); }
+.newgame p { margin: 0; }
+.newgame input { font: inherit; color: var(--ink); background: #2e2720; border: 1px solid #4a3f33; border-radius: 4px; padding: 6px 10px; max-width: 16rem; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--event); outline-offset: 1px; }
 header .quiet { margin-left: auto; }
 main { flex: 1; display: flex; min-height: 0; }
 .map-wrap { position: relative; flex: 1; min-width: 0; }
@@ -56,7 +65,7 @@ button.primary:hover:not(:disabled) { background: #6e342a; }
   aside { width: 100%; border-left: none; border-top: 1px solid var(--line); flex: 1; }
 }
 #event { background: #2b221a; border-left: 3px solid var(--event); }
-#event h2 { margin: 0; font-size: 1rem; color: var(--event); }
+#event h2 { margin: 0; color: var(--event); }
 #event p { margin: 0; }
 #event .warn { color: #e07a5f; }
 .buttons { display: flex; flex-wrap: wrap; gap: 6px; }

@@ -14,7 +14,9 @@ node tools/build-creatures.mjs ../Mastery-Foundry   # creatures from the Foundry
 node tools/build-encounters.mjs                     # terrain tables from design/02-encounters.md
 ```
 
-The game saves itself in the browser (localStorage) after every action. **New dynasty** starts over, optionally from a seed.
+The game saves after every action: on the hosted page, to the player's own private space in the page's database (so the save follows their account); opened from the repository, to the browser. **New dynasty** starts over, optionally from a seed.
+
+**The hosted page.** `node tools/build-page.mjs` packs every module into one self-contained page, `dist/mastery-solo.html` (not committed), which is published as Jon's private playable page with the `db` and `user` capabilities.
 
 ## How it's organized
 
@@ -28,6 +30,8 @@ The game saves itself in the browser (localStorage) after every action. **New dy
 | `game/mastery.js` | Mastery's trial dice: tiers, the Die Progression Chart, Dominance and Impotence |
 | `game/data/` | Game data. `encounters.js` and `creatures.js` are generated: never edit them. `party.js` holds the four starting characters from the audio roster. |
 | `game/world.js` | Map generation, squares, movement cost, kinds of country, pathfinding (`design/04-the-map.md`) |
+| `game/storage.js` | Saving and loading, compacted; the page database when hosted, the browser otherwise |
+| `tools/build-page.mjs` | Packs the game into one page for publishing |
 | `game/rng.js` | Seeded dice. Every roll goes through it, and its state is saved, so a dynasty can be replayed |
 | `game/vendor/foundry/` | Mastery's pure rules modules, copied from the Foundry system by `tools/sync-foundry.mjs`. **Never edit these here.** Change them in the Foundry repo and sync. |
 | `design/` | The rules the game implements. Code cites the design file it follows. |

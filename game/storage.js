@@ -1,0 +1,65 @@
+/**
+ * Saving. On the hosted page the save lives in the page's database, in the
+ * player's own private space, so it follows them between devices. Opened
+ * from the repository, it falls back to the browser's local storage.
+ *
+ * Saves are compacted: each tile's 36 squares become one short string.
+ */
+
+const LOCAL_KEY = "mastery-solo-save-v2";
+const FLAGS = ["road", "river", "lake"];
+
+export function pack(state) {
+  const s = structuredClone(state);
+  for (const t of Object.values(s.world.tiles)) {
+    t.sq = t.sq.map(c => String.fromCharCode(48 + FLAGS.reduce((n, f, i) => n | (c[f] ? 1 << i : 0), 0))).join("");
+  }
+  s.log = s.log.slice(-120);
+  return JSON.stringify(s);
+}
+
+export function unpack(json) {
+  const s = JSON.parse(json);
+  for (const t of Object.values(s.world.tiles)) {
+    if (typeof t.sq === "string") t.sq = [...t.sq].map(ch => { const n = ch.charCodeAt(0) - 48; return Object.fromEntries(FLAGS.map((f, i) => [f, !!(n & (1 << i))])); });
+  }
+  s.world.places ??= {};
+  return s;
+}
+
+/** Resolves to { load(), save(state), where } once it knows where saves go. */
+export async function openStorage() {
+  const local = {
+    where: "this browser",
+    async load() { try { const j = localStorage.getItem(LOCAL_KEY); return j ? unpack(j) : null; } catch { return null; } },
+    async save(state) { try { localStorage.setItem(LOCAL_KEY, pack(state)); } catch { /* private window: play on without saving */ } }
+  };
+  if (!window.claude?.use) return local;
+  try {
+    const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+    if (!db || !user) return local;
+    const id = await user.id();
+    if (!id) return local;
+    const doc = db.collection(`data/users/${id}`).doc("save");
+    let pending = null, writing = false;
+    const flush = async () => {
+      if (writing || !pending) return;
+      writing = true;
+      const json = pending; pending = null;
+      try { await doc.set({ json, savedAt: Date.now() }); } catch { await local.save(unpack(json)); }
+      writing = false;
+      if (pending) flush();
+    };
+    return {
+      where: "your account",
+      async load() {
+        try { const snap = await doc.get(); return snap.exists ? unpack(snap.data().json) : await local.load(); } catch { return local.load(); }
+      },
+      async save(state) {
+        pending = pack(state);
+        local.save(state);
+        setTimeout(flush, 400);
+      }
+    };
+  } catch { return local; }
+}
