@@ -22,7 +22,11 @@ const FILES = [
   "module/helpers/minion-rules.mjs",
   "module/helpers/puca-rules.mjs",
   "module/helpers/agathion-rules.mjs",
-  "module/helpers/companion-phase.mjs"
+  "module/helpers/companion-phase.mjs",
+  "module/helpers/food-rules.mjs",
+  "module/helpers/rest-rules.mjs",
+  "module/helpers/trade-rules.mjs",
+  "module/helpers/advancement-rules.mjs"
 ];
 
 /**
