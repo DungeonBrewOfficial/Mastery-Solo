@@ -238,6 +238,8 @@ export const COND_LABELS = {
   inspired: { 1: "Rallied", 2: "Emboldened", 3: "Fearless" },
   invigorated: { 1: "Energized", 2: "Empowered", 3: "Tireless" }
 };
+/** Possessed (Cursed): fire resistance of half the character's level. */
+const innateRes = (m, type) => type === "fire" && (m.abilities || []).includes("Possessed") ? Math.floor((m.level || 1) / 2) : 0;
 const MUNDANE = ["cutting", "cleaving", "crushing", "piercing", "puncturing"];
 const PHYSICAL = ["strength", "agility", "physique", "endurance"];
 /** Conditions that deteriorate on their own; Impaired's Startle tiers follow the Startle rule instead, and Demoralized holds while its source is in sight. */
@@ -322,8 +324,10 @@ function mods(state, u, kind) {
 }
 
 /** A trial to resist: the character's attribute trial, or the creature's trial dice, with its conditions. */
-function resist(state, rng, u, attr, dc, { edge = 0, hearten, forCond } = {}) {
+function resist(state, rng, u, attr, dc, { edge = 0, hearten, forCond, vsType } = {}) {
   const md = mods(state, u, attr);
+  // Possessed (Cursed): Impotence on trials to resist Sacred damage.
+  if (vsType === "sacred" && u.pc && (memberOf(state, u).abilities || []).includes("Possessed")) edge -= 1;
   const rb = forCond && has(u, "resistBonus");
   if (rb && rb.conds.includes(forCond)) md.bonus += rb.bonus;
   const e = Math.sign(edge + md.edge);
@@ -560,11 +564,18 @@ export function beginRound(state, rng, note, picks = {}) {
       note(`${m.name} ${old ? `drops the ${old.name.toLowerCase()} and ` : ""}draws the ${weaponOf(m, u).name.toLowerCase()} (1 AP).`);
     }
     if (p.free) setFreeSlot(u, p.free);
-    u.casting = null;
-    if (p.spell) declareSpell(state, note, u, p.spell);
+    upkeepImbue(state, note, u);
+    u.casting = null; u.theurgy = null;
+    const turnPick = p.turn && turnOptions(state, u).find(o => o.key === p.turn);
+    if (turnPick) {
+      const [mode, spirit, division] = p.turn.split(":");
+      u.theurgy = { mode, spirit, division: Number(division), phase: turnPick.phase, label: turnPick.label };
+      u.turnUsed = true; // once per encounter
+      note(`${m.name} declares: ${turnPick.label.replace(/ \(.*\)$/, "")} (${cap(turnPick.phase)} phase).`, "event");
+    } else if (p.spell) declareSpell(state, note, u, p.spell);
     const w = weaponOf(m, u);
     // A declared spell sets the phase by its speed (Magic Mastery, Spell Speed); a weapon drawn this round can still slow it.
-    const speeds = u.companion ? [u.declared?.hellfire ? "fast" : "moderate"] : [u.casting ? u.casting.phase : w?.speed || "fast", slowest].filter(Boolean);
+    const speeds = u.companion ? [u.declared?.hellfire ? "fast" : "moderate"] : [u.theurgy ? u.theurgy.phase : u.casting ? u.casting.phase : w?.speed || "fast", slowest].filter(Boolean);
     u.phase = u.impaired === 1 || u.impaired === 2 ? "slow" : PHASES[Math.max(...speeds.map(s => PHASES.indexOf(s)))];
   }
   const d = rng.d(6);
@@ -576,6 +587,7 @@ export function beginRound(state, rng, note, picks = {}) {
 
 function endRound(state, rng, note) {
   const b = state.battle;
+  for (const u of b.units.filter(x => x.fireAura > 0)) { u.fireAura -= 1; if (!u.fireAura) note(`${u.name}'s Fire Aura gutters out.`); }
   // Whoever had no turn this round (unconscious, Paralyzed) still bleeds at its end.
   for (const u of b.units.filter(x => onField(x) && !x.tookTurn)) endOfTurn(state, rng, note, u);
   // Tiers no source holds deteriorate by one each round; a hold keeps Restricted.
@@ -624,6 +636,7 @@ function nextActor(state, rng, note) {
 function finishTurn(state, u, rng, note) {
   const b = state.battle;
   if (u.casting) loseSpell(state, note, u, "the turn ended without releasing it");
+  if (u.theurgy) { note(`${u.name} lets the declared ${u.theurgy.mode === "destroy" ? "Destroy" : "Turn"} go unspoken.`); u.theurgy = null; }
   endOfTurn(state, rng, note, u);
   u.doneIn.push(PHASES[b.phaseIdx]);
   u.moveLeft = 0; u.lastMove = false;
@@ -693,6 +706,7 @@ function endOfTurn(state, rng, note, u) {
     }
     secondaryDamage(state, rng, note, u, a.amount, a.type, `Attrition (${a.label})`, { direct: true });
   }
+  if (onField(u)) fireAuraAt(state, rng, note, u);
   const ta = cond(u, "tainted");
   if (ta >= 2 && onField(u)) secondaryDamage(state, rng, note, u, ta === 3 ? 2 : 1, null, "poison", { direct: true, noResist: true });
   for (const o of b.units.filter(x => x.side !== u.side && onField(x) && !x.pc)) {
@@ -707,7 +721,7 @@ function endOfTurn(state, rng, note, u) {
  * resistance of its type and, unless direct, the armor's durability like
  * any hit (resolveDamage, passive). Immunity stops it.
  */
-function secondaryDamage(state, rng, note, t, amount, type, label, { direct = false, noResist = false } = {}) {
+function secondaryDamage(state, rng, note, t, amount, type, label, { direct = false, noResist = false, magic = false } = {}) {
   if (!onField(t) || !(amount > 0)) return;
   const ab = has(t, "absorb");
   if (ab && ab.type === type) { t.hp = Math.min(t.hpMax, t.hp + amount); note(`${label}: ${t.name} drinks it in (${ab.name}), healing ${amount}.`, "event"); return; }
@@ -715,14 +729,14 @@ function secondaryDamage(state, rng, note, t, amount, type, label, { direct = fa
   if (t.pc) {
     const m = memberOf(state, t);
     if (m.dead) return;
-    const res = noResist || !type ? 0 : t.companion ? (MUNDANE.includes(type) ? m.resistance : 0) : !m.armor || m.armor.durability <= 0 ? 0 : (m.armor.resistance[type] || 0);
+    const res = noResist || !type ? 0 : (t.companion ? (MUNDANE.includes(type) ? m.resistance : 0) : !m.armor || m.armor.durability <= 0 ? 0 : (m.armor.resistance[type] || 0)) + innateRes(m, type);
     const ward = type && wardFor(t, type);
     const r = direct ? { healthDamage: Math.max(0, amount - res), durabilityDamage: 0 }
       : resolveDamage({ attackTotal: amount, damageType: type, armorResistance: res, durabilityCurrent: m.armor?.durability || 0, healthCurrent: m.hp, activeDefense: false, wardPool: ward?.pool || 0 });
     drainWard(state, note, t, ward, r.wardAbsorbed);
     if (r.durabilityDamage) { m.armor.durability -= r.durabilityDamage; shaken(state, note, t); }
     note(`${label}: ${t.name} takes ${[r.durabilityDamage ? `${r.durabilityDamage} to the ${m.armor.name.toLowerCase()}` : "", r.healthDamage ? `${r.healthDamage} to health` : ""].filter(Boolean).join(", ") || "nothing"}.`, r.healthDamage ? "event" : "");
-    if (r.healthDamage) hurtPC(state, rng, note, t, r.healthDamage);
+    if (r.healthDamage || (magic && m.hp <= 0)) hurtPC(state, rng, note, t, r.healthDamage, { magic });
     return;
   }
   const c = CREATURES[t.cname];
@@ -767,6 +781,8 @@ function creatureFalls(state, rng, note, t) {
   }
   morale(state, rng, note, "fall");
 }
+/** Panicked or turned: it runs, or cowers when cornered, and attacks no one. */
+const cowed = (u) => u.demoralized >= 3 || !!u.turnedBy;
 const has = (u, kind) => !u.pc && abilitiesOf(CREATURES[u.cname]).find(a => a.kind === kind);
 
 function regroupHeads(u) {
@@ -909,6 +925,7 @@ function trampleRun(state, u, t) {
 export function canAttack(state, u, t, mode = u.mode || "strike") {
   if (!t || t.side === u.side || !onField(t)) return { ok: false };
   if (cond(u, "restricted") >= 3) return { ok: false, why: "Restrained: only breaking free" };
+  if (turning(u)) return { ok: false, why: "holding the Turn: only defense and movement" };
   const cost = mode === "opportunist" || mode === "trample" || mode === "hellfire" ? 2 : 1;
   if (u.ap < cost) return { ok: false, why: `needs ${cost} AP` };
   const m = memberOf(state, u), w = weaponOf(m, u);
@@ -947,6 +964,7 @@ export function canAttack(state, u, t, mode = u.mode || "strike") {
  */
 export function opportunities(state, u) {
   const b = state.battle, m = memberOf(state, u), out = [];
+  if (turning(u)) return [{ text: "You're holding the Turn: you can move and defend, nothing else. Release it to act.", rule: "Turned creatures are compelled to flee from you as fast as they are able for as long as you concentrate. While turning, you must hold your Focus in hand and can take no actions other than defense and movement (Paladin, Turn)." }];
   const foes = b.units.filter(t => !t.pc && standing(state, t));
   if (attackModes(state, u).some(x => x.id === "opportunist") && u.ap >= 2) {
     for (const t of foes.filter(f => canAttack(state, u, f, "opportunist").ok)) {
@@ -968,6 +986,10 @@ export function opportunities(state, u) {
   for (const t of b.units.filter(x => x.pc && x !== u && onField(x) && x.held && gap(u, x) <= 1)) out.push({ text: `${t.name} is held: help them break free for 1 AP.`, rule: RULES.assist });
   if (u.casting) out.push({ text: `You're casting ${u.casting.label}: release it this turn (1 AP)${u.casting.noSomatic ? "" : ". Attacking or defending first loses it"}.`, rule: "You lose the spell and its magan if, before it resolves, you: cast another spell, use another ability, or choose to stop; defend, attack, or interact with an object, unless the spell has no somatic components; cannot spend its AP when it resolves; take health damage and fail a Miscast trial against a DC equal to the health lost (Magic Mastery, Interrupted Casting)." });
   for (const o of reapplyOptions(state, u).filter(x => x.targets.length)) out.push({ text: `${o.e.name} is still held: 1 AP turns it on a target again.`, rule: "When a target resists a sustained condition spell or breaks free of it, the spell stays in your concentration slot for its duration. On your turn, you can spend 1 AP to apply it again to the same target or to a new one within the spell's reach. The target makes a fresh trial to resist (Magic Mastery, Conditions)." });
+  if (u.theurgy) out.push({ text: `${u.theurgy.mode === "destroy" ? "Destroy" : "Turn"} is ready: 1 AP, Charisma and Lore dice against ${u.theurgy.division * 2}.`, rule: "Choose Asura or Daeva, then choose one Division; every creature of that Division you can see is targeted. On your turn, roll your Charisma tier die + Lore skill die. DC: Division × 2. Roll ÷ Division (rounded down) = number turned. Turned creatures flee from you as long as you concentrate. While turning, you can take no actions other than defense and movement. Destroy Daeva: roll ÷ DC = number destroyed (Paladin, Theurgic Authority)." });
+  if (u.fireAura) out.push({ text: `Your Fire Aura burns everyone within 10 feet at the end of their turns, your own side too (${u.fireAura} round${u.fireAura === 1 ? "" : "s"} left).`, rule: "Fire Aura: all creatures within 10 feet take fire damage equal to Perception tier each round. Lasts a number of rounds equal to Wisdom tier. You retain full control of your actions (Cursed, Possessed)." });
+  for (const o of b.units.filter(x => x.pc && x !== u && x.fireAura > 0 && gap(x, u) <= 2)) out.push({ text: `You're inside ${o.name}'s Fire Aura: end your turn more than 10 feet from her or burn.`, rule: "Area auras fill the radius. A creature within the radius at the end of its turn takes the aura's damage; a creature that moves out during its turn takes none (Magic Mastery, Auras)." });
+  if (imbueOptions(state, u).length && !u.imbue) out.push({ text: `You can Imbue your weapon (1 AP, 1 magan a round): +d${dieOfTier(chantTier(m))[1]} ${imbueOptions(state, u).join(" or ")} on every blow that lands.`, rule: "Imbue: spend 1 AP to imbue your weapon with a damage type from a spell form in which you have at least Untrained mastery. While imbued, when your weapon deals damage to durability or health, it deals additional damage of the chosen type equal to your tier die. You either dedicate your concentration slot to maintain the imbuing or spend 1 AP per round. Cost: 1 magan per round (Paladin, Chantment)." });
   if (attackModes(state, u).some(x => x.id === "hellfire")) out.push({ text: `Hellfire is ready: pick a target within 3 squares. Everything in the cone burns, your own side included.`, rule: "Hellfire (2 AP, Fast, declared): spend 2 magan from your bonded caster to breathe a 15-foot cone of hellfire. Creatures in the cone make an Agility trial against your DC or take d2 + d4 fire damage. Control trial: your tier die; on a 1, the Daeva chooses the direction." });
   if (attackModes(state, u).some(x => x.id === "trample")) for (const t of foes.filter(f => canAttack(state, u, f, "trample").trample?.hit.length > 1)) out.push({ text: `Trample can catch ${canAttack(state, u, t, "trample").trample.hit.map(x => x.name).join(" and ")} in one run (2 AP, Inferiority).`, rule: "Trample (2 AP, Movement + Attack): move in a straight line up to full speed. Roll one tusk attack with Inferiority and apply it to up to 2 targets in the path." });
   const helper = heartener(state, u, "heartenDefense");
@@ -1069,10 +1091,10 @@ function hellfire(state, rng, note, u, t) {
   if (!caught.length) { note("The fire finds no one."); return; }
   for (const x of caught) {
     if (!onField(x)) continue;
-    if (isObject(x)) { secondaryDamage(state, rng, note, x, rng.d(2) + rng.d(4), "fire", "Hellfire"); continue; }
+    if (isObject(x)) { secondaryDamage(state, rng, note, x, rng.d(2) + rng.d(4), "fire", "Hellfire", { magic: true }); continue; }
     const r = resist(state, rng, x, "agility", pd.dc);
     note(`${x.name} twists away from the fire (Agility ${r.text} against ${pd.dc}): ${r.ok ? "clear" : "caught"}.`);
-    if (!r.ok) secondaryDamage(state, rng, note, x, rng.d(2) + rng.d(4), "fire", "Hellfire");
+    if (!r.ok) secondaryDamage(state, rng, note, x, rng.d(2) + rng.d(4), "fire", "Hellfire", { magic: true });
   }
 }
 
@@ -1098,7 +1120,7 @@ function spellOf(m, name) {
  */
 export function castOptions(state, u) {
   const m = memberOf(state, u);
-  if (!m.casting || u.companion) return [];
+  if (!m.casting || u.companion || turning(u)) return [];
   const out = [];
   for (const name of m.spells || []) {
     const sp = spellOf(m, name);
@@ -1160,7 +1182,7 @@ function spellOrigins(state, u) {
 /** Who the spell in hand could land on now. */
 export function castTargets(state, u) {
   const b = state.battle, c = u.casting;
-  if (!c || u.ap < 1) return [];
+  if (!c || u.ap < 1 || turning(u)) return [];
   const sp = spellOf(memberOf(state, u), c.name);
   const near = (t) => spellOrigins(state, u).some(o => o === t || gap(o, t) <= (sp.reach || 1));
   if (sp.kind === "damage" || sp.kind === "condition") return b.units.filter(t => t.side !== u.side && standing(state, t) && !isObject(t) && near(t));
@@ -1196,9 +1218,15 @@ function releaseSpell(state, rng, note, u, t, c) {
   const dc = m.casting.dc;
   const power = () => rollPool(rng, [castDie(m), masteryDie(m, sp.form)], { extra: -1 });
   if (sp.kind === "damage") {
-    const r = resist(state, rng, t, sp.resist, dc);
+    const r = resist(state, rng, t, sp.resist, dc, { vsType: sp.type });
     note(`${m.name} casts ${sp.name} at ${t.name}. ${t.name} resists with ${cap(sp.resist)} (${r.text} against ${dc}): ${r.ok ? "untouched" : "it lands"}.`);
-    if (!r.ok) { const d = power(); note(`${sp.name}: ${d.text}.`); secondaryDamage(state, rng, note, t, d.total, sp.type, sp.name); if (!t.pc && onField(t)) morale(state, rng, note, "hurt", t); }
+    if (!r.ok) {
+      const d = power(), before = tally(t);
+      note(`${sp.name}: ${d.text}.`);
+      secondaryDamage(state, rng, note, t, d.total, sp.type, sp.name, { magic: true });
+      if (!t.pc && onField(t)) morale(state, rng, note, "hurt", t);
+      demonTrigger(state, rng, note, u, kills(t, before));
+    }
     return;
   }
   if (sp.kind === "condition") {
@@ -1238,6 +1266,8 @@ function releaseSpell(state, rng, note, u, t, c) {
  * to health or durability, unless it was cast this round.
  */
 function concentrate(state, note, u, entry) {
+  // Imbue holds only in the free slot (the 1 AP a round to pay for it elsewhere isn't built): pushed out, it ends.
+  for (const e of [...(u.conc || [])]) if (e.slot === "free" && e.kind === "imbue") endConcentration(state, note, u, e, "ends: the free slot went elsewhere");
   for (const e of u.conc || []) if (e.slot === "free") e.slot = "passive";
   const e = { id: `${entry.name}:${state.battle.round}:${(u.conc || []).length}`, ...entry, slot: "free", round: state.battle.round };
   (u.conc ||= []).push(e);
@@ -1256,6 +1286,8 @@ function endConcentration(state, note, u, e, why) {
   if (e.kind === "ward" && t) t.wards = (t.wards || []).filter(w => !(w.by === u.id && w.name === e.name));
   // A held condition starts standard deterioration (Conditions spells).
   if (e.kind === "condition" && t && cond(t, e.cond)) (t.decay ||= {})[e.cond] = { by: null, round: b.round };
+  if (e.kind === "turn") for (const id of e.targets || []) { const x = unitById(b, id); if (x) x.turnedBy = null; }
+  if (e.kind === "imbue") u.imbue = null;
   note(`${u.name}'s ${e.name} ${why}.`, "event");
 }
 /** Damage reached the caster: passive spells break. */
@@ -1298,6 +1330,150 @@ export function pcReapply(state, rng, note, entryId, targetId) {
   advance(state, rng, note);
 }
 
+/* ------------------------------------------------------------------ */
+/* Class abilities: the Cursed and the Paladin (Mastery Core Classes)   */
+
+/** How much of a creature there is to kill: heads for a minion group, else whether it still stands. */
+const tally = (t) => t.minion ? t.heads : onField(t) && t.hp > 0 ? 1 : 0;
+const kills = (t, before) => t.pc ? 0 : Math.max(0, before - tally(t));
+
+/**
+ * Demon Trigger (Possessed): each killing blow Gisla deals herself, she rolls
+ * her Wisdom tier die; a 1 fails, and each kill in the same action widens it
+ * by one. A failure lights her Fire Aura.
+ */
+function demonTrigger(state, rng, note, u, n) {
+  const m = memberOf(state, u);
+  if (!n || !(m.abilities || []).includes("Possessed")) return;
+  const die = dieOfTier(tierOf(m.attributes.wisdom))[1], r = rng.d(die);
+  const fail = r <= n;
+  note(`Demon Trigger: ${m.name} rolls d${die} ${r}${n > 1 ? ` (${n} kills: fails on 1-${n})` : ""}: ${fail ? "the demon wakes" : "she holds it down"}.`, fail ? "event" : "");
+  if (!fail) return;
+  u.fireAura = tierOf(m.attributes.wisdom);
+  note(`${m.name}'s Fire Aura flares: everyone within 10 feet burns for ${tierOf(m.attributes.perception)} each round, friend or foe, for ${u.fireAura} rounds.`, "event");
+}
+/** Area aura (Magic Mastery, Auras): a creature within the radius at the end of its turn takes the damage. Gisla is immune to her own. */
+function fireAuraAt(state, rng, note, u) {
+  for (const o of state.battle.units.filter(x => x.pc && x !== u && x.fireAura > 0 && onField(x) && !memberOf(state, x).dead)) {
+    if (gap(o, u) <= 2) secondaryDamage(state, rng, note, u, tierOf(memberOf(state, o).attributes.perception), "fire", `${o.name}'s Fire Aura`);
+  }
+}
+
+/** The Chantment tier: 1 at level 1, 2 at 4, 3 at 8, then every 4 levels (Chantment table). */
+const chantTier = (m) => Math.min(7, 1 + Math.floor((m.level || 1) / 4));
+/** Imbue (Chantment): 1 AP, a damage type from a form she knows; 1 magan a round, held in the concentration slot. */
+export function imbueOptions(state, u) {
+  const m = memberOf(state, u);
+  if (!(m.abilities || []).includes("Imbue") || u.ap < 1 || turning(u) || (m.mp || 0) < (u.imbue ? 0 : 1)) return [];
+  return Object.keys(m.casting?.forms || {}).filter(f => f !== u.imbue);
+}
+export function pcImbue(state, rng, note, type) {
+  const u = currentPC(state);
+  if (!u || !imbueOptions(state, u).includes(type)) return;
+  const m = memberOf(state, u);
+  u.ap -= 1;
+  if (!u.imbue) {
+    m.mp -= 1;
+    concentrate(state, note, u, { name: "Imbue", kind: "imbue" });
+  }
+  u.imbue = type;
+  note(`${m.name} imbues the ${weaponOf(m, u)?.name.toLowerCase() || "weapon"} with ${type} (1 AP${u.imbueRound === state.battle.round ? "" : ", 1 magan"}).`);
+  u.imbueRound = state.battle.round;
+  advance(state, rng, note);
+}
+/** Each new round the imbuing costs 1 magan; with none left, it fades. */
+function upkeepImbue(state, note, u) {
+  if (!u.imbue || u.imbueRound === state.battle.round) return;
+  const m = memberOf(state, u);
+  if ((m.mp || 0) < 1) {
+    const e = (u.conc || []).find(x => x.kind === "imbue");
+    if (e) endConcentration(state, note, u, e, "fades: no magan left"); else u.imbue = null;
+    return;
+  }
+  m.mp -= 1; u.imbueRound = state.battle.round;
+}
+
+/**
+ * Turn and Destroy Daeva (Theurgic Authority, Paladin). Declared: the
+ * spirit and one Division, every creature of it in sight. On her turn,
+ * Charisma tier die + Lore die against Division × 2.
+ */
+const LORE_DIE = { 1: 2, 2: 3, 3: 4, 4: 6, 5: 8, 6: 10, 7: 12 };
+export const turning = (u) => (u.conc || []).some(e => e.kind === "turn");
+export function turnOptions(state, u) {
+  const m = memberOf(state, u), b = state.battle;
+  if (!(m.abilities || []).includes("Turn") || u.turnUsed) return [];
+  const out = [];
+  const seen = new Set();
+  for (const t of b.units.filter(x => !x.pc && standing(state, x) && !isObject(x) && !x.turnImmune)) {
+    const c = CREATURES[t.cname];
+    if (c.classification !== "daeva" && c.classification !== "asura") continue;
+    const key = `${c.classification}:${c.division}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const who = b.units.filter(x => !x.pc && standing(state, x) && CREATURES[x.cname].classification === c.classification && CREATURES[x.cname].division === c.division).map(x => x.name).join(", ");
+    out.push({ key: `turn:${key}`, label: `Turn ${c.classification === "daeva" ? "Daeva" : "Asura"} of Division ${c.division} (${who})`, phase: "fast" });
+    if (c.classification === "daeva") out.push({ key: `destroy:${key}`, label: `Destroy Daeva of Division ${c.division} (${who})`, phase: "slow" });
+  }
+  return out;
+}
+export function pcTurn(state, rng, note) {
+  const u = currentPC(state);
+  if (!u?.theurgy || u.ap < 1) return;
+  const b = state.battle, m = memberOf(state, u);
+  const { mode, spirit, division } = u.theurgy;
+  u.theurgy = null; u.ap -= 1;
+  const targets = b.units.filter(x => !x.pc && standing(state, x) && !x.turnImmune && CREATURES[x.cname].classification === spirit && CREATURES[x.cname].division === division)
+    .sort((x, y) => gap(u, x) - gap(u, y));
+  const cha = dieOfTier(tierOf(m.attributes.charisma)), lore = [1, LORE_DIE[m.theurgy?.lore || 2]];
+  const t = trial(rng, [cha, lore]);
+  const dc = division * 2;
+  const word = mode === "destroy" ? "destroy" : "turn";
+  if (!passes(t, dc)) {
+    note(`${m.name} raises the Swordbreaker and calls on her numen to ${word} the ${spirit} (${t.text} against ${dc}): nothing answers.`, "event");
+    for (const x of targets) x.turnImmune = true;
+    return advance(state, rng, note);
+  }
+  let n = Math.floor(t.total / (mode === "destroy" ? dc : division));
+  note(`${m.name} calls on her numen to ${word} the ${spirit} (${t.text} against ${dc}): ${n} ${n === 1 ? "is" : "are"} ${mode === "destroy" ? "destroyed" : "turned"}.`, "reward");
+  const held = [];
+  for (const x of targets) {
+    if (n <= 0) { x.turnImmune = true; continue; }
+    if (x.minion) {
+      // Heads are creatures: some of the group can go while the rest stand.
+      const k = Math.min(n, x.heads);
+      n -= k;
+      if (k >= x.heads) {
+        if (mode === "destroy") { x.heads = 0; x.hp = 0; note(`The ${x.cname.toLowerCase()}s crumble to nothing.`, "reward"); creatureFalls(state, rng, note, x); }
+        else { x.turnedBy = u.id; held.push(x.id); note(`The ${x.cname.toLowerCase()}s break and flee from ${m.name}.`, "reward"); }
+      } else {
+        x.heads -= k; x.hp = x.heads; regroupHeads(x);
+        note(`${k} of the ${x.cname.toLowerCase()}s ${mode === "destroy" ? "crumble to nothing" : "break away and flee the field"}; ${x.heads} stand.`, "reward");
+        x.turnImmune = true;
+      }
+    } else {
+      n -= 1;
+      if (mode === "destroy") { x.hp = 0; note(`${x.name} crumbles to nothing, never to rise again.`, "reward"); creatureFalls(state, rng, note, x); }
+      else { x.turnedBy = u.id; held.push(x.id); note(`${x.name} is turned: it flees from ${m.name}.`, "reward"); }
+    }
+  }
+  if (held.length) {
+    u.turnUsed = true;
+    concentrate(state, note, u, { name: "Turn", kind: "turn", targets: held });
+    note(`While she holds the Turn, ${m.name} can only defend and move.`);
+  }
+  morale(state, rng, note, "fall");
+  advance(state, rng, note);
+}
+/** Let the Turn go: the turned are free of it. */
+export function pcStopTurning(state, rng, note) {
+  const u = currentPC(state);
+  const e = u && (u.conc || []).find(x => x.kind === "turn");
+  if (!e) return;
+  endConcentration(state, note, u, e, "is released");
+  advance(state, rng, note);
+}
+
 /** Break free of a hold (Conditions, Breaking free), for yourself or an adjacent ally: 1 AP, a Strength trial against the hold. */
 export function freeTargets(state, u) {
   return state.battle.units.filter(t => t.pc && onField(t) && t.held && (t === u || gap(u, t) <= 1));
@@ -1326,6 +1502,7 @@ export function pcStand(state, rng, note) {
 
 /** Triage (Combat): 2 AP beside a dying ally stops the dying timer. */
 export function triageTargets(state, u) {
+  if (turning(u)) return [];
   return state.battle.units.filter(t => t.pc && t !== u && onField(t) && gap(u, t) <= 1 && memberOf(state, t).dying != null && !memberOf(state, t).stable);
 }
 export function pcTriage(state, rng, note, targetId) {
@@ -1433,9 +1610,9 @@ export function retreat(state, rng, note, carry = []) {
   b.stage = "phase";
   for (const u of b.units.filter(x => x.pc)) { u.doneIn = [...PHASES]; u.ap = Math.min(u.ap, 1); }
   const { runners } = runPlan(state);
-  for (const o of b.units.filter(x => !x.pc && standing(state, x) && x.ap > 0 && x.impaired < 3 && x.demoralized < 3)) {
+  for (const o of b.units.filter(x => !x.pc && standing(state, x) && x.ap > 0 && x.impaired < 3 && !cowed(x))) {
     const melee = meleeAttack(CREATURES[o.cname]);
-    const t = runners.filter(r => gap(o, r) <= reachOf(o, CREATURES[o.cname])).sort((x, y) => memberOf(state, x).hp - memberOf(state, y).hp)[0];
+    const t = runners.filter(r => gap(o, r) <= reachOf(o, CREATURES[o.cname])).sort((x, y) => preyRank(state, x) - preyRank(state, y))[0];
     if (!melee || !t) continue;
     o.ap -= 1; o.attack = CREATURES[o.cname].attacks.indexOf(melee);
     b.queue.push({ op: "attack", by: o.id, target: t.id, ranged: false, reaction: "reprisal" });
@@ -1533,7 +1710,7 @@ function runMove(state, rng, note, op) {
     for (const o of op.noReprisal ? [] : b.units) {
       if (o.side === u.side || op.asked.includes(o.id) || !standing(state, o) || o.ap < 1 || o.impaired >= 3) continue;
       const reach = reachOf(o, CREATURES[o.cname]);
-      if (o.pc && weaponOf(memberOf(state, o), o)?.ranged) continue;
+      if (o.pc && (weaponOf(memberOf(state, o), o)?.ranged || turning(o))) continue;
       if (gap(o, u) > reach || gap(o, next) <= reach) continue;
       op.asked.push(o.id);
       if (o.pc) {
@@ -1742,6 +1919,8 @@ function runAttack(state, rng, note, op) {
   if (hunt) dom = true;
   const huntBonus = hunt === 2 ? 1 : hunt === 3 ? 2 : 0;
   if (a.feintOn === t.id) { sup = true; a.feintOn = null; }
+  // Possessed: Sacred damage against the Cursed has Superiority.
+  if (t.pc && info.type === "sacred" && (memberOf(state, t).abilities || []).includes("Possessed")) sup = true;
   // Incorporeal: mundane damage has Inferiority against it.
   if (has(t, "incorporeal") && ["cutting", "cleaving", "crushing", "piercing", "puncturing"].includes(info.type)) inf = true;
   const lift = op.heartenAtk ? heartenBonus(state, op.heartenAtk) : 0;
@@ -1771,9 +1950,10 @@ function runAttack(state, rng, note, op) {
   }
   const verb = op.reaction === "counter" || op.reaction === "riposte" ? "counters" : op.reaction === "reprisal" ? "strikes at" : op.reaction === "pack" ? "piles onto" : op.charge ? "charges" : op.ranged ? "shoots" : "attacks";
   note(`${a.name} ${verb} ${t.name} with ${info.name.toLowerCase()}${flank ? ", flanking (+2)" : ""}${op.rider ? ` (${op.rider})` : ""}: ${atk.text}.${def ? ` ${t.name} defends: ${def.text}.` : ""}`);
-  const killedBefore = !onField(t);
+  const killedBefore = !onField(t), before = tally(t);
   const hit = applyHit(state, rng, note, a, t, atk, def, info.type, op.ranged);
   if (!killedBefore) afterHit(state, rng, note, a, t, op, hit, info);
+  if (a.pc) demonTrigger(state, rng, note, a, kills(t, before));
 }
 
 /** What lands after the damage: riders, Mob traits, flame, the pack, Challenge, Riposte, and counters. */
@@ -1794,6 +1974,11 @@ function afterHit(state, rng, note, a, t, op, hit, info, heartenTrial) {
       }
     }
     for (const r of riders) applyRider(state, rng, note, a, t, r, hit, heartenTrial);
+    // Imbue (Chantment): the weapon's damage carries the imbued type, the Chantment tier die more.
+    if (a.pc && a.imbue && !op.shield && onField(t)) {
+      const n = rng.d(dieOfTier(chantTier(memberOf(state, a)))[1]);
+      secondaryDamage(state, rng, note, t, n, a.imbue, `Imbued ${a.imbue} (${n})`, { magic: true });
+    }
     if (!a.pc) for (const f of abilitiesOf(CREATURES[a.cname]).filter(x => x.kind === "flame" && x.whenType === info.type)) secondaryDamage(state, rng, note, t, f.amount, f.type, `${a.name}'s ${f.name}`);
   }
   if (dealt && op.push && onField(t) && !(t.pc && memberOf(state, t).dead)) {
@@ -1838,7 +2023,7 @@ function afterHit(state, rng, note, a, t, op, hit, info, heartenTrial) {
   }
   // The pack: allies with Pack or Swarm Frenzy pile onto a creature that was hit.
   if (dealt && !a.pc && onField(t) && standing(state, a)) {
-    for (const o of b.units.filter(x => !x.pc && x !== a && standing(state, x) && x.ap > 0 && x.demoralized < 3 && gap(x, t) <= reachOf(x, CREATURES[x.cname]))) {
+    for (const o of b.units.filter(x => !x.pc && x !== a && standing(state, x) && x.ap > 0 && !cowed(x) && gap(x, t) <= reachOf(x, CREATURES[x.cname]))) {
       const p = abilitiesOf(CREATURES[o.cname]).find(x => x.kind === "pileOn");
       const atk = p && CREATURES[o.cname].attacks.find(x => p.attack.test(x.name));
       if (!atk || !(o.ap >= 2 || o.doneIn.length)) continue;
@@ -1850,20 +2035,20 @@ function afterHit(state, rng, note, a, t, op, hit, info, heartenTrial) {
   if (b.prompt || op.ranged || !standing(state, t) || t.ap <= 0 || gap(t, a) > reachOf(t, CREATURES[t.cname])) return;
   // Riposte: no damage taken from a melee attack, defended or not, opens a counter with its bonus.
   const rip = !t.pc && abilitiesOf(CREATURES[t.cname]).find(x => x.kind === "riposte");
-  if (rip && !dealt && t.demoralized < 3 && meleeAttack(CREATURES[t.cname])) {
+  if (rip && !dealt && !cowed(t) && meleeAttack(CREATURES[t.cname])) {
     t.ap -= 1; t.attack = CREATURES[t.cname].attacks.indexOf(meleeAttack(CREATURES[t.cname]));
     b.queue.unshift({ op: "attack", by: t.id, target: a.id, ranged: false, reaction: "riposte", bonus: rip.bonus });
     return;
   }
   // A successful defense opens a counterattack (Combat, Triggered Reactions).
-  if (!op.defend || !hit.defended || (t.pc && weaponOf(memberOf(state, t), t)?.ranged)) return;
+  if (!op.defend || !hit.defended || (t.pc && (weaponOf(memberOf(state, t), t)?.ranged || turning(t)))) return;
   if (t.pc) {
     const set = reactOf(memberOf(state, t), "counter");
     if (set === "never") return;
     if (set === "always" && !somatic(t)) { t.ap -= 1; b.queue.unshift({ op: "attack", by: t.id, target: a.id, ranged: false, reaction: "counter" }); return; }
     b.queue.unshift({ op: "ask" });
     b.prompt = { kind: "counter", by: t.id, target: a.id, text: `${t.name} turned the blow. Counterattack ${a.name} (1 AP, ${t.ap} left)?${somatic(t) ? ` Attacking loses ${t.casting.label}.` : ""}` };
-  } else if (t.demoralized < 3 && (t.ap >= 2 || t.doneIn.length) && meleeAttack(CREATURES[t.cname])) {
+  } else if (!cowed(t) && (t.ap >= 2 || t.doneIn.length) && meleeAttack(CREATURES[t.cname])) {
     t.ap -= 1; t.attack = CREATURES[t.cname].attacks.indexOf(meleeAttack(CREATURES[t.cname]));
     b.queue.unshift({ op: "attack", by: t.id, target: a.id, ranged: false, reaction: "counter" });
   }
@@ -1911,7 +2096,7 @@ function runGrab(state, rng, note, a, t, ab, hearten) {
 
 /** Corra's Hearten (Presence, Rhetoric): a standing ally with AP can add their Charisma tier to this roll. */
 function heartener(state, t, kind = "heartenDefense") {
-  return state.battle.units.find(o => o.pc && o !== t && standing(state, o) && o.ap > 0 && (memberOf(state, o).abilities || []).includes("Hearten") && reactOf(memberOf(state, o), kind) !== "never");
+  return state.battle.units.find(o => o.pc && o !== t && standing(state, o) && o.ap > 0 && !turning(o) && (memberOf(state, o).abilities || []).includes("Hearten") && reactOf(memberOf(state, o), kind) !== "never");
 }
 function heartenBonus(state, id) {
   const u = unitById(state.battle, id);
@@ -1947,7 +2132,7 @@ function applyHit(state, rng, note, a, t, atk, def, type, ranged) {
     const shield = usesShield(m, weaponOf(m, t)) && m.shieldAbsorbs !== false ? m.shield.durability : 0;
     const armor = m.armor?.durability || 0;
     // A companion's own hide: its mundane resistance stands whether or not it defends.
-    const res = t.companion ? (MUNDANE.includes(type) ? m.resistance : 0) : armor > 0 ? (m.armor.resistance[type] || 0) : 0;
+    const res = (t.companion ? (MUNDANE.includes(type) ? m.resistance : 0) : armor > 0 ? (m.armor.resistance[type] || 0) : 0) + innateRes(m, type);
     const ward = wardFor(t, type);
     const r = resolveDamage({ attackTotal: atk.total, damageType: type, armorResistance: res,
       durabilityCurrent: shield + armor, healthCurrent: m.hp, activeDefense: !!def, defenseTotal: def?.total || 0, wardPool: ward?.pool || 0 });
@@ -1996,8 +2181,14 @@ function applyHit(state, rng, note, a, t, atk, def, type, ranged) {
 }
 
 /** Health damage to a character: 0 health, the dying timer, Fighting On, Traumas (Combat, Death). */
-function hurtPC(state, rng, note, u, dmg) {
+function hurtPC(state, rng, note, u, dmg, { magic = false } = {}) {
   const m = memberOf(state, u);
+  // Hard to Kill (Cursed): at 0 health, only magic can kill, on a 1 on the Endurance tier die.
+  if (hardToKill(m) && m.hp <= 0 && magic) {
+    const die = dieOfTier(tierOf(m.attributes.endurance))[1], n = rng.d(die);
+    note(`Magic finds ${m.name} at 0 health: Endurance d${die} ${n}${n === 1 ? ": the head is destroyed" : ", and the curse holds"}.`, "event");
+    if (n === 1) return kill(state, note, u, "dies, past any resurrection");
+  }
   u.lostThisRound = (u.lostThisRound || 0) + dmg;
   shaken(state, note, u);
   if (u.casting) miscastOnHurt(state, rng, note, u, dmg);
@@ -2022,11 +2213,17 @@ function hurtPC(state, rng, note, u, dmg) {
         text: `${m.name} is about to drop to 0 health. Use Avoid Death (roll the Endurance tier die and restore that much; once per rest)?` };
       return;
     }
+    if (hardToKill(m)) {
+      m.hp = 0; m.injuries = (m.injuries || 0) + 1; m.dying = null; m.stable = false; m.fightingOn = true;
+      note(`${m.name} drops to 0 health: an Injury, but no dying and no falling (Hard to Kill). Every wound now is a Trauma.`, "event");
+      return;
+    }
     return dropToZero(state, rng, note, u, dmg);
   }
-  if (!m.fightingOn) return;
+  if (!m.fightingOn || !dmg) return;
   const tr = traumaFor(rng, m);
   note(`${m.name} takes a Trauma (d100 ${tr.n}): ${tr.row.name}. ${tr.row.none ? "" : tr.row.text}`, "event");
+  if (hardToKill(m)) return; // always fighting on
   const t = endure();
   if (!passes(t, dmg)) { note(`Endurance ${t.text} against ${dmg}: ${m.name} goes down.`); knockOut(state, note, u); }
   else note(`Endurance ${t.text} against ${dmg}: ${m.name} stays up.`);
@@ -2072,6 +2269,10 @@ function knockOut(state, note, u, how = "falls unconscious") {
   note(`${m.name} ${how}.`, "event");
 }
 
+/** Who a creature goes for: the most hurt, but a Hard to Kill at 0 health can't be finished, so it comes last. */
+const preyRank = (state, u) => { const m = memberOf(state, u); return hardToKill(m) && m.hp <= 0 ? 1e6 : m.hp; };
+const hardToKill = (m) => (m.abilities || []).includes("Hard to Kill");
+const kill = (state, note, u, how) => die(state, note, u, how);
 function die(state, note, u, how = "dies") {
   const m = memberOf(state, u);
   dropAllSpells(state, note, u);
@@ -2169,10 +2370,10 @@ function runEffect(state, rng, note, op) {
       secondaryDamage(state, rng, note, t, roll(rng, ab.damage).total, ab.type, `${a.name} feeds on ${t.name}`);
       if (!onField(t)) continue;
     }
-    const r = resist(state, rng, t, ab.resist.attr, ab.resist.dc, { forCond: ab.cond?.name });
+    const r = resist(state, rng, t, ab.resist.attr, ab.resist.dc, { forCond: ab.cond?.name, vsType: op.op === "bolt" ? ab.type : null });
     note(`${ab.name}: ${t.name} resists with ${ab.resist.attr[0].toUpperCase() + ab.resist.attr.slice(1)} (${r.text} against ${ab.resist.dc}), ${r.ok ? "and avoids it" : "and fails"}.`);
     if (r.ok) continue;
-    if (op.op === "bolt") secondaryDamage(state, rng, note, t, roll(rng, a.tree1 ? stepUp(ab.damage) : ab.damage).total, ab.type, `${a.name}'s ${ab.name}${a.tree1 ? " (Dominance)" : ""}`);
+    if (op.op === "bolt") secondaryDamage(state, rng, note, t, roll(rng, a.tree1 ? stepUp(ab.damage) : ab.damage).total, ab.type, `${a.name}'s ${ab.name}${a.tree1 ? " (Dominance)" : ""}`, { magic: true });
     if (!onField(t)) continue;
     if (ab.cond) addCond(state, note, t, ab.cond.name, ab.cond.n, { by: a.id, lasting: ab.cond.name === "exhausted" });
     if (ab.attrition) { t.attrition.push({ ...ab.attrition }); note(`${t.name} suffers Attrition (${ab.attrition.label}) ${ab.attrition.amount}.`, "event"); }
@@ -2183,7 +2384,7 @@ function aiStep(state, rng, note, u) {
   const b = state.battle;
   const c = CREATURES[u.cname];
   if (isObject(u)) {
-    const t = b.units.filter(x => x.pc && standing(state, x) && gap(u, x) <= 3).sort((x, y) => memberOf(state, x).hp - memberOf(state, y).hp)[0];
+    const t = b.units.filter(x => x.pc && standing(state, x) && gap(u, x) <= 3).sort((x, y) => preyRank(state, x) - preyRank(state, y))[0];
     if (!t || u.ap < 2) return finishTurn(state, u, rng, note);
     u.ap -= 2; u.attacks += 1;
     note("The bonded tree swings a great branch.", "event");
@@ -2206,8 +2407,9 @@ function aiStep(state, rng, note, u) {
   const speed = creatureSpeed(c);
   // Panicked: away from the party by the safest route, off the field.
   // Guardians never leave their place: cornered, they only defend.
-  if (u.demoralized >= 3 && b.temper === "Guardian") return finishTurn(state, u, rng, note);
-  if (u.demoralized >= 3) {
+  if (u.demoralized >= 3 && !u.turnedBy && b.temper === "Guardian") return finishTurn(state, u, rng, note);
+  // Turned (Theurgic Authority): compelled to flee the theurgist as fast as it can; cornered, it cowers.
+  if (u.demoralized >= 3 || u.turnedBy) {
     if (cond(u, "restricted")) return finishTurn(state, u, rng, note);
     const edge = (x, y) => x === 0 || y === 0 || x + u.w >= b.w || y + u.h >= b.h;
     const path = search(b, u, (x) => x + u.w >= b.w) || search(b, u, edge);
@@ -2222,7 +2424,7 @@ function aiStep(state, rng, note, u) {
   const yetToAct = pcs.some(t => t.ap > 0 && PHASES.indexOf(t.phase) >= b.phaseIdx && !t.doneIn.includes(t.phase));
   const maxAttacks = MASTERY.npcRanks[c.rank].maxAttacks;
   const mayAttack = u.attacks < maxAttacks && (u.attacks === 0 || u.ap - 1 >= (yetToAct ? 1 : 0));
-  const near = pcs.filter(t => gap(u, t) <= reach).sort((x, y) => memberOf(state, x).hp - memberOf(state, y).hp);
+  const near = pcs.filter(t => gap(u, t) <= reach).sort((x, y) => preyRank(state, x) - preyRank(state, y));
 
   // Smash: declared at the top of the round; it lands now if anyone is still in reach.
   if (u.smashing) {
@@ -2514,6 +2716,13 @@ function checkEnd(state, rng, note) {
   const pcs = b.units.filter(u => u.pc && standing(state, u));
   if (!foes.length) return aftermath(state, rng, note, pcs);
   if (!pcs.length) { finish(state, rng, note, "lost"); return true; }
+  // Hard to Kill at 0 health can't be finished by mundane blows, and can't win alone either.
+  // Until Jon rules on it, a party down to only that counts as fallen (a wipe).
+  if (pcs.every(u => hardToKill(memberOf(state, u)) && memberOf(state, u).hp <= 0)) {
+    note(`${pcs.map(u => u.name).join(" and ")} stand${pcs.length > 1 ? "" : "s"} alone at 0 health, unkillable and unable to win. (How this ends is an open question; for now it counts as the party falling.)`, "todo");
+    finish(state, rng, note, "lost");
+    return true;
+  }
   return false;
 }
 
@@ -2616,6 +2825,10 @@ function tend(state, rng, note) {
 
 export function conditionsOf(state, u) {
   const bits = [];
+  if (u.imbue) bits.push(`imbued ${u.imbue}`);
+  if (u.fireAura) bits.push(`Fire Aura (${u.fireAura})`);
+  if (u.turnedBy) bits.push("turned");
+  if (u.theurgy) bits.push(`declared ${u.theurgy.mode === "destroy" ? "Destroy" : "Turn"}`);
   if (u.casting) bits.push(`casting ${u.casting.label}`);
   for (const w of u.wards || []) bits.push(`${w.name} ${w.pool}`);
   for (const e of u.conc || []) bits.push(`holding ${e.name}${e.slot === "passive" ? " (passive)" : ""}`);

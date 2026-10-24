@@ -7,7 +7,7 @@ import { choices, choose, signChoices, chooseSign, partyLevel, bandFor, ROMAN } 
 import { CREATURES } from "./data/creatures.js";
 import { squareAt, countryAt, findPath, moveCost, TERRAINS, SETTLEMENTS } from "./world.js";
 import { draw, drawBattle, battleLayout } from "./render.js";
-import { castOptions, castTargets, pcCast, reapplyOptions, pcReapply, concentrationOf, opportunities, REACTIONS, reactOf, reactionsFor, setReaction, attackModes, setMode, freeTargets, pcBreakFree, pcStand, challengeTargets, beginRound, retreat, runPlan, respond, currentPC, moveCost as stepCost, pcMove, pcAttack, pcEndTurn, triageTargets, pcTriage, canAttack, standing, onField, conditionsOf, memberFor, creatureFor, weaponOf, GUARDS, PHASES } from "./combat.js";
+import { turnOptions, pcTurn, pcStopTurning, turning, imbueOptions, pcImbue, castOptions, castTargets, pcCast, reapplyOptions, pcReapply, concentrationOf, opportunities, REACTIONS, reactOf, reactionsFor, setReaction, attackModes, setMode, freeTargets, pcBreakFree, pcStand, challengeTargets, beginRound, retreat, runPlan, respond, currentPC, moveCost as stepCost, pcMove, pcAttack, pcEndTurn, triageTargets, pcTriage, canAttack, standing, onField, conditionsOf, memberFor, creatureFor, weaponOf, GUARDS, PHASES } from "./combat.js";
 import { BAND_LABELS } from "./vendor/foundry/module/helpers/weather-rules.mjs";
 import { openStorage, pack, unpack } from "./storage.js";
 
@@ -111,7 +111,7 @@ let picks = {};
 /** Begin the round with the declarations; spells and Hellfire are declared afresh each round. */
 function declareRound(rng) {
   beginRound(state, rng, say, picks);
-  for (const p of Object.values(picks)) { delete p.spell; delete p.hellfire; delete p.free; }
+  for (const p of Object.values(picks)) { delete p.spell; delete p.hellfire; delete p.free; delete p.turn; }
 }
 let planningRun = false, carry = {};
 const say = (t, k) => note(state, t, k);
@@ -154,7 +154,7 @@ function paint() {
   else draw(canvas, state, view);
 }
 
-const GOOD = /^(Rallied|Emboldened|Fearless|Energized|Empowered|Tireless|challenging|casting|holding|Stoneskin|Sacred Ward)/;
+const GOOD = /^(Rallied|Emboldened|Fearless|Energized|Empowered|Tireless|challenging|casting|holding|Stoneskin|Sacred Ward|imbued|declared)/;
 const condHtml = (conds) => conds.length ? ` ${conds.map(c => `<span class="${GOOD.test(c) ? "good" : "warn"}">${c}</span>`).join(", ")}` : "";
 const describeHealth = (u) => u.hp >= u.hpMax ? "unhurt" : u.hp > u.hpMax / 2 ? "hurt" : u.hp > u.hpMax / 4 ? "bloodied" : "near death";
 
@@ -265,6 +265,16 @@ function renderBattle(box) {
         ss.onchange = () => { picks[x.id].spell = ss.value || null; };
         line.append(ss);
       }
+      const turns = turnOptions(state, x);
+      if (turns.length) {
+        const ts = document.createElement("select");
+        ts.title = "Turn (Fast, once per encounter): Charisma die + Lore die against Division × 2; roll ÷ Division are turned and flee while you concentrate. Destroy Daeva (Slow): roll ÷ DC are destroyed. Declaring either takes the place of a spell this round.";
+        ts.add(new Option("No Turn", ""));
+        for (const o of turns) ts.add(new Option(o.label, o.key));
+        ts.value = picks[x.id].turn || "";
+        ts.onchange = () => { picks[x.id].turn = ts.value || null; };
+        line.append(ts);
+      }
       const held = concentrationOf(x);
       if (held.length > 1) {
         const fs = document.createElement("select");
@@ -317,7 +327,7 @@ function renderBattle(box) {
       box.appendChild(hl);
     }
     const modes = attackModes(state, u);
-    if (modes.length > 1) {
+    if (modes.length > 1 && !turning(u)) {
       const mr = document.createElement("div");
       mr.className = "buttons modes";
       for (const md of modes) {
@@ -327,6 +337,13 @@ function renderBattle(box) {
       }
       box.appendChild(mr);
     }
+    if (u.theurgy) {
+      const tb = button(`${u.theurgy.mode === "destroy" ? "Destroy" : "Turn"} the ${u.theurgy.spirit === "daeva" ? "Daeva" : "Asura"} (1 AP)`, () => battleAct((rng) => pcTurn(state, rng, say)));
+      tb.className = "primary"; tb.disabled = u.ap < 1;
+      row.appendChild(tb);
+    }
+    if (turning(u)) row.appendChild(button("Release the Turn", () => battleAct((rng) => pcStopTurning(state, rng, say))));
+    for (const f of imbueOptions(state, u)) row.appendChild(button(`${u.imbue ? "Change imbuing to" : "Imbue:"} ${f} (1 AP${u.imbue ? "" : ", 1 magan"})`, () => battleAct((rng) => pcImbue(state, rng, say, f))));
     if (u.casting) {
       const ts = castTargets(state, u);
       if (!ts.length) box.insertAdjacentHTML("beforeend", `<p class="small warn">${u.casting.label}: no one in reach${u.ap < 1 ? " (no AP)" : ""}.</p>`);
