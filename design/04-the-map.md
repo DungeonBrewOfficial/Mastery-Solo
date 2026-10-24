@@ -133,21 +133,29 @@ When the event die comes up **Discovery**, roll a d12 [N]. Every place reached f
 | 7 | **A ruin.** A tower, a hall, a fort, a chapel, gone to ruin. A site. |
 | 8 | **A barrow.** An old grave mound or tomb. The dead may be restless. A site. |
 | 9 | **A homestead or hamlet** off any road, if the tile has no settlement. Otherwise, a ruin. |
-| 10 | **A clue** to a hidden place. See Hidden and lost places. No XP until the place is found. |
-| 11 | **A fragment of lost lore**: a carved stone, a relic, an inscription in a script no one uses. In Wild or Deep country only; in Settled country, a landmark. See Hidden and lost places. |
+| 10–11 | **Another site.** Roll again on 5–8. |
 | 12 | **Roll twice** and take both. |
 
 ### Hidden and lost places
 
-In a game with a GM, hidden and lost places are found through real exploration: following clues, working out a puzzle, searching the right place. They shouldn't turn up by chance [Jon, 2026-10-24]. So here they have to be earned, through a chain the player follows [N]:
+In a game with a GM, hidden and lost places are found through real exploration: following clues, working out a puzzle, searching the right place. They shouldn't turn up by chance [Jon, 2026-10-24]. Here they're earned through a chain the player follows, and every link is in a hard place to reach [Jon, 2026-10-24]:
 
-**Clues lead to hidden places.** A clue says where something is hidden: roll a d8 for direction and 1d3 for how many tiles from where the clue was found, and a d6 for what's there (1 a lair, 2 a cave, 3 a ruin, 4 a barrow, 5 an outlaws' hideout, a ruin with bandits or outlaws as its guardian, 6 a cache: one notable piece and a purse, with no guardian). Mark the tile. Clues come from the Discovery table (10), from the remains of those who came before in a site [`05-sites.md`], and from enemies who've been beaten or bargained with: a Presence (Interrogation) trial against their Division + 1 [M, Skill Mastery, Presence].
+- **The clues are in sites.** Nothing on open ground points to a hidden or lost place.
+- **The places themselves are always in Deep country.**
 
-**Searching.** In the clue's tile, the party can spend a leg searching instead of traveling: roll the travel die for the hours it takes, move nowhere, and roll the event die as usual. The Scout or Investigator makes an Alertness (Secret Doors) trial against the band's Hard DC [`05-sites.md`, Default DCs], with a Helper if there is one. On a success, it's found: a Hidden Location (50 XP), whose hoard is a Hidden Hoard (25 XP) [M]. Without a clue, nothing hidden can be found out in the wild.
+**Where clues come from** [N]:
 
-**Fragments lead to lost places.** Each fragment of lost lore is read with a Lore (Ancient Lore) trial against the band's Hard DC [M, Skill Mastery, Lore]; a fragment can be taken home and studied by a Sage if the first reading fails. When the party has read **three**, the lost place they point to is revealed: roll a d8 for direction and 2d6 for how many tiles from where the third was read. It's always in Wild or Deep country; if the tile is Settled, move it outward to the first tile that isn't. The party travels there and searches as for a hidden place, at the Hard DC + 2. Found, it's a Lost Location (75 XP), and a site of type Lost place.
+- The remains of those who came before, in a site [`05-sites.md`, Contents].
+- The guardian of a site, beaten or bargained with: a Presence (Interrogation) trial against its Division + 1 [M, Skill Mastery, Presence]. Beasts know nothing.
+- A hoard: when the party takes one, roll a d6. On a 6, or a 5–6 in a Deep site, it holds a clue (a map scrap, a letter, a confession).
 
-Fragments also turn up in ruins' libraries and lost places' inscriptions [`05-sites.md`, Features by type]. Read fragments belong to the dynasty, not the hero: a new hero can pick up where a dead one left off. Lost places are what a dynasty works toward.
+**Clues lead to hidden places.** A clue gives a direction (d8) and a distance (1d3 tiles), and what's hidden there (d6): 1 a lair, 2 a cave, 3 a ruin, 4 a barrow, 5 an outlaws' hideout (a ruin with bandits or outlaws as its guardian), 6 a cache (one notable piece and a purse, with no guardian). If that tile isn't Deep, carry on in the same direction to the first tile that is. Mark it.
+
+**Searching.** In the marked tile, the party can spend a leg searching instead of traveling: roll the travel die for the hours it takes, move nowhere, and roll the event die as usual. The Scout or Investigator makes an Alertness (Secret Doors) trial against the band's Hard DC (Deep country's +2 applies) [`05-sites.md`, Default DCs], with a Helper if there is one. On a success, it's found: a Hidden Location (50 XP), whose hoard is a Hidden Hoard (25 XP) [M]. Without a clue, nothing hidden can be found.
+
+**Fragments lead to lost places.** Fragments of lost lore (a carved stone, a relic, an inscription in a script no one uses) are found in ruined libraries and in lost places [`05-sites.md`, Features by type], and in Deep hoards on a d6 of 6 (in place of a clue). Each is read with a Lore (Ancient Lore) trial against the band's Hard DC [M, Skill Mastery, Lore]; a fragment that can't be read can be carried home and studied by a Sage. When the party has read **three**, the lost place they point to is revealed: a direction (d8) and a distance (2d6 tiles) from where the third was read, carried on to the first Deep tile. The party travels there and searches as for a hidden place, at the Hard DC + 2. Found, it's a Lost Location (75 XP), and a site of type Lost place.
+
+Read fragments belong to the dynasty, not the hero: a new hero can pick up where a dead one left off. Lost places are what a dynasty works toward.
 
 Sites (lairs, caves, ruins, barrows, and lost places), and what guards them, are in `05-sites.md`. Their hoards are drafted in `03-treasure.md`.
 

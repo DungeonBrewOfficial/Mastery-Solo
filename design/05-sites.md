@@ -177,7 +177,7 @@ A rest inside a site is a Dungeon Rest at best [M, General Rules, Resting], and 
 
 ## The heart
 
-The heart holds the guardian, the rest of its group that hasn't been fought, and the hoard. A beast's hoard is what its victims carried: purses, a dead traveler's pack, a cart's goods, scattered among the bones [N, from the dry run]. The hoard is worth 40 sp per point of the guardian's XP value, doubled in Deep country [`03-treasure.md`]. A site found as a hidden place holds a Hidden Hoard (25 XP instead of 20) [M].
+The heart holds the guardian, the rest of its group that hasn't been fought, and the hoard. A beast's hoard is what its victims carried: purses, a dead traveler's pack, a cart's goods, scattered among the bones [N, from the dry run]. The hoard is worth 40 sp per point of the guardian's XP value, doubled in Deep country [`03-treasure.md`]. A site found as a hidden place holds a Hidden Hoard (25 XP instead of 20) [M]. Taking a hoard may also turn up a clue or a fragment of lost lore [`04-the-map.md`, Hidden and lost places].
 
 Exploration XP for every area, the hoard, and the site itself (as a New, Hidden, or Lost Location) is banked until the party reaches safety [M].
 
