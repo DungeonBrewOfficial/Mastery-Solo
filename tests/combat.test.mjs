@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { newGame, runWithDice, note } from "../game/journey.js";
-import { startBattle, beginRound, currentPC, pcEndTurn, respond, triageTargets, pcTriage, gap, GRID_W, GRID_H } from "../game/combat.js";
+import { startBattle, beginRound, retreat, currentPC, pcEndTurn, respond, triageTargets, pcTriage, gap, GRID_W, GRID_H } from "../game/combat.js";
 import { pack, unpack } from "../game/storage.js";
 import { playBattle } from "./autoplay.mjs";
 
@@ -134,4 +134,56 @@ test("after a win without the means, the dying must be reached and triaged", () 
   }
   assert.equal(s.battle, null);
   assert.ok(!gisla.dead);
+});
+
+test("breaking away: fights end whether the party gets clear or is caught", () => {
+  let fled = 0, caught = 0;
+  for (let seed = 1; seed <= 30; seed++) {
+    const s = battle(seed);
+    const start = s.log.length;
+    playBattle(s, { run: 2 });
+    const lines = s.log.slice(start).map(l => l.text).join("\n");
+    if (/No XP for a fight you ran from/.test(lines)) fled++;
+    if (/starts again at close quarters|still on you/.test(lines)) caught++;
+  }
+  assert.ok(fled > 0, "some get away");
+  assert.ok(caught > 0, "some are caught");
+});
+
+function breakingWithGisla(seed, dying, carryHer) {
+  const s = battle(seed, [{ name: "Wild Dog", count: 1 }], { temper: "Predator" });
+  const gisla = s.party.members.find(m => m.id === "gisla");
+  gisla.hp = 0; gisla.dying = dying; gisla.down = true;
+  const say = (t, k) => note(s, t, k);
+  const start = s.log.length;
+  runWithDice(s, (rng) => retreat(s, rng, say, carryHer ? ["gisla"] : []));
+  const lines = () => s.log.slice(start).map(l => l.text).join("\n");
+  return { s, gisla, lines };
+}
+
+test("carrying anyone puts the break-away at Impotence", () => {
+  // A zombie is slower than the party: Dominance running free, cancelled by carrying.
+  const run = (carry) => {
+    const s = battle(2, [{ name: "Zombie", count: 1 }], { temper: "Restless dead" });
+    const gisla = s.party.members.find(m => m.id === "gisla");
+    gisla.hp = 0; gisla.dying = 3; gisla.down = true;
+    const start = s.log.length;
+    runWithDice(s, (rng) => retreat(s, rng, (t, k) => note(s, t, k), carry ? ["gisla"] : []));
+    return s.log.slice(start).map(l => l.text).find(t => /You break away/.test(t));
+  };
+  assert.match(run(false), /\(Dominance\)/);
+  assert.doesNotMatch(run(true), /Dominance|Impotence/);
+});
+
+test("getting clear: one tick left dies, the abandoned die, the rest are tended", () => {
+  let checked = 0;
+  for (let seed = 1; seed <= 40 && checked < 2; seed++) {
+    const a = breakingWithGisla(seed, 1, true);
+    if (/you get clear/.test(a.lines())) { assert.ok(a.gisla.dead, "one tick: dies"); checked++; }
+    const b = breakingWithGisla(seed, 3, false);
+    if (/you get clear/.test(b.lines())) { assert.ok(b.gisla.dead, "left behind"); assert.match(b.lines(), /left behind/); }
+    const c = breakingWithGisla(seed, 3, true);
+    if (/you get clear/.test(c.lines())) assert.ok(!c.gisla.dead && !c.gisla.dying, "carried and tended");
+  }
+  assert.ok(checked, "a break-away succeeded");
 });

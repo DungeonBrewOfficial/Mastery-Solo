@@ -7,7 +7,7 @@ import { choices, choose, signChoices, chooseSign, partyLevel, bandFor, ROMAN } 
 import { CREATURES } from "./data/creatures.js";
 import { squareAt, countryAt, findPath, moveCost, TERRAINS, SETTLEMENTS } from "./world.js";
 import { draw, drawBattle, battleLayout } from "./render.js";
-import { beginRound, retreat, respond, currentPC, moveCost as stepCost, pcMove, pcAttack, pcEndTurn, triageTargets, pcTriage, canAttack, standing, onField, conditionsOf, memberFor, creatureFor, weaponOf, GUARDS, PHASES } from "./combat.js";
+import { beginRound, retreat, runPlan, respond, currentPC, moveCost as stepCost, pcMove, pcAttack, pcEndTurn, triageTargets, pcTriage, canAttack, standing, onField, conditionsOf, memberFor, creatureFor, weaponOf, GUARDS, PHASES } from "./combat.js";
 import { BAND_LABELS } from "./vendor/foundry/module/helpers/weather-rules.mjs";
 import { openStorage, pack, unpack } from "./storage.js";
 
@@ -108,6 +108,7 @@ function renderEvent() {
 /* ---------------- battle */
 
 let picks = {};
+let planningRun = false, carry = {};
 const say = (t, k) => note(state, t, k);
 const PROMPT_LABELS = { defend: ["Defend", "Take it"], counter: ["Counterattack", "Hold back"], reprisal: ["Strike", "Let them go"] };
 const cap = (t) => t[0].toUpperCase() + t.slice(1);
@@ -115,7 +116,7 @@ const cap = (t) => t[0].toUpperCase() + t.slice(1);
 function battleAct(fn) {
   runWithDice(state, fn);
   afterEvent(state);
-  if (!state.battle) { picks = {}; view.cx = state.party.x + 0.5; view.cy = state.party.y + 0.5; }
+  if (!state.battle) { picks = {}; planningRun = false; carry = {}; view.cx = state.party.x + 0.5; view.cy = state.party.y + 0.5; }
   persist();
   render();
 }
@@ -175,6 +176,31 @@ function renderBattle(box) {
     row.appendChild(button(`${yes} (Y)`, () => battleAct((rng) => respond(state, rng, say, true))));
     row.appendChild(button(`${no} (N)`, () => battleAct((rng) => respond(state, rng, say, false))));
     row.firstChild.className = "primary";
+  } else if (b.stage === "declare" && planningRun) {
+    const plan = runPlan(state);
+    box.insertAdjacentHTML("beforeend", `<p class="prompt">Break away?</p><p class="small muted">It takes the round. Enemies beside you strike as you go, then one trial to get clear, at Impotence if you carry anyone. Clear of them, you stop the bleeding of anyone with more than a round left. Then they chase you.</p>`);
+    const form = document.createElement("div");
+    form.className = "declare";
+    for (const x of plan.downed) {
+      carry[x.id] ??= true;
+      const m = memberFor(state, x);
+      const line = document.createElement("div");
+      line.className = "declare-row";
+      line.innerHTML = `<strong>${m.name}</strong> <span class="muted small">unconscious${m.dying != null && !m.stable ? `, dying (${m.dying})` : ""}</span>`;
+      const sel = document.createElement("select");
+      sel.add(new Option("Carry", "carry")); sel.add(new Option("Leave behind", "leave"));
+      sel.value = carry[x.id] ? "carry" : "leave";
+      sel.onchange = () => { carry[x.id] = sel.value === "carry"; render(); };
+      line.append(sel);
+      form.appendChild(line);
+    }
+    for (const x of plan.lame) form.insertAdjacentHTML("beforeend", `<div class="declare-row"><strong>${x.name}</strong> <span class="muted small">can't run, and is carried</span></div>`);
+    box.appendChild(form);
+    const carried = plan.lame.length + plan.downed.filter(x => carry[x.id]).length;
+    if (carried > plan.runners.length) box.insertAdjacentHTML("beforeend", `<p class="small warn">${plan.runners.length} can run, and each carries one. Whoever doesn't fit is left behind.</p>`);
+    const go = button("Break away", () => { planningRun = false; const ids = plan.downed.filter(x => carry[x.id]).map(x => x.id); battleAct((rng) => retreat(state, rng, say, ids)); });
+    go.className = "primary";
+    row.append(go, button("Stay and fight", () => { planningRun = false; render(); }));
   } else if (b.stage === "declare") {
     box.insertAdjacentHTML("beforeend", `<p class="small muted">Choose each weapon and guard for the round. Changing weapons drops the old one and costs 1 AP.</p>`);
     const form = document.createElement("div");
@@ -212,9 +238,9 @@ function renderBattle(box) {
     go.className = "primary";
     row.appendChild(go);
     const dying = b.units.some(v => v.pc && onField(v) && memberFor(state, v).dying != null && !memberFor(state, v).stable);
-    const run = button("Run", () => battleAct((rng) => retreat(state, rng, say)));
+    const run = button("Break away", () => { planningRun = true; carry = {}; render(); });
     run.hidden = !!b.aftermath;
-    run.title = dying ? "Anyone still dying is left to die on the way. Stop the bleeding first." : "The chase: three successes before two failures.";
+    run.title = dying ? "Anyone with one round left on the dying timer dies during the break-away." : "One round and one trial to get clear, then the chase.";
     row.appendChild(run);
   } else if (u) {
     const m = memberFor(state, u), w = weaponOf(m, u);

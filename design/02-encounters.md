@@ -139,6 +139,18 @@ Mastery has a reprisal attack for leaving reach, but no procedure for getting aw
 3. Three successes before two failures, and you're away. Two failures first, and it catches you. Combat begins at Close, and the party isn't Startled; they know it's coming.
 4. Dropping something it wants (see Pay the price) ends the chase.
 
+**Carrying the fallen** [Jon, 2026-10-24]. If anyone is being carried, the chase trials have Impotence, which cancels Dominance from speed. One runner carries one body. Characters who can't run (a lost foot, a broken leg, a Broken Back, Paralyzed) are carried with the unconscious.
+
+**Running from a fight** [Jon, 2026-10-24]. Breaking away from a fight takes one round and one trial: the chase trial above, with the same leader, Helper, DC, and edges.
+
+1. Declare it in place of the round's declarations. Choose, for each unconscious character, whether to carry them or leave them behind.
+2. Every enemy beside a runner can make its reprisal attack as the party goes [M, Combat, Triggered Reactions]. Runners keep 1 AP to defend.
+3. Roll the trial. On a failure, the round is spent running and the enemies take their turns.
+4. On a success, the party is clear enough to tend its dying. The round ends, so the dying timer ticks once: anyone with one round left dies. Everyone else bleeding is stabilized, which needs no kit [M, Combat, Triage]. Anyone left behind dies.
+5. Then the chase, as above. Getting away ends the encounter with no XP. Being caught starts the fight again at Close, and no one is Startled.
+
+Whatever was dropped or thrown in the fight is lost.
+
 Some creatures make running a mistake. The Eidolon of the Hunt gains Superiority against anything that moved [M, Creatures - Morphon]. The chase fails against it automatically, and its signs say so to anyone who reads them. That stands as written [Jon, 2026-10-24].
 
 ---

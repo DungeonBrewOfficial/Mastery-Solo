@@ -4,7 +4,7 @@
  * defense, counter, reprisal, and Fighting On.
  */
 import { runWithDice, note } from "../game/journey.js";
-import { beginRound, currentPC, canAttack, pcAttack, pcMove, pcEndTurn, respond, triageTargets, pcTriage, gap, standing, moveCost } from "../game/combat.js";
+import { beginRound, retreat, runPlan, currentPC, canAttack, pcAttack, pcMove, pcEndTurn, respond, triageTargets, pcTriage, gap, standing, moveCost } from "../game/combat.js";
 
 export function playBattle(s, { maxSteps = 5000, picks = {}, run = false } = {}) {
   const say = (t, k) => note(s, t, k);
@@ -12,7 +12,10 @@ export function playBattle(s, { maxSteps = 5000, picks = {}, run = false } = {})
     const b = s.battle;
     runWithDice(s, (rng) => {
       if (b.prompt) return respond(s, rng, say, true);
-      if (b.stage === "declare") return beginRound(s, rng, say, picks);
+      if (b.stage === "declare") {
+        if (run && b.round >= run && !b.aftermath) return retreat(s, rng, say, runPlan(s).downed.map(u => u.id));
+        return beginRound(s, rng, say, picks);
+      }
       const u = currentPC(s);
       if (!u) throw new Error(`battle stuck: stage ${b.stage}, queue ${b.queue.length}, current ${b.current}`);
       const t = triageTargets(s, u)[0];

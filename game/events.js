@@ -278,34 +278,56 @@ const CHASE_SKILLS = [
 ];
 
 function flee(state, rng, note) {
-  if (chase(state, rng, state.encounter.head, note)) end(state);
+  const carrying = living(state).some(m => m.hp <= 0 || cannotRun(m));
+  if (chase(state, rng, state.encounter.head, note, alive(state).filter(m => !cannotRun(m)), { carrying })) end(state);
   else caught(state, rng, note);
 }
 
-/** The chase: three successes before two failures. → true if the party gets away. */
-export function chase(state, rng, head, note, ms = alive(state)) {
+/** Traumas that take away a character's legs (no crutches are tracked yet, so they're carried). */
+export const cannotRun = (m) => (m.traumas || []).some(t => /Broken Back|Lose your (left|right) foot|Break your (left|right) leg/.test(t.name));
+
+/** The runner, the Helper, and the edge: speed against the slowest runner, Impotence while carrying anyone. */
+function chaseSetup(head, ms, carrying) {
   const c = CREATURES[head];
-  if (head === "Eidolon of the Hunt") {
-    note("You run. Running is what the Eidolon of the Hunt is for. It catches you.", "event");
-    return false;
-  }
-  if (!ms.length) return false;
-  // The best way to run is the party's best skill for it; one Helper adds 2.
   const best = CHASE_SKILLS.map(k => {
     const leader = [...ms].sort((a, b) => (skill(b, k.skill) + attrTier(b, k.attr)) - (skill(a, k.skill) + attrTier(a, k.attr)))[0];
     const helper = ms.find(m => m !== leader && skill(m, k.skill) >= 2);
     return { ...k, leader, helper, score: skill(leader, k.skill) + attrTier(leader, k.attr) + (helper ? 2 : 0) };
   }).sort((a, b) => b.score - a.score)[0];
   const slowest = Math.min(...ms.map(speedOf)), theirs = creatureSpeed(c);
-  const edge = theirs > slowest ? -1 : theirs < slowest ? 1 : 0;
-  const dc = c.division + 1;
-  note(`You run, trying to ${best.label}. ${best.leader.name} leads${best.helper ? `, ${best.helper.name} helps` : ""}. Its speed ${theirs}, your slowest ${slowest}.`, "event");
+  const edge = Math.sign((theirs > slowest ? -1 : theirs < slowest ? 1 : 0) + (carrying ? -1 : 0));
+  return { best, slowest, theirs, edge, dc: c.division + 1 };
+}
+function chaseTrial(rng, k) {
+  return trial(rng, [dieOfTier(attrTier(k.best.leader, k.best.attr)), dieOfTier(skill(k.best.leader, k.best.skill))], { edge: k.edge, bonus: k.best.helper ? 2 : 0 });
+}
+const eidolon = (head, note) => {
+  if (head !== "Eidolon of the Hunt") return false;
+  note("You run. Running is what the Eidolon of the Hunt is for. It catches you.", "event");
+  return true;
+};
+
+/** Breaking away from a fight: one trial, one round [Jon, 2026-10-24]. → true if the party gets clear enough to tend its dying. */
+export function breakAway(state, rng, head, note, ms, { carrying = false } = {}) {
+  if (eidolon(head, note) || !ms.length) return false;
+  const k = chaseSetup(head, ms, carrying);
+  const t = chaseTrial(rng, k);
+  const ok = passes(t, k.dc);
+  note(`You break away, trying to ${k.best.label}. ${k.best.leader.name} leads${k.best.helper ? `, ${k.best.helper.name} helps` : ""}${carrying ? ", carrying the fallen" : ""}. Its speed ${k.theirs}, your slowest ${k.slowest}. ${t.text} against ${k.dc}: ${ok ? "you get clear" : "they're still on you"}.`, "event");
+  return ok;
+}
+
+/** The chase: three successes before two failures. → true if the party gets away. */
+export function chase(state, rng, head, note, ms = alive(state), { carrying = false } = {}) {
+  if (eidolon(head, note) || !ms.length) return false;
+  const k = chaseSetup(head, ms, carrying);
+  note(`You run, trying to ${k.best.label}. ${k.best.leader.name} leads${k.best.helper ? `, ${k.best.helper.name} helps` : ""}${carrying ? ", carrying the fallen" : ""}. Its speed ${k.theirs}, your slowest ${k.slowest}.`, "event");
   let ok = 0, bad = 0;
   while (ok < 3 && bad < 2) {
-    const t = trial(rng, [dieOfTier(attrTier(best.leader, best.attr)), dieOfTier(skill(best.leader, best.skill))], { edge, bonus: best.helper ? 2 : 0 });
-    const p = passes(t, dc);
+    const t = chaseTrial(rng, k);
+    const p = passes(t, k.dc);
     p ? ok++ : bad++;
-    note(`${t.text} against ${dc}: ${p ? "you gain ground" : "it gains on you"}.`);
+    note(`${t.text} against ${k.dc}: ${p ? "you gain ground" : "it gains on you"}.`);
   }
   note(ok >= 3 ? "You get away." : "It catches you.", "event");
   return ok >= 3;

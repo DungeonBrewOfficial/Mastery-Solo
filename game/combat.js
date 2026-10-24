@@ -25,7 +25,7 @@ import { buildHealthPlan, armoredDurability } from "./vendor/foundry/module/help
 import { headsLost, groupTokenSize, bandFor as groupBand } from "./vendor/foundry/module/helpers/minion-rules.mjs";
 import { TRAUMA_TABLE } from "./vendor/foundry/module/data/trauma-table.mjs";
 import { resolveDamage } from "./vendor/foundry/extract/resolve-damage.mjs";
-import { speedOf, creatureSpeed, creatureTrial, awardCombatXp, spoils, chase } from "./events.js";
+import { speedOf, creatureSpeed, creatureTrial, awardCombatXp, spoils, chase, breakAway, cannotRun } from "./events.js";
 
 export const GRID_W = 16, GRID_H = 12;
 export const PHASES = ["fast", "moderate", "slow"];
@@ -511,21 +511,98 @@ export function respond(state, rng, note, yes) {
   advance(state, rng, note);
 }
 
-/** Run from the fight: the chase (design/02-encounters.md). On a failure the round is spent running. */
-export function retreat(state, rng, note) {
+/**
+ * Who runs and who is carried if the party breaks away: characters standing
+ * on their own legs run; the unconscious are carried or left; anyone who
+ * can't run (no legs, Paralyzed) is carried.
+ */
+export function runPlan(state) {
+  const b = state.battle;
+  const pcs = b.units.filter(u => u.pc && onField(u));
+  const lame = (u) => cannotRun(memberOf(state, u)) || u.impaired >= 3;
+  return {
+    runners: pcs.filter(u => standing(state, u) && !lame(u)),
+    downed: pcs.filter(u => memberOf(state, u).down),
+    lame: pcs.filter(u => standing(state, u) && lame(u))
+  };
+}
+
+/**
+ * Break away (design/02-encounters.md, Running from a fight). It takes the
+ * round: enemies beside a runner get their reprisal attacks as the party
+ * goes, then one trial, at Impotence if anyone is carried. Clear of them,
+ * the dying are tended; then the chase. carry: ids of the unconscious to carry.
+ */
+export function retreat(state, rng, note, carry = []) {
   const b = state.battle;
   if (!b || b.stage !== "declare") return;
-  const dying = b.units.filter(u => u.pc && onField(u) && memberOf(state, u).dying != null && !memberOf(state, u).stable);
-  const away = chase(state, rng, b.head, note, b.units.filter(u => u.pc && standing(state, u)).map(u => memberOf(state, u)));
-  if (away) {
-    for (const u of dying) die(state, note, u, "dies on the way, untended");
-    note("You get away, carrying anyone who fell. No XP for a fight you ran from.", "event");
+  const d = rng.d(6);
+  b.order = d <= 3 ? ["party", "enemy"] : ["enemy", "party"];
+  b.breaking = { carry };
+  note(`You try to break away. Initiative d6 ${d}: ${d <= 3 ? "your side" : "their side"} first if it comes to blows.`, "event");
+  b.stage = "phase";
+  for (const u of b.units.filter(x => x.pc)) { u.doneIn = [...PHASES]; u.ap = Math.min(u.ap, 1); }
+  const { runners } = runPlan(state);
+  for (const o of b.units.filter(x => !x.pc && standing(state, x) && x.ap > 0 && x.impaired < 3 && x.demoralized < 3)) {
+    const melee = meleeAttack(CREATURES[o.cname]);
+    const t = runners.filter(r => gap(o, r) <= reachOf(o, CREATURES[o.cname])).sort((x, y) => memberOf(state, x).hp - memberOf(state, y).hp)[0];
+    if (!melee || !t) continue;
+    o.ap -= 1; o.attack = CREATURES[o.cname].attacks.indexOf(melee);
+    b.queue.push({ op: "attack", by: o.id, target: t.id, ranged: false, reaction: "reprisal" });
+  }
+  b.queue.push({ op: "breakaway" });
+  advance(state, rng, note);
+}
+
+function runBreakaway(state, rng, note) {
+  const b = state.battle;
+  b.queue.shift();
+  const plan = runPlan(state);
+  const carried = [...plan.downed.filter(u => b.breaking.carry.includes(u.id)), ...plan.lame];
+  const left = plan.downed.filter(u => !b.breaking.carry.includes(u.id));
+  // One runner carries one body.
+  if (carried.length > plan.runners.length) {
+    const extra = carried.splice(plan.runners.length);
+    note(`There aren't enough hands to carry ${extra.map(u => u.name).join(" and ")}.`, "event");
+    left.push(...extra);
+  }
+  b.breaking = null;
+  if (!plan.runners.length) { note("No one is left who can run.", "event"); return; }
+  if (!breakAway(state, rng, b.head, note, plan.runners.map(u => memberOf(state, u)), { carrying: carried.length > 0 })) {
+    note("The round is spent running, and they come on.", "event");
+    return;
+  }
+  for (const u of left) die(state, note, u, "is left behind");
+  // The round is over: the dying timer ticks once, then the bleeding can be stopped.
+  for (const u of b.units.filter(x => x.pc && onField(x))) {
+    const m = memberOf(state, u);
+    if (m.dying == null || m.stable) continue;
+    if (m.dying <= 1) { die(state, note, u, "dies before anyone can stop the bleeding"); continue; }
+    m.dying = null; m.stable = true;
+    note(`Clear of them, you stop ${m.name}'s bleeding.`, "reward");
+  }
+  const runners = plan.runners.filter(onField).map(u => memberOf(state, u));
+  const stillCarried = carried.some(onField);
+  if (chase(state, rng, b.head, note, runners, { carrying: stillCarried })) {
+    note("No XP for a fight you ran from.");
     finish(state, rng, note, "fled");
     return;
   }
-  note("They catch you. The round goes on, and you've spent it running.", "event");
-  for (const u of b.units.filter(x => x.pc)) u.ap = 0;
-  beginRound(state, rng, note);
+  note("The fight starts again at close quarters. You saw it coming, so no one is Startled.", "event");
+  regroup(state);
+  startRound(state, rng, note);
+}
+
+/** Caught after a chase: the party together on the left, the enemy close. */
+function regroup(state) {
+  const b = state.battle;
+  const units = b.units.filter(onField);
+  for (const u of units) { u.x = -100; u.y = -100; }
+  units.filter(u => u.pc).forEach((u, i) => {
+    const [x, y] = FORMATION[u.id] || [2, 3 + i];
+    if (!blockedFor(b, u, x, y)) { u.x = x; u.y = y; } else place(b, u, 2);
+  });
+  for (const u of units.filter(x => !x.pc)) place(b, u, 5);
 }
 
 /* ------------------------------------------------------------------ */
@@ -536,6 +613,7 @@ function runOp(state, rng, note) {
   const op = b.queue[0];
   if (op.op === "move") return runMove(state, rng, note, op);
   if (op.op === "attack") return runAttack(state, rng, note, op);
+  if (op.op === "breakaway") return runBreakaway(state, rng, note);
   b.queue.shift();
 }
 
@@ -693,10 +771,11 @@ function applyHit(state, rng, note, a, t, atk, def, type, ranged) {
       const fp = groupTokenSize(Math.max(1, t.heads), c.size.width * c.size.height);
       t.w = fp.width; t.h = fp.height;
       t.name = `${t.cname}s (${t.heads})`;
-      bits.push(`${lost} of them fall${t.heads ? `, ${t.heads} left` : ""}`);
+      bits.push(`${lost} of the ${t.cname.toLowerCase()}s fall${t.heads ? `, ${t.heads} left` : ""}`);
     }
   } else if (r.healthDamage) { t.hp = Math.max(0, t.hp - r.healthDamage); bits.push(`${r.healthDamage} to health`); }
-  note(`${t.minion ? "The group" : t.name} takes ${bits.join(", ") || "nothing"}.`, "event");
+  if (t.minion) note(bits.length ? `${bits.join(", ").replace(/^./, ch => ch.toUpperCase())}.` : "None of them fall.", "event");
+  else note(`${t.name} takes ${bits.join(", ") || "nothing"}.`, "event");
   if (t.hp <= 0) {
     t.dead = true;
     note(`${t.minion ? `The last of the ${t.cname.toLowerCase()}s falls` : `${t.name} falls`}.`, "reward");
@@ -912,8 +991,21 @@ function finish(state, rng, note, outcome) {
     if (b.units.some(u => !u.pc && u.dead && u.cname === b.head)) spoils(state, rng, e, note);
     for (const d of b.dropped) note(`${state.party.members.find(m => m.id === d.member).name} picks up the ${state.party.members.find(m => m.id === d.member).weapons[d.weapon].name.toLowerCase()}.`);
     if (Object.keys(b.thrown).length) note("You gather up the thrown weapons.");
-    tend(state, rng, note);
   }
+  if (outcome === "fled") {
+    // What was dropped or thrown stays on the field.
+    for (const d of [...b.dropped].sort((x, y) => y.weapon - x.weapon)) {
+      const m = state.party.members.find(x => x.id === d.member);
+      note(`${m.name}'s ${m.weapons[d.weapon].name.toLowerCase()} is left lying where it fell.`);
+      m.weapons.splice(d.weapon, 1);
+    }
+    for (const [k, n] of Object.entries(b.thrown)) {
+      const [id, i] = k.split(":");
+      const w = state.party.members.find(x => x.id === id).weapons[Number(i)];
+      if (w && b.dropped.every(d => d.member !== id)) { w.count = Math.max(0, (w.count ?? 1) - n); note(`${n} ${w.name.toLowerCase()} left behind; ${w.count} remain.`); }
+    }
+  }
+  if (outcome === "won" || outcome === "fled") tend(state, rng, note);
   for (const m of state.party.members) { m.down = m.dead || m.hp <= 0; m.fightingOn = false; m.stable = false; m.dying = null; }
   state.encounter = null;
   state.battle = null;
