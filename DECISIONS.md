@@ -112,6 +112,8 @@ Rulings Jon has made for this design, newest last within each section. Each line
   - An inn night is Common lodging and a Common supper (3½ sp a head).
   - Without a kit, Triage stabilizes as the Combat chapter has it; with a Wound Kit it heals as the Healer discipline has it.
 
+**Sites (`design/05-sites.md`) [Jon, 2026-10-24]:** all eight drafts stand. A site is a chain of areas drawn as the party goes, with fights on the combat grid; sizes as drafted; trials inside use the Even and Hard DCs by band (+2 in Deep country); the clock rolls every 3 exploration rounds and after each fight; the guardian's group is spread through the Occupied areas; cleared sites may refill after a month; no magic treasure until magic items exist. Lost places can be held by the Asura (the Cherub, the Agathodaimon) as one option among the rolls, not the rule.
+
 **Creature tiers (a guess, 2026-10-24)**
 Jon is still building monsters. His current guess at the party levels each creature Tier serves, used until the tables test it:
 
@@ -130,7 +132,6 @@ Jon is still building monsters. His current guess at the party levels each creat
 - The chase, until it's tested.
 - The map questions at the top of `design/04-the-map.md`: tiles, region size, hills, Deep country by tile, road and settlement density, spell sources, and river crossings.
 - The hoard multiplier (40 sp per point of the guardian's XP value), waiting on play.
-- The site questions at the top of `design/05-sites.md`: areas instead of grid maps, site sizes, default DCs by band, the clock inside, the guardian's group spread through the site, cleared sites refilling, magic treasure, and lost-place guardians.
 - The settlement questions at the top of `design/06-settlements.md`: recruit level, who's available, hiring a smith, rumors, libraries, and a hamlet's hospitality.
 - **Difficulty settings** (later). Candidates so far: what a wipe means (everyone dies; everyone but the dynasty's main character survives; raiders rob and leave, beasts drag one off), whether healing means make saving the dying after a fight automatic, and how a fight ends when only a Hard to Kill character at 0 health is left against foes who can't kill her (the party falls; she survives alone; the foe leaves her with her Traumas).
 - Metals, deferred: Jon is working on them in the main rules. Plate is the level-10 bar for now; better materials and craftsmanship belong past that. The five-metal ladder (Iron, Steel, Silver, Gold, Mithril) needs a purpose. Candidates so far: Durability grades on armor and shields, or the substrate for permanent enchantment (which waits on Mastery's magic items).

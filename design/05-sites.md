@@ -10,7 +10,7 @@ A site is drawn as a **chain of areas** on scrap paper: a circle for each area, 
 
 ## Questions for Jon
 
-Each is marked **[?]** where it comes up.
+Each is marked **[?]** where it comes up. **Answered 2026-10-24: all eight stand as drafted [Jon]; the Asura in lost places are one option among the rolls, not the rule.**
 
 1. **Areas instead of rooms on a grid.** A site is a chain of circles and lines, built as you go. It's quick on paper and needs no drawing skill. Measured maps can still be drawn for fights.
 2. **Site sizes.** A lair has 2 to 4 areas and a lost place 4 to 14. See Size.
