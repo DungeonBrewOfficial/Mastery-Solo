@@ -15,6 +15,8 @@ function battle(seed, group, extra = {}) {
 const say = (s) => (t, k) => note(s, t, k);
 const logOf = (s, from = 0) => s.log.slice(from).map(l => l.text).join("\n");
 const unit = (s, id) => s.battle.units.find(u => u.id === id);
+/** Answer No to whatever the attack stops for (Hearten, defense), until it resolves. */
+const settle = (s) => { for (let i = 0; i < 20 && s.battle?.prompt; i++) runWithDice(s, (rng) => respond(s, rng, say(s), false)); };
 
 test("every ability the abilities table names is quoted from a real stat block", () => {
   const all = new Set(Object.values(CREATURES).flatMap(c => c.abilities));
@@ -84,7 +86,7 @@ test("Gisla is immune to Grave Rust's Profane rot", () => {
 
 test("Avoid Death works once, then waits for a rest", () => {
   let fired = 0;
-  for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) {
+  for (let seed = 1; seed <= 40; seed++) {
     const s = battle(seed, [{ name: "Bandit Leader", count: 1 }, { name: "Bandit Cutthroat", count: 2 }, { name: "Bandit Thug", heads: 6 }], { temper: "Raider" });
     const from = s.log.length;
     playBattle(s);
@@ -123,6 +125,7 @@ test("Hamon's Opportunist with Backstab adds two Stealth dice, with Dominance an
   setMode(s, "opportunist");
   const from = s.log.length;
   runWithDice(s, (rng) => pcAttack(s, rng, say(s), foe.id));
+  settle(s);
   const line = s.log.slice(from).map(l => l.text).find(t => /^Hamon attacks .*opportunist/i.test(t));
   assert.ok(line, logOf(s, from));
   assert.match(line, /Dominance/);
@@ -153,6 +156,7 @@ test("a character three or more squares off in a straight line can Charge for 2 
   assert.ok(can.ok && can.charge && can.cost === 2, JSON.stringify(can));
   const from = s.log.length;
   runWithDice(s, (rng) => pcAttack(s, rng, say(s), boar.id));
+  settle(s);
   assert.match(logOf(s, from), /Gerberga charges Boar with swordbreaker.*Dominance/);
 });
 
@@ -235,4 +239,27 @@ test("Avoid Death set to Ask stops for the choice", () => {
     if (asked) break;
   }
   assert.ok(asked);
+});
+
+test("Hearten is asked about only while Corra stands with AP to spend, and on trials too", () => {
+  const kinds = new Set();
+  for (let seed = 1; seed <= 12; seed++) {
+    const s = battle(seed, [{ name: "Bandit Leader", count: 1 }, { name: "Bandit Cutthroat", count: 2 }, { name: "Bandit Thug", heads: 6 }], { temper: "Raider" });
+    runWithDice(s, (rng) => beginRound(s, rng, say(s)));
+    for (let i = 0; i < 600 && s.battle; i++) {
+      const p = s.battle.prompt;
+      if (p) {
+        const helperId = p.kind === "heartenTrial" || p.kind === "heartenAttack" ? p.by : p.kind === "defend" ? p.helper : null;
+        if (helperId) {
+          kinds.add(p.kind);
+          const corra = unit(s, helperId), m = s.party.members.find(x => x.id === helperId);
+          assert.ok(corra.ap > 0 && !m.down, `${p.kind}: Corra has AP and is standing`);
+        }
+        runWithDice(s, (rng) => respond(s, rng, say(s), p.kind === "defend" && p.helper ? "hearten" : true));
+      } else if (s.battle.stage === "declare") runWithDice(s, (rng) => beginRound(s, rng, say(s)));
+      else if (currentPC(s)) runWithDice(s, (rng) => pcEndTurn(s, rng, say(s)));
+    }
+  }
+  assert.ok(kinds.has("heartenTrial"), "asked on a trial");
+  assert.ok(kinds.has("defend"), "offered on a defense");
 });

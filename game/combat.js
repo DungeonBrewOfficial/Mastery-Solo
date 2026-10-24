@@ -179,8 +179,8 @@ export const REACTIONS = {
   snap: { label: "Snap Shot", default: "ask", text: "Reprisal, when a creature uses movement to approach within 15 feet of your position. Make a ranged attack with Impotence and move up to half your movement speed away from the triggering creature (Weapon Mastery, Ranged Baseline)." },
   avoidDeath: { label: "Avoid Death", default: "always", text: "When an attack or spell would reduce you to 0 health, you can roll your Endurance tier die and restore that amount of health. You cannot use this again until you complete a rest (Skill Mastery, Athletics)." },
   heartenDefense: { label: "Hearten an ally's defense", default: "ask", text: "As a reaction, you may spend 1 AP when an ally makes a trial, attack, or defense roll. You grant a bonus equal to your Charisma tier to that roll (Skill Mastery, Presence, Rhetoric)." },
-  heartenAttack: { label: "Hearten an ally's attack", default: "never", text: "As a reaction, you may spend 1 AP when an ally makes a trial, attack, or defense roll. You grant a bonus equal to your Charisma tier to that roll (Skill Mastery, Presence, Rhetoric)." },
-  heartenTrial: { label: "Hearten an ally's trial", default: "never", noAsk: true, text: "As a reaction, you may spend 1 AP when an ally makes a trial, attack, or defense roll. You grant a bonus equal to your Charisma tier to that roll (Skill Mastery, Presence, Rhetoric). Trials come up mid-attack, so this one is Always or Never." }
+  heartenAttack: { label: "Hearten an ally's attack", default: "ask", text: "As a reaction, you may spend 1 AP when an ally makes a trial, attack, or defense roll. You grant a bonus equal to your Charisma tier to that roll (Skill Mastery, Presence, Rhetoric)." },
+  heartenTrial: { label: "Hearten an ally's trial", default: "ask", text: "As a reaction, you may spend 1 AP when an ally makes a trial, attack, or defense roll. You grant a bonus equal to your Charisma tier to that roll (Skill Mastery, Presence, Rhetoric). Ask stops for trials against an enemy's attack (venom, a grab, a Low Cut, a Mob trait); other trials, like Endurance at 0 health, take Hearten only on Always." }
 };
 export const reactOf = (m, k) => m.react?.[k] || REACTIONS[k].default;
 /** The reactions a character has, for the settings page. */
@@ -282,11 +282,12 @@ function mods(state, u, kind) {
 }
 
 /** A trial to resist: the character's attribute trial, or the creature's trial dice, with its conditions. */
-function resist(state, rng, u, attr, dc, { edge = 0 } = {}) {
+function resist(state, rng, u, attr, dc, { edge = 0, hearten } = {}) {
   const md = mods(state, u, attr);
   const e = Math.sign(edge + md.edge);
-  const helper = u.pc && state.battle ? heartener(state, u, "heartenTrial") : null;
-  const lift = helper && reactOf(memberOf(state, helper), "heartenTrial") === "always" ? heartenBonus(state, helper.id) : 0;
+  // Hearten: chosen at a prompt (hearten is the helper's id, or null for no), or Always.
+  const helper = hearten ? unitById(state.battle, hearten) : hearten === undefined && u.pc && state.battle ? heartener(state, u, "heartenTrial") : null;
+  const lift = helper && (hearten || reactOf(memberOf(state, helper), "heartenTrial") === "always") ? heartenBonus(state, helper.id) : 0;
   const t = u.pc
     ? trial(rng, [dieOfTier(tierOf(memberOf(state, u).attributes[attr])), dieOfTier(tierOf(memberOf(state, u).attributes[attr]))], { edge: e, bonus: md.bonus - md.pen + lift })
     : creatureTrial(rng, CREATURES[u.cname], attr, { edge: e, bonus: md.bonus - md.pen });
@@ -899,6 +900,7 @@ export function respond(state, rng, note, yes) {
       break;
     }
     case "heartenAttack": head.heartenAsked = true; if (yes) head.heartenAtk = p.by; break;
+    case "heartenTrial": head.heartenTrial = yes ? p.by : null; break;
     case "avoidDeath": {
       b.queue.shift();
       const u = unitById(b, p.id);
@@ -1029,6 +1031,12 @@ function runOp(state, rng, note) {
   if (op.op === "move") return runMove(state, rng, note, op);
   if (op.op === "attack") return runAttack(state, rng, note, op);
   if (op.op === "breakaway") return runBreakaway(state, rng, note);
+  if (op.op === "afterHit") {
+    b.queue.shift();
+    const a = unitById(b, op.by), t = unitById(b, op.target);
+    if (a && t) afterHit(state, rng, note, a, t, op.src, op.hit, op.info, op.heartenTrial ?? null);
+    return;
+  }
   b.queue.shift();
 }
 
@@ -1161,7 +1169,17 @@ function runAttack(state, rng, note, op) {
   if (!op.ranged && gap(a, t) > reachOf(a, CREATURES[a.cname])) { b.queue.shift(); return; }
   const info = attackInfo(state, a, op);
   // Grab: in lieu of an attack roll, a trial.
-  if (op.grab) { b.queue.shift(); return runGrab(state, rng, note, a, t, op.grab); }
+  if (op.grab) {
+    const helper = !op.heartenAsked && t.pc && heartener(state, t, "heartenTrial");
+    if (helper && reactOf(memberOf(state, helper), "heartenTrial") === "ask") {
+      op.heartenAsked = true;
+      b.prompt = { kind: "heartenTrial", by: helper.id, target: t.id, yes: "Hearten", no: "Hold",
+        text: `${a.name} tries to seize ${t.name} (${op.grab.name}): a Strength trial against ${op.grab.resist.dc}. ${helper.name}: hearten it (+${tierOf(memberOf(state, helper).attributes.charisma)}, 1 AP, ${helper.ap} left)?` };
+      return;
+    }
+    b.queue.shift();
+    return runGrab(state, rng, note, a, t, op.grab, op.heartenTrial);
+  }
   // Declare the defense before the roll (Combat, Defense).
   if (op.defend === undefined) {
     const d = canDefend(state, t, info.type, op.ranged);
@@ -1240,12 +1258,23 @@ function runAttack(state, rng, note, op) {
 }
 
 /** What lands after the damage: riders, Mob traits, flame, the pack, Challenge, Riposte, and counters. */
-function afterHit(state, rng, note, a, t, op, hit, info) {
+function afterHit(state, rng, note, a, t, op, hit, info, heartenTrial) {
   const b = state.battle;
   const dealt = (hit.durabilityDamage || 0) + (hit.healthDamage || 0) > 0;
   if (dealt && onField(t)) {
-    if (op.rider) applyRider(state, rng, note, a, t, abilitiesOf(CREATURES[a.cname]).find(x => x.name === op.rider), hit);
-    if (a.minion) for (const m of abilitiesOf(CREATURES[a.cname]).filter(x => x.kind === "mob")) applyRider(state, rng, note, a, t, m, hit);
+    const riders = [...(op.rider ? [abilitiesOf(CREATURES[a.cname]).find(x => x.name === op.rider)] : []), ...(a.minion ? abilitiesOf(CREATURES[a.cname]).filter(x => x.kind === "mob") : [])].filter(Boolean);
+    // A trial is coming and an ally could hearten it: stop and ask, then pick up here.
+    if (heartenTrial === undefined && riders.some(r => r.resist) && t.pc) {
+      const helper = heartener(state, t, "heartenTrial");
+      if (helper && reactOf(memberOf(state, helper), "heartenTrial") === "ask") {
+        const r = riders.find(x => x.resist);
+        b.queue.unshift({ op: "afterHit", by: a.id, target: t.id, src: { ...op }, hit: { durabilityDamage: hit.durabilityDamage || 0, healthDamage: hit.healthDamage || 0, defended: !!hit.defended }, info: { type: info.type } });
+        b.prompt = { kind: "heartenTrial", by: helper.id, target: t.id, yes: "Hearten", no: "Hold",
+          text: `${t.name} must resist ${a.name}'s ${r.name} with ${r.resist.attr[0].toUpperCase() + r.resist.attr.slice(1)}. ${helper.name}: hearten the trial (+${tierOf(memberOf(state, helper).attributes.charisma)}, 1 AP, ${helper.ap} left)?` };
+        return;
+      }
+    }
+    for (const r of riders) applyRider(state, rng, note, a, t, r, hit, heartenTrial);
     if (!a.pc) for (const f of abilitiesOf(CREATURES[a.cname]).filter(x => x.kind === "flame" && x.whenType === info.type)) secondaryDamage(state, rng, note, t, f.amount, f.type, `${a.name}'s ${f.name}`);
   }
   // Challenge: the killing blow on the challenged foe inspires the challenger.
@@ -1288,7 +1317,7 @@ function afterHit(state, rng, note, a, t, op, hit, info) {
 }
 
 /** A rider or Mob trait landing: extra damage, then a resist trial, then the condition, Attrition, or swap. */
-function applyRider(state, rng, note, a, t, ab, hit) {
+function applyRider(state, rng, note, a, t, ab, hit, hearten) {
   if (!ab || !onField(t)) return;
   if (ab.gate === "health" && !hit.healthDamage) return;
   if (ab.extra) secondaryDamage(state, rng, note, t, ab.extra.amount, ab.extra.type, `${a.name}'s ${ab.name}`);
@@ -1296,7 +1325,8 @@ function applyRider(state, rng, note, a, t, ab, hit) {
   if (ab.cond && cond(t, ab.cond.name) >= (ab.cond.max || 3) && ab.cond.name !== "infected") return;
   if (ab.resist) {
     const dc = ab.resist.dc === "band" ? mobDC(CREATURES[a.cname].tier, a.heads) : ab.resist.dc;
-    const r = resist(state, rng, t, ab.resist.attr, dc);
+    const r = resist(state, rng, t, ab.resist.attr, dc, { hearten });
+    hearten = null; // one Hearten, one roll
     note(`${ab.name}: ${t.name} resists with ${ab.resist.attr[0].toUpperCase() + ab.resist.attr.slice(1)} (${r.text} against ${dc}), ${r.ok ? "and shrugs it off" : "and fails"}.`);
     if (r.ok) return;
   }
@@ -1316,9 +1346,9 @@ function applyRider(state, rng, note, a, t, ab, hit) {
 }
 
 /** Grab and Constrict: a Strength trial or Restricted, held while the grabber stays beside its catch. */
-function runGrab(state, rng, note, a, t, ab) {
+function runGrab(state, rng, note, a, t, ab, hearten) {
   if (cond(t, "restricted") >= 3) return;
-  const r = resist(state, rng, t, ab.resist.attr, ab.resist.dc);
+  const r = resist(state, rng, t, ab.resist.attr, ab.resist.dc, { hearten });
   note(`${a.name} tries to ${ab.name === "Constrict" ? "wrap around" : "seize"} ${t.name} (${ab.name}). ${t.name} resists with Strength (${r.text} against ${ab.resist.dc}), ${r.ok ? "and slips free" : "and is caught"}.`, r.ok ? "" : "event");
   if (r.ok) return;
   addCond(state, note, t, "restricted", 1, { by: a.id });
