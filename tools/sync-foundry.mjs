@@ -26,7 +26,10 @@ const FILES = [
   "module/helpers/food-rules.mjs",
   "module/helpers/rest-rules.mjs",
   "module/helpers/trade-rules.mjs",
-  "module/helpers/advancement-rules.mjs"
+  "module/helpers/advancement-rules.mjs",
+  "module/helpers/treasure-rules.mjs",
+  "module/helpers/hoard-rules.mjs",
+  "module/helpers/coin-rules.mjs"
 ];
 
 /**
