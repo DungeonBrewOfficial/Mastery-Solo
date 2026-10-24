@@ -95,6 +95,19 @@ export function draw(canvas, state, view) {
     if (sq?.settlement) settlementIcon(ctx, sq.settlement, ...toScreen(x + 0.5, y + 0.5), s);
   }
 
+  // places found
+  const ICON = { lair: ["L", "#a33"], cave: ["C", "#444"], ruin: ["R", "#6b5a45"], barrow: ["B", "#5a4a6b"], source: ["✦", "#3b6fb0"], landmark: ["▲", "#555"], camp: ["×", "#7a5230"], ground: ["❦", "#3f6b33"] };
+  for (const pl of Object.values(world.places || {})) {
+    if (pl.x < x0 || pl.x > x1 || pl.y < y0 || pl.y > y1) continue;
+    const [cx, cy] = toScreen(pl.x + 0.5, pl.y + 0.5);
+    const [ch, col] = ICON[pl.type] || ["?", "#333"];
+    const r = Math.max(5, s * 0.36);
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = "#f3e6c8"; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = col; ctx.stroke();
+    ctx.fillStyle = col; ctx.font = `bold ${Math.round(r * 1.2)}px Georgia`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(ch, cx, cy + 1);
+  }
+
   // route and target
   if (view.path?.length) {
     ctx.strokeStyle = COLORS.target; ctx.lineWidth = Math.max(1, s * 0.08); ctx.setLineDash([s * 0.2, s * 0.25]);

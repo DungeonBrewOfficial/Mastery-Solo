@@ -29,6 +29,7 @@
         <div id="weather"></div>
         <div id="here" class="here"></div>
       </div>
+      <div id="event" class="panel event" hidden></div>
       <div class="panel">
         <label>Pace
           <select id="pace">
@@ -47,6 +48,16 @@
         <button id="camp">Make camp</button>
         <p class="muted small">Space: travel a leg · C: make camp · drag to pan · wheel to zoom</p>
       </div>
+      <details class="panel" open>
+        <summary id="party-head"></summary>
+        <ul id="members" class="members"></ul>
+        <div class="roles">
+          <label>Scout <select id="scout"></select></label>
+          <label>Watchman <select id="watchman"></select></label>
+        </div>
+        <label class="small"><input type="checkbox" id="quiet"> Move quietly (at Slow pace)</label>
+        <div id="pelts" class="muted small"></div>
+      </details>
       <ol id="log" class="log"></ol>
     </aside>
   </main>

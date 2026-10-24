@@ -2,7 +2,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { makeRng } from "../game/rng.js";
 import { startDynasty, getTile, squareAt, findPath, EDGES, OPPOSITE, TILE, generateTile } from "../game/world.js";
-import { newGame, travelLeg, setTarget, campNow } from "../game/journey.js";
+import { newGame, travelLeg, setTarget, campNow, runWithDice, afterEvent, note } from "../game/journey.js";
+import { choices, choose, chooseSign } from "../game/events.js";
 
 test("a dynasty starts with home and eight known tiles", () => {
   const w = startDynasty(makeRng(42));
@@ -48,7 +49,10 @@ test("paths avoid lakes", () => {
 test("a journey runs for days without breaking", () => {
   const s = newGame(1234);
   setTarget(s, 3, -40);
+  const say = (t, k) => note(s, t, k);
   for (let i = 0; i < 60; i++) {
+    if (s.encounter) { runWithDice(s, (rng) => choose(s, rng, "fight", say)); afterEvent(s); continue; }
+    if (s.sign) { runWithDice(s, (rng) => chooseSign(s, rng, "leave", say)); afterEvent(s); continue; }
     if (s.pending) travelLeg(s, i % 2 ? "stop" : "push");
     else if (!s.target) setTarget(s, s.party.x + 30, s.party.y + (i % 3) * 10);
     else travelLeg(s);

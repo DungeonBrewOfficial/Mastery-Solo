@@ -55,4 +55,15 @@ button.primary:hover:not(:disabled) { background: #6e342a; }
   .map-wrap { flex: none; height: 55vh; }
   aside { width: 100%; border-left: none; border-top: 1px solid var(--line); flex: 1; }
 }
+#event { background: #2b221a; border-left: 3px solid var(--event); }
+#event h2 { margin: 0; font-size: 1rem; color: var(--event); }
+#event p { margin: 0; }
+#event .warn { color: #e07a5f; }
+.buttons { display: flex; flex-wrap: wrap; gap: 6px; }
+.members { list-style: none; margin: 4px 0; padding: 0; font-size: 0.88rem; }
+.members li { display: flex; gap: 8px; align-items: baseline; }
+.members li strong { min-width: 70px; }
+.roles { display: flex; gap: 10px; flex-wrap: wrap; font-size: 0.88rem; }
+summary { cursor: pointer; font-size: 0.9rem; }
+.log li.reward { color: #9fd18b; }
 [hidden] { display: none !important; }

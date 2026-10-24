@@ -7,6 +7,8 @@ import { makeRng, roll, total } from "./rng.js";
 import { startDynasty, generateTile, getTile, tileOf, squareAt, moveCost, countryAt, findPath, TILE, TERRAINS } from "./world.js";
 import { PACES } from "./vendor/foundry/module/helpers/travel-rules.mjs";
 import { WEATHER_TABLES } from "./vendor/foundry/module/data/weather-data.mjs";
+import { PREGENS } from "./data/party.js";
+import { startSign, startEncounter, discover, checkLevels, alive } from "./events.js";
 import { rowFor, weatherFrom, BAND_LABELS } from "./vendor/foundry/module/helpers/weather-rules.mjs";
 
 export const DAY_HOURS = 8;
@@ -23,7 +25,15 @@ export function newGame(seed = Math.floor(Math.random() * 2 ** 31)) {
   const state = {
     version: 1, seed, rngState: 0,
     world,
-    party: { x: 3, y: 3, pace: "normal", carry: 0 },
+    party: {
+      x: 3, y: 3, pace: "normal", carry: 0, quiet: false,
+      members: PREGENS.map(p => ({ ...structuredClone(p), hp: p.health })),
+      roles: { scout: "hamon", watchman: "gerberga" },
+      coin: 450 + 160 + 193 + 284,
+      pelts: [],
+      bankedXp: 0
+    },
+    encounter: null, sign: null, following: null, campDue: false, night: false, season: "spring",
     day: 1, hoursUsed: 0, morningDone: false, pushed: false,
     weather: null, target: null, pending: null,
     log: []
@@ -71,6 +81,7 @@ function rollWeather(rng, day) {
 export const weatherDC = (band) => (band === "cold" || band === "hot") ? 4 : (band === "extremeCold" || band === "extremeHeat") ? 5 : null;
 
 function morning(state, rng) {
+  state.season = seasonOf(state.day);
   const w = rollWeather(rng, state.day);
   state.weather = w;
   state.morningDone = true;
@@ -103,6 +114,7 @@ export function setPace(state, pace) {
  * travelLeg(state, "stop") or travelLeg(state, "push").
  */
 export function travelLeg(state, choice = null) {
+  if (state.encounter || state.sign) return state;
   if (state.pending?.type === "nightfall" && !choice) return state;
   if (!state.target && !state.pending) { note(state, "Choose where to go: click the map."); return state; }
   withDice(state, (rng) => {
@@ -126,7 +138,10 @@ export function travelLeg(state, choice = null) {
     move(state, rng, hours);
     state.hoursUsed += hours;
     eventDie(state, rng);
-    if (state.hoursUsed >= DAY_HOURS) camp(state, rng);
+    if (state.hoursUsed >= DAY_HOURS) {
+      if (state.encounter || state.sign) state.campDue = true;
+      else camp(state, rng);
+    }
   });
   return state;
 }
@@ -161,7 +176,25 @@ function move(state, rng, hours) {
   p.carry = mp;
   note(state, moved ? `You cover ${moved} square${moved === 1 ? "" : "s"}${mp ? ` (${mp} movement carried over)` : ""}.` : `The ground is too hard going to gain a square (${mp} movement carried over).`);
   const sq = squareAt(state.world, p.x, p.y);
-  if (sq?.settlement) note(state, `You reach a ${sq.settlement.home ? "home village" : sq.settlement.size}.`, "place");
+  if (sq?.settlement) {
+    note(state, `You reach a ${sq.settlement.home ? "home village" : sq.settlement.size}.`, "place");
+    reachSafety(state);
+  }
+  const place = state.world.places?.[`${p.x},${p.y}`];
+  if (place && ["lair", "cave", "ruin", "barrow"].includes(place.type)) {
+    // TODO(sites): exploring sites is milestone 4.
+    note(state, `You stand at the ${place.type}${place.creature ? ` of ${place.creature}` : ""}. Exploring sites comes in milestone 4.`, "todo");
+  }
+}
+
+/** Exploration XP is banked until the party reaches safety (design/01-the-turn.md, Coming Home). */
+function reachSafety(state) {
+  const xp = state.party.bankedXp;
+  if (!xp) return;
+  for (const m of alive(state)) m.xp += xp;
+  state.party.bankedXp = 0;
+  note(state, `Safe in a settlement: each character earns ${xp} banked exploration XP.`, "reward");
+  checkLevels(state, (t, k) => note(state, t, k));
 }
 
 /** The event die (design/01-the-turn.md, What happened there; Deep country). */
@@ -171,15 +204,18 @@ function eventDie(state, rng) {
   let result = n <= 2 ? "Quiet" : n === 3 ? "Sign" : n === 4 ? "Discovery" : "Encounter";
   if (country === "settled" && n === 5) result = "Quiet";
   const where = country === "deep" ? "Deep country" : country === "settled" ? "Settled country" : "the wild";
-  // TODO(events): Signs, Discoveries, and Encounters are milestone 2.
   note(state, `Event die ${n} in ${where}: ${result}.`, result === "Quiet" ? "" : "event");
+  const say = (t, k) => note(state, t, k);
+  if (result === "Sign") startSign(state, rng, say);
+  else if (result === "Discovery") discover(state, rng, say);
+  else if (result === "Encounter") startEncounter(state, rng, say);
 }
 
 /* ------------------------------------------------------------------ */
 /* Camp                                                                 */
 
 export function campNow(state) {
-  if (state.pending) return state;
+  if (state.pending || state.encounter || state.sign) return state;
   withDice(state, (rng) => {
     if (!state.morningDone) morning(state, rng);
     camp(state, rng);
@@ -196,6 +232,12 @@ function camp(state, rng) {
   } else {
     const n = rng.d(6);
     note(state, `You make camp. Night die ${n}${n === 6 ? ": something finds the camp." : ": the night passes."}`, n === 6 ? "event" : "camp");
+    if (n === 6) {
+      state.night = true;
+      startEncounter(state, rng, (t, k) => note(state, t, k), { night: true });
+      state.night = false;
+      state.sign = null; // a Sign at night is only noises in the dark
+    }
   }
   if (state.pushed) note(state, `You traveled ${state.hoursUsed} hours today: Pushing the Pace trial, DC ${2 + Math.max(0, state.hoursUsed - DAY_HOURS)} plus pace.`, "todo");
   state.day += 1;
@@ -203,9 +245,18 @@ function camp(state, rng) {
   state.morningDone = false;
   state.pushed = false;
   state.party.carry = 0;
+  state.campDue = false;
 }
 
 /* ------------------------------------------------------------------ */
+
+/** After an encounter or sign is settled, finish the day if it was over. */
+export function afterEvent(state) {
+  if (!state.encounter && !state.sign && state.campDue) withDice(state, (rng) => camp(state, rng));
+  return state;
+}
+
+export function runWithDice(state, fn) { return withDice(state, fn); }
 
 export const save = (state) => JSON.stringify(state);
 export const load = (json) => JSON.parse(json);

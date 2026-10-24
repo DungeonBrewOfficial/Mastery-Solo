@@ -13,7 +13,9 @@ import { fileURLToPath } from "node:url";
 const FILES = [
   "module/helpers/weather-rules.mjs",
   "module/helpers/travel-rules.mjs",
-  "module/data/weather-data.mjs"
+  "module/data/weather-data.mjs",
+  "module/data/chargen-data.mjs",
+  "module/data/treasure-data.mjs"
 ];
 
 const here = dirname(fileURLToPath(import.meta.url));

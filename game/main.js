@@ -2,12 +2,14 @@
  * The page: wires the map canvas and the side panel to the game state, and
  * saves after every action.
  */
-import { newGame, travelLeg, campNow, setTarget, setPace, seasonOf, DAY_HOURS, squaresPerHour } from "./journey.js";
+import { newGame, travelLeg, campNow, setTarget, setPace, seasonOf, DAY_HOURS, squaresPerHour, note, afterEvent, runWithDice } from "./journey.js";
+import { choices, choose, signChoices, chooseSign, partyLevel, bandFor, ROMAN } from "./events.js";
+import { CREATURES } from "./data/creatures.js";
 import { squareAt, countryAt, findPath, moveCost, TERRAINS, SETTLEMENTS } from "./world.js";
 import { draw } from "./render.js";
 import { BAND_LABELS } from "./vendor/foundry/module/helpers/weather-rules.mjs";
 
-const SAVE_KEY = "mastery-solo-save-v1";
+const SAVE_KEY = "mastery-solo-save-v2";
 const $ = (id) => document.getElementById(id);
 const canvas = $("map");
 
@@ -40,9 +42,12 @@ function render() {
   $("seed").textContent = `Seed ${state.seed}`;
 
   const pending = state.pending?.type === "nightfall";
+  const busy = !!(state.encounter || state.sign);
   $("choice").hidden = !pending;
-  $("travel").disabled = pending;
-  $("camp").disabled = pending;
+  $("travel").disabled = pending || busy;
+  $("camp").disabled = pending || busy;
+  renderEvent();
+  renderParty();
   $("travel").textContent = state.target ? "Travel a leg" : "Click the map to choose a destination";
 
   const log = $("log");
@@ -56,10 +61,66 @@ function render() {
   log.scrollTop = log.scrollHeight;
 }
 
+function button(label, onclick) {
+  const b = document.createElement("button");
+  b.textContent = label;
+  b.onclick = onclick;
+  return b;
+}
+
+function renderEvent() {
+  const box = $("event");
+  box.innerHTML = "";
+  const say = (t, k) => note(state, t, k);
+  if (state.encounter) {
+    const e = state.encounter, c = CREATURES[e.head];
+    box.hidden = false;
+    box.innerHTML = `<h2>${e.night ? "In the night" : "Encounter"}</h2>
+      <p>${e.text.replace(/\s*\[[^\]]*\]/g, "")}</p>
+      <p class="muted">${e.head}: Tier ${c.tier} ${c.rank}, Division ${c.division}, ${e.xp} XP. ${e.temper}.</p>
+      <p>${e.distance} · ${e.partyAware ? "you see it" : "you didn't see it"} · ${e.creatureAware ? "it knows you're here" : "it hasn't noticed you"}</p>`;
+    const row = document.createElement("div");
+    row.className = "buttons";
+    for (const ch of choices(state)) row.appendChild(button(ch.label, () => act(() => { runWithDice(state, (rng) => choose(state, rng, ch.id, say)); afterEvent(state); })));
+    box.appendChild(row);
+  } else if (state.sign) {
+    const s = state.sign;
+    box.hidden = false;
+    box.innerHTML = `<h2>Signs</h2><p>${s.read && !s.unread ? s.text.replace(/\s*\[[^\]]*\]/g, "") : "Tracks, a kill, a camp gone cold. Something has passed this way."}</p>${s.above ? '<p class="warn">Whatever left these is beyond you.</p>' : ""}`;
+    const row = document.createElement("div");
+    row.className = "buttons";
+    for (const ch of signChoices(state)) row.appendChild(button(ch.label, () => act(() => { runWithDice(state, (rng) => chooseSign(state, rng, ch.id, say)); afterEvent(state); })));
+    box.appendChild(row);
+  } else box.hidden = true;
+}
+
+function renderParty() {
+  const p = state.party;
+  const lvl = partyLevel(state);
+  $("party-head").textContent = `Party level ${lvl} · Band ${ROMAN[bandFor(lvl)]} · ${p.coin} sp · ${p.bankedXp} XP banked`;
+  const list = $("members");
+  list.innerHTML = "";
+  for (const m of p.members) {
+    const li = document.createElement("li");
+    li.innerHTML = `<strong>${m.name}</strong> <span class="muted">${m.cls} ${m.level}</span> <span>${m.hp}/${m.health} hp</span> <span class="muted">${m.xp} XP</span>`;
+    list.appendChild(li);
+  }
+  for (const role of ["scout", "watchman"]) {
+    const sel = $(role);
+    if (!sel.options.length) for (const m of p.members) sel.add(new Option(m.name, m.id));
+    sel.value = p.roles[role];
+  }
+  $("quiet").checked = !!p.quiet;
+  if (p.pelts.length) $("pelts").textContent = `Pelts: ${p.pelts.map(x => `${x.quality} ${x.name.toLowerCase()} (${x.value} sp)`).join(", ")}`;
+  else $("pelts").textContent = "";
+}
+
 function describe(sq, x, y) {
   if (!sq) return "Unexplored";
   const bits = [sq.lake ? "Lake" : TERRAINS[sq.terrain].label];
   if (sq.settlement) bits.push(sq.settlement.home ? "Home village" : SETTLEMENTS[sq.settlement.size].label);
+  const pl = state.world.places?.[`${x},${y}`];
+  if (pl) bits.push(pl.type === "source" ? `${pl.kind} (${pl.forms.join(", ")})` : pl.creature ? `${pl.type} of ${pl.creature}` : pl.type);
   if (sq.bridge) bits.push("bridge"); else { if (sq.road) bits.push("road"); if (sq.river) bits.push("river"); }
   const country = countryAt(state.world, x, y);
   bits.push(country === "deep" ? "Deep country" : country === "settled" ? "Settled" : "Wild");
@@ -82,6 +143,9 @@ $("camp").onclick = () => act(() => campNow(state));
 $("stop").onclick = () => act(() => travelLeg(state, "stop"));
 $("push").onclick = () => act(() => travelLeg(state, "push"));
 $("pace").onchange = (e) => act(() => setPace(state, e.target.value));
+$("scout").onchange = (e) => act(() => { state.party.roles.scout = e.target.value; });
+$("watchman").onchange = (e) => act(() => { state.party.roles.watchman = e.target.value; });
+$("quiet").onchange = (e) => act(() => { state.party.quiet = e.target.checked; });
 $("center").onclick = () => { view.cx = state.party.x + 0.5; view.cy = state.party.y + 0.5; render(); };
 $("zoom-in").onclick = () => { view.scale = Math.min(48, view.scale * 1.25); render(); };
 $("zoom-out").onclick = () => { view.scale = Math.max(6, view.scale / 1.25); render(); };
@@ -114,7 +178,7 @@ canvas.addEventListener("pointermove", (ev) => {
   draw(canvas, state, view);
 });
 canvas.addEventListener("pointerup", (ev) => {
-  if (drag && !drag.moved && !state.pending) {
+  if (drag && !drag.moved && !state.pending && !state.encounter && !state.sign) {
     const { x, y } = squareUnder(ev);
     setTarget(state, x, y);
     persist();
@@ -131,8 +195,9 @@ canvas.addEventListener("wheel", (ev) => {
 
 window.addEventListener("keydown", (ev) => {
   if (ev.target.tagName === "SELECT" || ev.target.tagName === "INPUT") return;
-  if (ev.key === " " && !state.pending) { ev.preventDefault(); act(() => travelLeg(state)); }
-  if (ev.key === "c" && !state.pending) act(() => campNow(state));
+  const free = !state.pending && !state.encounter && !state.sign;
+  if (ev.key === " " && free) { ev.preventDefault(); act(() => travelLeg(state)); }
+  if (ev.key === "c" && free) act(() => campNow(state));
 });
 window.addEventListener("resize", render);
 

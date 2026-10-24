@@ -55,7 +55,7 @@ const local = (x, y) => [((x % TILE) + TILE) % TILE, ((y % TILE) + TILE) % TILE]
 /* ------------------------------------------------------------------ */
 
 export function newWorld() {
-  return { tiles: {}, log: [] };
+  return { tiles: {}, places: {}, log: [] };
 }
 
 export const getTile = (world, tx, ty) => world.tiles[key(tx, ty)] || null;
