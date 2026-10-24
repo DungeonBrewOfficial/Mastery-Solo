@@ -10,7 +10,7 @@ This file covers what happens when the event die (see `01-the-turn.md`) comes up
 
 Flagged here so they're easy to find. Each is marked **[?]** where it comes up below. Settled questions move to `DECISIONS.md`.
 
-1. **The break roll's attribute (redrafted 2026-10-24).** The head's death no longer forces a roll; losses do, and numbers give Dominance or Impotence. Still open: whether the roll uses Wisdom, as Mastery resists fear, or Endurance, which separates soldiers from bandits. The odds are tabled under Breaking point.
+1. **Morale is now the Demoralized ladder (redrafted 2026-10-24).** Two numbers are mine: the DC of 5, and advancing 2 tiers on a failure by 3 or more. Both are under Breaking point.
 2. **Epic and Legendary creatures retreat to their lairs** at half health. You called this game-y. The case for it is under Breaking point; the alternative is that they fight on or flee for good.
 3. **The chase** stands as drafted until it's tested.
 4. **Deep country.** Your "punishment is going where you shouldn't" is now a rule in `01-the-turn.md`: the farther from roads and settlements, the harder the encounters and the better the finds. The distance that makes country Deep is a guess.
@@ -92,29 +92,32 @@ With contact and disposition settled, the party chooses [N]:
 
 ## Breaking point
 
-The red box had morale [S, via the reconstruction record, §4]. Mastery has Motivation instead: a creature fights for what it wants and stops when the price gets too high [M]. Solo play needs that stopping point written down.
+The red box had morale [S, via the reconstruction record, §4]. Mastery has the condition for it already: **Demoralized**, resisted with Wisdom, whose third tier, Panicked, makes a creature flee "by the safest available route" [M, Conditions]. Morale in solo play is the Demoralized ladder [Jon, 2026-10-24]. Soldiers flee battles; their Wisdom of 4 stays as written.
 
-**Heads hold the group** [Jon, 2026-10-24]. While a Leader or Master stands, its group doesn't roll to break, however badly the fight goes.
+**Heads hold the group** [Jon, 2026-10-24]. While a Leader or Master stands, its group makes no morale trials. (Mastery's Leaders can also rally: the Leader Buff's Inspired counters Demoralized tier for tier [M, Monster Manual, Leaders; Conditions], which undoes fear the party causes with War Cry and the like.)
 
-**Losses trigger the roll; the head's death doesn't** [N, redrafted 2026-10-24]. Killing the head removes that protection, but it doesn't force a roll by itself, so a party can't win a fight just by sniping the captain. A group rolls when half its number is down and no Leader or Master is standing. If the head falls after half the group is already down, the group rolls then. A lone creature rolls at half its health. Count minion heads one by one.
+**Morale trials** [N]. Each creature makes a Wisdom trial with its trial dice [M, Monster Manual, Trials] against DC 5 [?1]:
 
-**Numbers matter** [N]. Compare the creatures still standing with the characters still standing. A group that outnumbers the party rolls with Dominance; a group the party outnumbers rolls with Impotence; an even count rolls as normal.
+- when its Leader or Master falls, and
+- each time another creature on its side falls, once no Leader or Master is standing.
 
-**The roll** [N, ?1]. The strongest creature left standing makes a trial with its trial dice [M, Monster Manual, Trials] against DC 5. Which attribute it uses is open:
+On a failure, advance Demoralized by 1 tier. On a failure by 3 or more, advance it by 2. A creature that reaches Tier 3 (Panicked) flees.
 
-| | Wisdom (resists fear, as Mastery has it) | Endurance (grit) |
-|:---|:---:|:---:|
-| Bandit Cutthroat (T1 Adept): holds on | d3 + d2: 17% | d3 + d3: 33% |
-| Warrior (T2 Armored Adept): holds on | d3 + d2: 17% | d3 + d4: 50% |
-| Veteran (T2 Armored Champion): holds on | d6 + d2: 58% | d6 + d6: 83% |
-| Warrior, outnumbering the party (Dominance) | d4 + d3: 50% | d4 + d6: 75% |
-| Warrior, outnumbered (Impotence) | d2 + 1: 0% | d2 + d3: 17% |
+**Numbers matter** [N]. Compare the creatures still standing with the characters still standing. A side that outnumbers the party rolls with Dominance; a side the party outnumbers rolls with Impotence; an even count rolls as normal.
 
-Every infantry stat block from Warrior to Veteran has Wisdom at Tier 1, so under Wisdom, trained soldiers break exactly as easily as bandits. Endurance separates them.
+**The fear lasts.** Demoralized persists while its source is in sight [M, Conditions], and the source is the party, so in a fight it doesn't fade. Each tier also makes the creature worse at fighting before it ever runs: Shaken has Inferiority on attacks, and Frightened on attacks and defense [M]. The rout is gradual: a group comes apart over several deaths instead of all at once.
 
-**Restless dead** never roll. **Guardians** roll only at a quarter of their health, and never leave their place.
+**It stacks with the party's own fear.** Death Knell and War Cry (Presence, Intimidation), the Fili's Song of Shame, and other abilities that advance Demoralized add their tiers to the morale ladder [M, Conditions, Stacking]. A party with an intimidator routs enemies faster, which those abilities now earn in solo play.
 
-A broken creature flees and doesn't pursue. A broken group scatters, and the XP is still earned: the fight is over, and the party holds the field.
+**Exceptions.** A lone creature makes a morale trial at half its health and again at a quarter. **Restless dead** make none. **Guardians** make none until a quarter of their health, and never leave their place. Creatures immune to Demoralized are immune to morale.
+
+**Paper shortcut.** Identical creatures in the same group can share one roll and one Demoralized track. A minion group is a single creature in Mastery and always has one track [M, Monster Manual, Minions].
+
+**Ending the fight.** A creature that flees out of sight is gone for the rest of the encounter [N]. When every enemy left has fled, the fight is over, the party holds the field, and the head's XP is earned.
+
+### Example
+
+Six Warriors and a Captain meet four characters. The Captain falls in the second round. Each Warrior makes a morale trial with Dominance, since six outnumber four: d4 + d3 against 5, a coin flip. About half come out Shaken. Each Warrior that falls after that sets off another round of trials. Once three Warriors are down, the last three are outnumbered and roll with Impotence, which they can barely pass (d2 + d3 makes 5 one time in six). The survivors climb to Panicked and run within a death or two. If the party has lost two characters by then, it's three Warriors against two, and they keep their Dominance and probably fight on.
 
 **Epic and Legendary creatures go home** [N, ?2]. At half health, an apex creature breaks off and retreats to its lair, and heals there over days. The lair becomes a site the party can find by following its signs. You called this game-y, and it can be. Here's the case for it anyway. Your Dryad already works this way: beaten in a fight, she reforms at her tree, and ending her for good means going to the tree [M, Creatures - Fae]. A wounded bear going back to its den is ordinary animal behavior. And it turns the apex fight into exactly the decision you want the game to be about: you've hurt the dragon, and now you can go home and brag, or follow it into the dark while it's weak, which is the greedy choice and the dangerous one. The alternative is simpler: apex creatures fight to the death or flee for good, like anything else.
 
