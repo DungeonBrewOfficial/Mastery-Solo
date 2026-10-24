@@ -116,7 +116,7 @@ Most armored folk start a fight in worn armor: a creature's armor is listed at i
 **What it's worth** [Jon, 2026-10-24]:
 
 - Secondhand arms and armor sell for **half their listed value, times their condition** (current Durability over maximum). A Warlord's scale mail, listed at 1,120 sp and taken at 40%, sells for about 220 sp.
-- **Broken** armor (0 Durability) sells only as scrap: 5% of its listed value for metal armor, and nothing for leather, hide, or cloth. The same scale mail, broken, is 56 sp of iron.
+- **Broken** armor (0 Durability) sells only as scrap: 5% of its listed value, whatever it's made of [Jon, 2026-10-24]. The same scale mail, broken, is 56 sp of scrap.
 - **Repairing** it first raises the price. Repair takes repair kits and a Blacksmith [M, Skill Mastery, Trade], and work that needs an anvil waits until the party stops [M, General Rules, Working on the road]. It pays well, and that's the point: a character who invests in the Blacksmith discipline isn't advancing a combat skill, and the trade pays them back for it [Jon, 2026-10-24].
 
 **What it weighs.** Carried armor counts 1 toward encumbrance for every 10 pounds [M, Equipment, Encumbrance]. A brigandine (43 lb) is 5, full plate (70 lb) is 7, against a carrying limit equal to your Strength. One suit is a burden. Three are a wagon.

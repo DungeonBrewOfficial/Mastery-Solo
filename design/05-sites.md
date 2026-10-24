@@ -25,7 +25,7 @@ Each is marked **[?]** where it comes up.
 
 ## Making a site
 
-1. **Type.** From the Discovery roll, or Lair if you followed signs.
+1. **Type.** From the Discovery roll, from a clue or lost lore [`04-the-map.md`, Hidden and lost places], or Lair if you followed signs.
 2. **Size.** Roll the number of areas.
 3. **Guardian.** Roll who holds the site. The guardian's XP value sets the hoard [`03-treasure.md`, Hoards].
 4. **Explore.** Draw the entrance. Each time the party moves into an undrawn area, roll its contents and its passages.
@@ -105,7 +105,7 @@ Each new area: roll its **contents** (d12), then its **passages** (d6).
 | 7 | **A lock or seal** on the way onward. | 3 |
 | 8 | **An obstacle or puzzle**: a collapse, a flooded passage, a riddle carved on a door. | 3 |
 | 9 | **A cache.** One notable piece [`03-treasure.md`, Filling a hoard]. | 1 |
-| 10 | **Remains** of someone who came before: their gear (salvage, at 1d10 × 10% condition), a purse, and a clue. The clue reveals the contents of one undrawn area. | 1 |
+| 10 | **Remains** of someone who came before: their gear (salvage, at 1d10 × 10% condition), a purse, and a clue. On a d6 of 1–4, the clue reveals the contents of one undrawn area; on 5–6, it's a clue to a hidden place [`04-the-map.md`, Hidden and lost places]. | 1 |
 | 11 | **A feature** of the site's type (see below). | 1 |
 | 12 | **The heart**, if it hasn't been found: the guardian and the hoard. Otherwise, a cache. | 20 (Hoard) |
 
@@ -159,9 +159,9 @@ A lock is Thievery (Breaching) against the band's Even DC, or Hard for a good on
 |:---|:---|
 | Lair | Bones and refuse. 1–4: a Throatcutter can harvest parts [M, Exploration Roles]. 5–6: 1d3 pelts of the guardian's prey. |
 | Cave | 1–2 underground water, cold and deep. 3–4 a squeeze: anyone in Heavy armor can't pass without taking it off. 5–6 fungus and cave growth: a Forager can gather here. |
-| Ruin | 1–2 an unsound floor (an obstacle). 3–4 an old chapel: a holy site [`04-the-map.md`, Spell sources]. 5–6 the remains of a library: occult writings, a source for occult casters. |
+| Ruin | 1–2 an unsound floor (an obstacle). 3–4 an old chapel: a holy site [`04-the-map.md`, Spell sources]. 5–6 the remains of a library: occult writings, a source for occult casters, and on a further d6 of 6, a fragment of lost lore. |
 | Barrow | Grave goods: one notable piece. Taking them wakes the dead: if the guardian hasn't been met, it comes here next round. |
-| Lost place | 1–3 occult writings, a source for occult casters. 4–5 a font, a priscan source. 6 an inscription: Lore (Ancient Lore) at the Hard DC reveals the way to the heart. |
+| Lost place | 1–3 occult writings, a source for occult casters. 4–5 a font, a priscan source. 6 an inscription: a fragment of lost lore, and read with Lore (Ancient Lore) at the Hard DC, it also reveals the way to the heart. |
 
 ---
 

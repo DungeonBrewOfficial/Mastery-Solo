@@ -42,15 +42,19 @@ A travel day is 8 hours [M, General Rules, Traveling Roles]. It runs in this ord
 
 Roll the day's weather on the season's table [M, General Rules, Weather Tables]. Choose your pace and assign a Traveling Role to each character: Scout, Watchman, Navigator, Hunter/Forager, Healer, Helper, Sage, or Teamster [M]. Eat, if you're eating.
 
+**Weather trials once a day** [Jon, 2026-10-24]. Mastery calls for Endurance trials every 2 hours in Cold or Hot weather, and every travel round in Extreme weather [M, General Rules, Weather]. On paper, each character makes one Endurance trial for the day instead, at the DC of the worst weather the day brings: 4 for Cold or Hot, 5 for Extreme. Clothing and armor work as written: enough cold-weather pieces, or a head and body piece made for heat, give Dominance or excuse the trial [M]. A failure advances Exhausted by 1 tier [M]. Falling into frigid water and being wet in the cold are still rolled when they happen.
+
 ### 2. Roll the travel die
 
 Roll a d6. That many hours pass on this leg of the journey [S, reinterpreted: the original die counted squares; here it counts hours, and pace turns hours into squares].
 
-If the roll is more than the hours left in the day, you have a choice. You can stop when the day runs out: no event happens, and you go to Camp. Or you can push on and finish the leg, which takes you past 8 hours and calls for a Pushing the Pace trial at day's end [M, General Rules, Traveling Speed].
+If the roll is more than the hours left in the day, you have a choice. You can stop when the day runs out: move for the hours that are left, roll the event die where you stop, and then make Camp [Jon, 2026-10-24]. Or you can push on and finish the leg, which takes you past 8 hours and calls for a Pushing the Pace trial at day's end [M, General Rules, Traveling Speed].
 
 ### 3. Move
 
 Move up to (hours × squares per hour) along your route, paying terrain costs. If you enter a blank tile, it is generated as you arrive [N; see `04-the-map.md`].
+
+Movement you can't spend carries over to the next leg the same day [Jon, 2026-10-24], so a short leg in the mountains isn't wasted. It doesn't carry over to the next day.
 
 ### 4. What happened there
 

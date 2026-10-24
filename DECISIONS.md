@@ -22,6 +22,11 @@ Rulings Jon has made for this design, newest last within each section. Each line
 - The stronghold persists between runs. Following the B/X tradition, a hero can found a stronghold and retire, and a new hero starts out from it. Strongholds wait on Mastery's stronghold chapter. (2026-10-23)
 - Dungeons and other sites exist as places worth reaching. Real treasure (hoards) lives in them; overland fights pay what the creatures carry. (2026-10-23)
 
+**The turn**
+- A leg cut short by the end of the day still rolls the event die. (2026-10-24)
+- Movement a party can't spend carries over to the next leg within the same day. (2026-10-24)
+- Weather trials are made once a day per character, at the worst conditions of the day. (2026-10-24)
+
 **World**
 - A dynasty is one world. Within it, the map is generated at the frontier as heroes explore. A new dynasty starts a new world. Carrying things between dynasties may come later. (2026-10-24)
 
@@ -38,6 +43,8 @@ Rulings Jon has made for this design, newest last within each section. Each line
 - The morale trial is DC 5, and a failure by 3 or more advances Demoralized 2 tiers. Accepted for now, pending play. (2026-10-24)
 - The Eidolon of the Hunt works as written: running from it is the mistake. (2026-10-24)
 - Hunting with the Wilderness skill is abstracted and pays no XP. Only a real encounter, a fight, pays combat XP. (2026-10-24)
+- Deep sites stacking a bigger guardian and a doubled hoard is fine: a party that takes the risk and survives earns the loot, and it makes them greedier next time. (2026-10-24)
+- Hidden and Lost Locations shouldn't be stumbled on. They're found through real exploration, so they need to be seeded differently from ordinary discoveries. (2026-10-24)
 - The measure of danger is greed: break points where the party decides to go on or turn back, and punishment for going off the beaten path. (2026-10-24)
 
 **Treasure and money**
@@ -49,7 +56,7 @@ Rulings Jon has made for this design, newest last within each section. Each line
 - Purses at about the creature's Division in d6 silver are in the right range. (2026-10-24)
 - Selling: treasure sells at its value only if the settlement has a buyer who can afford it, found with the Availability table in reverse. The same goes for salvage. Small settlements won't want broken armor and lack the coin. (2026-10-24)
 - Salvaged armor is usually worn to begin with and often broken by the end of a fight. The party can leave it, lug it home and sell it for a fraction, or spend time and effort repairing it to get more. (2026-10-24)
-- Broken metal armor sells as scrap at 5% of its listed value; secondhand gear sells at half value times condition. Repairing loot is profitable on purpose: a character who invests in the Blacksmith discipline gives up advancing something else, and low-level parties can carry back only a couple of suits. (2026-10-24)
+- Broken armor of any kind sells as scrap at 5% of its listed value; secondhand gear sells at half value times condition. Repairing loot is profitable on purpose: a character who invests in the Blacksmith discipline gives up advancing something else, and low-level parties can carry back only a couple of suits. (2026-10-24)
 - Settlement coin on hand (about 4 sp per resident, 8 in cities, refilling a quarter each week) is accepted as a ballpark. (2026-10-24)
 
 **Creature tiers (a guess, 2026-10-24)**
@@ -73,5 +80,6 @@ Jon is still building monsters. His current guess at the party levels each creat
 - The hoard multiplier (40 sp per point of the guardian's XP value), waiting on play.
 - The site questions at the top of `design/05-sites.md`: areas instead of grid maps, site sizes, default DCs by band, the clock inside, the guardian's group spread through the site, cleared sites refilling, magic treasure, and lost-place guardians.
 - The settlement questions at the top of `design/06-settlements.md`: recruit level, who's available, hiring a smith, rumors, libraries, and a hamlet's hospitality.
-- The questions from the first dry run, in `playtests/2026-10-24-dry-run.md`: events on a cut-short leg, leftover movement, weather trials on paper, how early Deep country starts, Deep sites stacking, exploration XP at low level, and what counts as metal armor for scrap.
+- From the first dry run: whether the known lands around home should always be at least Wild, rather than Deep. See `playtests/2026-10-24-dry-run.md`.
+- Clues and lost lore: the chain that seeds hidden and lost places, drafted in `design/04-the-map.md`, Hidden and lost places.
 - Metals. The five-metal ladder (Iron, Steel, Silver, Gold, Mithril) needs a purpose. Candidates so far: Durability grades on armor and shields, or the substrate for permanent enchantment (which waits on Mastery's magic items).
