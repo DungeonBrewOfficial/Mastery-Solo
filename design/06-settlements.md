@@ -19,7 +19,7 @@ Each is marked **[?]** where it comes up.
 5. ~~**Libraries.**~~ A city's library can be a source of occult writings [Jon, 2026-10-24].
 6. ~~**A hamlet's hospitality.**~~ A household taking the party in is a Good Night's Rest [Jon, 2026-10-24].
 
-Jon on 1–3 (2026-10-24): should recruits cost something, with level 1 free or cheap and higher levels costing more? The d20 below gives the seven demihuman classes (Cursed, Dwarf, both Elves, Gnome, Halfling, Orc) 7 of 20 faces, which is 35%, not rare. And 24 Durability a kit feels high.
+Jon on 1–3 (2026-10-24): level 1 recruits are free; higher levels cost their XP in silver pennies. The class roll below is replaced: a d6 (1–5 human, 6 demihuman), then a d12 over the human classes with Fighter on two faces, or a d7 over the demihumans. The smith's 24 a kit is the Blacksmith formula's Skilled average, and stands.
 
 ---
 
