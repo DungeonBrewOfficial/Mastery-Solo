@@ -498,8 +498,22 @@ function place(b, u, col) {
 /* ------------------------------------------------------------------ */
 /* Rounds                                                               */
 
+/** Everything anyone could lose: health, heads, armor, shields. Unchanged for ten rounds means a stalemate. */
+const blood = (state, b) => b.units.reduce((n, u) => n + (u.pc ? (memberOf(state, u).hp || 0) + (memberOf(state, u).armor?.durability || 0) + (memberOf(state, u).shield?.durability || 0)
+  : (u.hp || 0) + (u.heads || 0) + (u.armorDur || 0)), 0);
+export const STALEMATE_ROUNDS = 10;
+
 function startRound(state, rng, note) {
   const b = state.battle;
+  // A stalemate [N, a placeholder until Jon rules]: ten rounds in which no one loses health or Durability, and both sides give it up.
+  const now = blood(state, b);
+  b.quiet = b.lastBlood === now ? (b.quiet || 0) + 1 : 0;
+  b.lastBlood = now;
+  if (b.quiet >= STALEMATE_ROUNDS && !b.aftermath) {
+    note(`${STALEMATE_ROUNDS} rounds, and no one has drawn blood. Neither side can hurt the other, and both give it up.`, "event");
+    finish(state, rng, note, "parted");
+    return;
+  }
   b.round += 1;
   b.stage = "declare"; b.phaseIdx = 0; b.sideIdx = 0; b.current = null; b.rolls = {};
   for (const u of b.units) {
@@ -1709,6 +1723,9 @@ export function runPlan(state) {
   };
 }
 
+/** Someone must be able to run to break away: a character on their feet and not lame (companions follow, they don't lead). */
+export const canBreakAway = (state) => runPlan(state).runners.some(u => !u.companion);
+
 /**
  * Break away (design/02-encounters.md, Running from a fight). It takes the
  * round: enemies beside a runner get their reprisal attacks as the party
@@ -1749,7 +1766,7 @@ function runBreakaway(state, rng, note) {
     left.push(...extra);
   }
   b.breaking = null;
-  if (!plan.runners.length) { note("No one is left who can run.", "event"); return; }
+  if (!plan.runners.some(u => !u.companion)) { note("No one is left who can run.", "event"); return; }
   if (!breakAway(state, rng, b.head, note, plan.runners.filter(u => !u.companion).map(u => memberOf(state, u)), { carrying: carried.length > 0 })) {
     note("The round is spent running, and they come on.", "event");
     return;
@@ -2909,7 +2926,8 @@ function finish(state, rng, note, outcome) {
       if (w && b.dropped.every(d => d.member !== id)) { w.count = Math.max(0, (w.count ?? 1) - n); note(`${n} ${w.name.toLowerCase()} left behind; ${w.count} remain.`); }
     }
   }
-  if (outcome === "won" || outcome === "fled") tend(state, rng, note);
+  if (outcome === "parted") note("No XP for a fight no one won.");
+  if (outcome === "won" || outcome === "fled" || outcome === "parted") tend(state, rng, note);
   for (const u of b.units.filter(x => x.pc)) { const m = memberOf(state, u); m.exhausted = cond(u, "exhausted") || 0; }
   for (const m of state.party.members) { m.down = m.dead || m.hp <= 0; m.fightingOn = false; m.stable = false; m.dying = null; }
   state.lastFight = { outcome, site: e?.site || null };

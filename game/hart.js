@@ -97,6 +97,7 @@ function follow(state, rng, note) {
   // It wants to be followed: the band's Even DC, and the party's best tracker leads.
   const dc = EVEN_DC[bandFor(partyLevel(state))];
   const scout = [...alive(state)].sort((a, b) => (tier(b, "perception") + skillOf(b, "wilderness")) - (tier(a, "perception") + skillOf(a, "wilderness")))[0];
+  if (!scout) { note("No one is awake to follow it. It walks into the wood alone."); state.sign = null; return; }
   const helper = alive(state).find(m => m !== scout && (skillOf(m, "wilderness") >= 2 || skillOf(m, "alertness") >= 2));
   note(`You follow the hart into the deep wood. ${scout.name} leads${helper ? `, ${helper.name} helps` : ""}.`, "event");
   let ok = 0, bad = 0;

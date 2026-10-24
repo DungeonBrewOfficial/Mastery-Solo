@@ -173,6 +173,12 @@ function levelTo(rng, m, level) {
   m.xp = CLASSES[m.cls].xp?.[level - 1] || 0;
   const fake = { party: { members: [m] } };
   checkLevels(fake, () => {}, rng);
+  spendPoints(rng, m);
+}
+
+/** Spend a character's unspent points where the class leans: its biggest attribute dice, then masteries it already has. */
+export function spendPoints(rng, m) {
+  const fake = { party: { members: [m] } };
   const dice = RECOMMENDED_DICE[m.cls];
   const order = [...ATTRIBUTES].sort((a, b) => sizes(dice[b]) - sizes(dice[a]));
   for (let i = 0; m.unspent.attr > 0 && i < 500; i++) raiseAttribute(fake, m, order[i % 3], rng, () => {});

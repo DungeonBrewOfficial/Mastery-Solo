@@ -7,7 +7,7 @@
 import { roll } from "./rng.js";
 import { trial, passes, tierOf, dieOfTier } from "./mastery.js";
 import { alive, partyLevel, bandFor, EVEN_DC, HARD_DC, placeOn } from "./events.js";
-import { getTile, tileOf, TILE } from "./world.js";
+import { getTile, tileOf, squareAt, TILE } from "./world.js";
 
 export const DIRS = [["north", 0, -1], ["northeast", 1, -1], ["east", 1, 0], ["southeast", 1, 1], ["south", 0, 1], ["southwest", -1, 1], ["west", -1, 0], ["northwest", -1, -1]];
 /** What a clue says is hidden there (d6). */
@@ -121,7 +121,14 @@ export function search(state, rng, note) {
 /** The place a lead points to is found where the party stands. */
 function arrive(state, note, lead, how) {
   lead.found = true;
-  const { x, y } = state.party;
+  // On the square searched to, or the nearest free one if something is already marked there.
+  let { x, y } = state.party;
+  for (let r = 0; state.world.places?.[`${x},${y}`] && r < 4; r++)
+    for (let dy = -r; dy <= r && state.world.places?.[`${x},${y}`]; dy++) for (let dx = -r; dx <= r; dx++) {
+      const k = `${state.party.x + dx},${state.party.y + dy}`;
+      if (!state.world.places?.[k] && !squareAt(state.world, state.party.x + dx, state.party.y + dy)?.settlement) { x = state.party.x + dx; y = state.party.y + dy; break; }
+    }
+  if (x !== state.party.x || y !== state.party.y) { state.party.x = x; state.party.y = y; }
   const place = placeOn(state, x, y, { type: lead.kind === "hideout" ? "ruin" : lead.kind === "lost" ? "lost" : lead.kind, hidden: true, lost: lead.kind === "lost", hideout: lead.kind === "hideout" });
   const xp = lead.kind === "lost" ? 75 : 50;
   state.party.bankedXp += xp;

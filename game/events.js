@@ -5,7 +5,7 @@
  */
 import { checkLevels } from "./advance.js";
 import { roll } from "./rng.js";
-import { trial, passes, tierOf, dieOfTier, RANK_DIE, countsAs } from "./mastery.js";
+import { trial, passes, tierOf, dieOfTier, RANK_DIE, countsAs, PROGRESSION } from "./mastery.js";
 import { ENCOUNTERS } from "./data/encounters.js";
 import { CREATURES } from "./data/creatures.js";
 import { squareAt, countryAt, tileOf, getTile, TERRAINS } from "./world.js";
@@ -239,7 +239,7 @@ export function choices(state) {
   const calm = !e.creatureAware || ["watch", "warn", "defend", "guard", "question", "talk", "stalk"].includes(e.mood);
   if (e.mood === "wait" && e.partyAware) list.push({ id: "avoid", label: "Go around their ambush" });
   else if (calm && !e.ambushed) list.push({ id: "avoid", label: "Leave it be" });
-  if (e.mood === "toll") list.push({ id: "toll", label: `Pay the toll (${e.toll} sp)` });
+  if (e.mood === "toll") list.push({ id: "toll", label: `Pay the toll (${e.toll} sp)`, ...(state.party.coin < e.toll ? { disabled: true, why: `You have ${state.party.coin} sp.` } : {}) });
   if (e.mood === "question") list.push({ id: "answer", label: "Answer their questions" });
   if (e.mood === "talk") list.push({ id: "talk", label: "Talk" });
   if (e.temper === "Predator" && ["attack", "stalk"].includes(e.mood)) list.push({ id: "food", label: "Leave it food" });
@@ -303,6 +303,21 @@ function chaseSetup(head, ms, carrying) {
   const slowest = Math.min(...ms.map(speedOf)), theirs = creatureSpeed(c);
   const edge = Math.sign((theirs > slowest ? -1 : theirs < slowest ? 1 : 0) + (carrying ? -1 : 0));
   return { best, slowest, theirs, edge, dc: c.division + 1 };
+}
+/**
+ * What a break-away or chase trial can roll at best, against its DC, for the
+ * page to show and for players to see a hopeless run before they try it.
+ * → { leader, label, best, dc, possible, text }
+ */
+export function runOdds(head, ms, { carrying = false } = {}) {
+  if (!ms.length || !CREATURES[head]) return null;
+  const k = chaseSetup(head, ms, carrying);
+  const dice = [dieOfTier(attrTier(k.best.leader, k.best.attr)), dieOfTier(skill(k.best.leader, k.best.skill))]
+    .map(([c, s]) => PROGRESSION[Math.max(0, Math.min(15, PROGRESSION.findIndex(([c2, s2]) => c2 === c && s2 === s) + k.edge))]);
+  const best = dice.reduce((n, [c, s]) => n + c * s, 0) + (k.best.helper ? 2 : 0);
+  const why = [k.theirs > k.slowest ? "it's faster than your slowest" : k.theirs < k.slowest ? "you're faster" : "", carrying ? "you're carrying someone" : ""].filter(Boolean).join(", ");
+  return { leader: k.best.leader.name, label: k.best.label, best, dc: k.dc, possible: best >= k.dc,
+    text: `${k.best.leader.name} would ${k.best.label}: best roll ${best} against ${k.dc}${why ? ` (${why})` : ""}${best < k.dc ? ". It can't succeed." : "."}` };
 }
 function chaseTrial(rng, k) {
   return trial(rng, [dieOfTier(attrTier(k.best.leader, k.best.attr)), dieOfTier(skill(k.best.leader, k.best.skill))], { edge: k.edge, bonus: k.best.helper ? 2 : 0 });
@@ -398,9 +413,10 @@ export function chooseSign(state, rng, id, note) {
   const s = state.sign;
   if (!s) return;
   const scout = member(state, state.party.roles.scout) || alive(state)[0];
+  if (id === "leave") { note("You leave the signs alone."); state.sign = null; return; }
+  if (!scout) { note("No one is awake to follow them."); state.sign = null; return; }
   const dc = EVEN_DC[s.band] + (countryAt(state.world, state.party.x, state.party.y) === "deep" ? 2 : 0);
   const dice = [dieOfTier(attrTier(scout, "perception")), dieOfTier(skill(scout, "alertness"))];
-  if (id === "leave") { note("You leave the signs alone."); state.sign = null; return; }
   if (id === "read") {
     const t = trial(rng, dice);
     if (passes(t, dc)) { s.read = true; note(`${scout.name} reads the signs, ${t.text} against ${dc}: ${s.text}.`, "event"); }

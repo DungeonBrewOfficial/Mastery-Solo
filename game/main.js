@@ -6,11 +6,11 @@ import { stay, maxMagan, newGame, travelLeg, campNow, setTarget, setPace, season
 import { leadsHere, leadText, fragmentsRead, unreadFragments } from "./leads.js";
 import { hartChoices, chooseHart } from "./hart.js";
 import { atSite, siteHere, siteChoices, areaLabel, inDark } from "./sites.js";
-import { choices, choose, signChoices, chooseSign, partyLevel, bandFor, ROMAN } from "./events.js";
+import { choices, choose, signChoices, chooseSign, partyLevel, bandFor, ROMAN, runOdds } from "./events.js";
 import { CREATURES } from "./data/creatures.js";
 import { squareAt, countryAt, findPath, moveCost, TERRAINS, SETTLEMENTS } from "./world.js";
 import { draw, drawBattle, battleLayout } from "./render.js";
-import { turnOptions, pcTurn, pcStopTurning, turning, imbueOptions, pcImbue, castOptions, castTargets, pcCast, reapplyOptions, pcReapply, concentrationOf, opportunities, REACTIONS, reactOf, reactionsFor, setReaction, attackModes, setMode, freeTargets, pcBreakFree, pcStand, challengeTargets, beginRound, retreat, runPlan, respond, currentPC, moveCost as stepCost, pcMove, pcAttack, pcEndTurn, triageTargets, pcTriage, canAttack, standing, onField, conditionsOf, memberFor, creatureFor, weaponOf, GUARDS, PHASES } from "./combat.js";
+import { turnOptions, pcTurn, pcStopTurning, turning, imbueOptions, pcImbue, castOptions, castTargets, pcCast, reapplyOptions, pcReapply, concentrationOf, opportunities, REACTIONS, reactOf, reactionsFor, setReaction, attackModes, setMode, freeTargets, pcBreakFree, pcStand, challengeTargets, beginRound, retreat, canBreakAway, runPlan, respond, currentPC, moveCost as stepCost, pcMove, pcAttack, pcEndTurn, triageTargets, pcTriage, canAttack, standing, onField, conditionsOf, memberFor, creatureFor, weaponOf, GUARDS, PHASES } from "./combat.js";
 import { BAND_LABELS } from "./vendor/foundry/module/helpers/weather-rules.mjs";
 import { openStorage, pack, unpack } from "./storage.js";
 import { count, meals, KEEPS, waterNeed, SKIN_GALLONS } from "./supplies.js";
@@ -124,7 +124,11 @@ function renderEvent() {
       <p>${e.distance} · ${e.partyAware ? "you see it" : "you didn't see it"} · ${e.creatureAware ? "it knows you're here" : "it hasn't noticed you"}</p>`;
     const row = document.createElement("div");
     row.className = "buttons";
-    for (const ch of choices(state)) row.appendChild(button(ch.label, () => act(() => { runWithDice(state, (rng) => choose(state, rng, ch.id, say)); afterEvent(state); })));
+    for (const ch of choices(state)) {
+      const b = button(ch.label, () => act(() => { runWithDice(state, (rng) => choose(state, rng, ch.id, say)); afterEvent(state); }));
+      if (ch.disabled) { b.disabled = true; b.title = ch.why || ""; }
+      row.appendChild(b);
+    }
     box.appendChild(row);
   } else if (state.sign?.hart) {
     const s = state.sign;
@@ -289,6 +293,8 @@ function renderBattle(box) {
     box.appendChild(form);
     const carried = plan.lame.length + plan.downed.filter(x => carry[x.id]).length;
     if (carried > plan.runners.length) box.insertAdjacentHTML("beforeend", `<p class="small warn">${plan.runners.length} can run, and each carries one. Whoever doesn't fit is left behind.</p>`);
+    const odds = runOdds(b.head, plan.runners.filter(u => !u.companion).map(u => memberFor(state, u)), { carrying: carried > 0 });
+    if (odds) box.insertAdjacentHTML("beforeend", `<p class="small ${odds.possible ? "muted" : "warn"}">${odds.text}</p>`);
     const go = button("Break away", () => { planningRun = false; const ids = plan.downed.filter(x => carry[x.id]).map(x => x.id); battleAct((rng) => retreat(state, rng, say, ids)); });
     go.className = "primary";
     row.append(go, button("Stay and fight", () => { planningRun = false; render(); }));
@@ -397,6 +403,7 @@ function renderBattle(box) {
     const run = button("Break away", () => { planningRun = true; carry = {}; render(); });
     run.hidden = !!b.aftermath;
     run.title = dying ? "Anyone with one round left on the dying timer dies during the break-away." : "One round and one trial to get clear, then the chase.";
+    if (!canBreakAway(state)) { run.disabled = true; run.title = "No one can run: everyone on their feet is lame or a companion. Fight on."; }
     row.appendChild(run);
   } else if (u) {
     const m = memberFor(state, u), w = weaponOf(m, u);

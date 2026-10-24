@@ -140,6 +140,8 @@ Rulings Jon has made for this design, newest last within each section. Each line
 
 - The White Hart [Jon, 2026-10-24, approving the suggestion; details N]: a rare Sign (d6 of 6 on any Sign in forest whose tile or a neighbor is Deep), so the encounter tables are unchanged. Following uses the band's Even DC, since it lets itself be followed; the Scout couldn't follow it at the stat block's DC 7. Where it leads: "sent by someone who wants you" goes to a lost place if any lore has been read; the other two stories go to a hidden place (the herders' land waits on the fae court). The charmed can't let it go until held back.
 
+- Stalemates [N, a placeholder until Jon rules, 2026-10-24]: after 10 rounds in which no one on either side loses health or Durability, both sides give it up; no XP. In a site, what they held they still hold. Found by the simulation: a fighter and a swarm who couldn't hurt each other fought for thousands of rounds.
+
 **Creature tiers (a guess, 2026-10-24)**
 Jon is still building monsters. His current guess at the party levels each creature Tier serves, used until the tables test it:
 

@@ -492,6 +492,8 @@ export function afterFight(state, rng, note) {
     }
     if (!site.headAlive && site.hoard.taken) clearSite(state, site);
     if (state.party.members.some(m => !m.dead && m.hp > 0)) clock(state, rng, note, { afterFight: true });
+  } else if (f.outcome === "parted") {
+    note("They draw off into the dark. What they held, they still hold.");
   } else if (f.outcome === "fled") {
     note(`You flee the ${LABEL[site.type]}.`, "event");
     state.site = null;

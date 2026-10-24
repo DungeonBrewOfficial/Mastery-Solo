@@ -119,6 +119,13 @@ The game saves after every action: on the hosted page, to the player's own priva
      - *Concentration* has the free slot, two paid slots (1 AP a round), and passive, placed at each round's declarations.
      Not yet: reaction casting, Charm Asura, and the Charmed and Concealed conditions, since no party ability uses them.
 
+6. **Playtesting by simulation.** *Built.* `tools/simulate.mjs` plays whole dynasties with a plain strategy (bold or cautious): travel, water, encounters, signs and the Hart, sites, leads, towns (selling, healing, kits, hiring), level-ups, and fights through the test autoplayer, which now casts spells. It reports the level curve, XP by source, coin and treasure, deaths by foe, and the deadliest fights. Reports and findings are in `reports/`.
+7. **Characters past level 2** (next): discipline, Chantment, and Theurgic Lore picks; maneuvers and guards past Untrained; the other classes' abilities; a character-building screen; Traumas in play.
+8. **Places in fights:** terrain, cover, and light on the battle grid.
+9. **Magic beyond the fight:** spell sources, learning spells, divination, barriers, summoning, shapeshifting.
+
+Alongside all of these: making the game readable while it's played (what each roll was, why, and what it did).
+
 ## Known gaps
 
 - The autoplayer used by the tests doesn't cast spells, Turn, or Imbue, so the balance numbers in the sims leave magic out.
