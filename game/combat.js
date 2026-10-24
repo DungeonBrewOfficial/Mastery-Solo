@@ -34,6 +34,9 @@ import { SPELLS, wardCovers } from "./data/spells.js";
 import { RULES } from "./data/rules-text.js";
 import { TRAUMA_TABLE } from "./vendor/foundry/module/data/trauma-table.mjs";
 import { resolveDamage } from "./vendor/foundry/extract/resolve-damage.mjs";
+import { PUCA_FORMS } from "./vendor/foundry/module/helpers/puca-rules.mjs";
+import { boundMaganAfterDeath } from "./vendor/foundry/module/helpers/agathion-rules.mjs";
+import { companionNaturalPhase } from "./vendor/foundry/module/helpers/companion-phase.mjs";
 import { speedOf, creatureSpeed, creatureTrial, awardCombatXp, spoils, chase, breakAway, cannotRun } from "./events.js";
 
 export const GRID_W = 16, GRID_H = 12;
@@ -176,7 +179,7 @@ const usesShield = (m, w) => !!(m.shield && m.shield.durability > 0 && (!w || ON
 
 function pcAttackDice(state, u, w) {
   const m = memberOf(state, u);
-  if (u.companion) { const d = petDice(state, u); return { dice: [d.owner, d.tier], bonus: 0, extra: -1, type: m.attack.type, name: m.attack.name }; }
+  if (u.companion) { const d = petDice(state, u); return { dice: [d.owner, d.tier], bonus: 0, extra: -1, type: PUCA_FORMS[m.form]?.damageType || m.attack.type, name: m.attack.name }; }
   if (!w) return { dice: [attrTD(m, m.attributes.strength >= m.attributes.physique ? "strength" : "physique")], bonus: 0, extra: -1, type: "crushing", name: "Unarmed" };
   const level = m.weaponSkill?.[w.type] || 1;
   const wd = fromCS(MASTERY.weaponAttackTable[level][w.track]);
@@ -241,6 +244,8 @@ export const COND_LABELS = {
 /** Possessed (Cursed): fire resistance of half the character's level. */
 const innateRes = (m, type) => type === "fire" && (m.abilities || []).includes("Possessed") ? Math.floor((m.level || 1) / 2) : 0;
 const MUNDANE = ["cutting", "cleaving", "crushing", "piercing", "puncturing"];
+/** Damage is mundane or magical by its type (Combat, Damage Types). */
+const MAGICAL = ["fire", "sea", "sky", "stone", "primal", "profane", "sacred", "void"];
 const PHYSICAL = ["strength", "agility", "physique", "endurance"];
 /** Conditions that deteriorate on their own; Impaired's Startle tiers follow the Startle rule instead, and Demoralized holds while its source is in sight. */
 const DECAYS = ["impaired", "restricted", "tainted", "inspired", "invigorated", "quarry"];
@@ -563,7 +568,7 @@ export function beginRound(state, rng, note, picks = {}) {
       if (u.ap > 0) u.ap -= 1;
       note(`${m.name} ${old ? `drops the ${old.name.toLowerCase()} and ` : ""}draws the ${weaponOf(m, u).name.toLowerCase()} (1 AP).`);
     }
-    if (p.free) setFreeSlot(u, p.free);
+    placeConcentration(state, note, u, p.conc);
     upkeepImbue(state, note, u);
     u.casting = null; u.theurgy = null;
     const turnPick = p.turn && turnOptions(state, u).find(o => o.key === p.turn);
@@ -574,8 +579,11 @@ export function beginRound(state, rng, note, picks = {}) {
       note(`${m.name} declares: ${turnPick.label.replace(/ \(.*\)$/, "")} (${cap(turnPick.phase)} phase).`, "event");
     } else if (p.spell) declareSpell(state, note, u, p.spell);
     const w = weaponOf(m, u);
-    // A declared spell sets the phase by its speed (Magic Mastery, Spell Speed); a weapon drawn this round can still slow it.
-    const speeds = u.companion ? [u.declared?.hellfire ? "fast" : "moderate"] : [u.theurgy ? u.theurgy.phase : u.casting ? u.casting.phase : w?.speed || "fast", slowest].filter(Boolean);
+    // Your phase is the slowest of what you declare: a weapon attack, a spell, an ability. A weapon you hold
+    // but don't declare an attack with doesn't count; declare nothing else and the weapon sets it (Combat, Initiative Phases).
+    const other = u.companion ? (u.declared?.hellfire ? ["fast"] : []) : [u.theurgy?.phase, u.casting?.phase].filter(Boolean);
+    u.attackDeclared = !other.length || (u.companion ? false : p.attack ?? false);
+    const speeds = [...other, u.attackDeclared ? weaponSpeed(state, u) : null, slowest].filter(Boolean);
     u.phase = u.impaired === 1 || u.impaired === 2 ? "slow" : PHASES[Math.max(...speeds.map(s => PHASES.indexOf(s)))];
   }
   const d = rng.d(6);
@@ -736,7 +744,7 @@ function secondaryDamage(state, rng, note, t, amount, type, label, { direct = fa
     drainWard(state, note, t, ward, r.wardAbsorbed);
     if (r.durabilityDamage) { m.armor.durability -= r.durabilityDamage; shaken(state, note, t); }
     note(`${label}: ${t.name} takes ${[r.durabilityDamage ? `${r.durabilityDamage} to the ${m.armor.name.toLowerCase()}` : "", r.healthDamage ? `${r.healthDamage} to health` : ""].filter(Boolean).join(", ") || "nothing"}.`, r.healthDamage ? "event" : "");
-    if (r.healthDamage || (magic && m.hp <= 0)) hurtPC(state, rng, note, t, r.healthDamage, { magic });
+    if (r.healthDamage) hurtPC(state, rng, note, t, r.healthDamage, { magic: magic || MAGICAL.includes(type) });
     return;
   }
   const c = CREATURES[t.cname];
@@ -921,11 +929,19 @@ function trampleRun(state, u, t) {
   return best;
 }
 
+/** The speed of what a character attacks with: the weapon in hand, a companion's natural attack, or a fist (Fast). */
+function weaponSpeed(state, u) {
+  if (u.companion) return companionNaturalPhase(memberOf(state, u).kind, 1, { form: "beast" }) || "moderate"; // both are 1 square, Tallow in beast form
+  return weaponOf(memberOf(state, u), u)?.speed || "fast";
+}
+
 /** Can the current character attack this target? → { ok, why, ranged, charge, cost } */
 export function canAttack(state, u, t, mode = u.mode || "strike") {
   if (!t || t.side === u.side || !onField(t)) return { ok: false };
   if (cond(u, "restricted") >= 3) return { ok: false, why: "Restrained: only breaking free" };
   if (turning(u)) return { ok: false, why: "holding the Turn: only defense and movement" };
+  // Acting faster than your weapon: no attacks with it on your turn; defense and reprisals still work (Combat, Initiative Phases).
+  if (mode !== "hellfire" && mode !== "shield" && PHASES.indexOf(weaponSpeed(state, u)) > PHASES.indexOf(u.phase)) return { ok: false, why: `your ${u.companion ? "attack" : weaponOf(memberOf(state, u), u)?.name.toLowerCase() || "weapon"} is slower than your phase (declare an attack to act in its phase)` };
   const cost = mode === "opportunist" || mode === "trample" || mode === "hellfire" ? 2 : 1;
   if (u.ap < cost) return { ok: false, why: `needs ${cost} AP` };
   const m = memberOf(state, u), w = weaponOf(m, u);
@@ -1261,23 +1277,49 @@ function releaseSpell(state, rng, note, u, t, c) {
 }
 
 /**
- * Concentration (Magic Mastery): the newest spell takes the free slot and
- * the one it displaces turns passive. A passive spell breaks on any damage
- * to health or durability, unless it was cast this round.
+ * Concentration (Magic Mastery; slots as Foundry's concentration.mjs keeps
+ * them): one free slot, two paid slots at 1 AP a round each, and any number
+ * of passive ones, which break on any damage to health or durability. A new
+ * effect takes the first open active slot, free first, and never pushes
+ * another out; with none open it goes passive. An effect cast this round is
+ * active whatever its slot. Each round's declarations place them again.
  */
+const ACTIVE_SLOTS = ["free", "paid1", "paid2"];
+/** Imbue holds only in an active slot: "your concentration slot … or 1 AP per round". */
+const canBePassive = (e) => e.kind !== "imbue";
+function openSlot(u) { return ACTIVE_SLOTS.find(k => !(u.conc || []).some(e => e.slot === k)) || null; }
 function concentrate(state, note, u, entry) {
-  // Imbue holds only in the free slot (the 1 AP a round to pay for it elsewhere isn't built): pushed out, it ends.
-  for (const e of [...(u.conc || [])]) if (e.slot === "free" && e.kind === "imbue") endConcentration(state, note, u, e, "ends: the free slot went elsewhere");
-  for (const e of u.conc || []) if (e.slot === "free") e.slot = "passive";
-  const e = { id: `${entry.name}:${state.battle.round}:${(u.conc || []).length}`, ...entry, slot: "free", round: state.battle.round };
+  const slot = openSlot(u) || "passive";
+  const e = { id: `${entry.name}:${state.battle.round}:${(u.conc || []).length}`, ...entry, slot, round: state.battle.round };
   (u.conc ||= []).push(e);
   return e;
 }
 export function concentrationOf(u) { return u.conc || []; }
-/** At declarations: which spell takes the free slot this round. */
-function setFreeSlot(u, id) {
-  if (!(u.conc || []).some(e => e.id === id)) return;
-  for (const e of u.conc) e.slot = e.id === id ? "free" : "passive";
+export const SLOT_LABELS = { free: "free slot", paid1: "paid slot (1 AP)", paid2: "paid slot (1 AP)", passive: "passive" };
+/**
+ * At declarations: where each held effect goes this round. plan maps an
+ * effect's id to "free", "paid", "passive", or "drop"; anything unnamed
+ * keeps its slot. Paid slots cost 1 AP now; short of it, the effect goes
+ * passive (Imbue ends).
+ */
+function placeConcentration(state, note, u, plan = {}) {
+  const want = (e) => plan[e.id] || (e.slot.startsWith("paid") ? "paid" : e.slot);
+  for (const e of [...(u.conc || [])]) if (want(e) === "drop") endConcentration(state, note, u, e, "is let go");
+  const held = u.conc || [];
+  const order = [...held].sort((x, y) => ["free", "paid", "passive"].indexOf(want(x)) - ["free", "paid", "passive"].indexOf(want(y)));
+  const taken = new Set();
+  for (const e of order) {
+    let w = want(e);
+    if (w === "free" && taken.has("free")) w = "paid";
+    if (w === "paid") {
+      const k = ["paid1", "paid2"].find(x => !taken.has(x));
+      if (k && u.ap >= 1) { u.ap -= 1; e.slot = k; taken.add(k); note(`${u.name} spends 1 AP holding ${e.name}.`); continue; }
+      w = "passive";
+    }
+    if (w === "free") { e.slot = "free"; taken.add("free"); continue; }
+    if (!canBePassive(e)) { endConcentration(state, note, u, e, "ends: it needs an active slot"); continue; }
+    e.slot = "passive";
+  }
 }
 function endConcentration(state, note, u, e, why) {
   const b = state.battle;
@@ -1364,7 +1406,7 @@ const chantTier = (m) => Math.min(7, 1 + Math.floor((m.level || 1) / 4));
 /** Imbue (Chantment): 1 AP, a damage type from a form she knows; 1 magan a round, held in the concentration slot. */
 export function imbueOptions(state, u) {
   const m = memberOf(state, u);
-  if (!(m.abilities || []).includes("Imbue") || u.ap < 1 || turning(u) || (m.mp || 0) < (u.imbue ? 0 : 1)) return [];
+  if (!(m.abilities || []).includes("Imbue") || u.ap < 1 || turning(u) || (m.mp || 0) < (u.imbue ? 0 : 1) || (!u.imbue && !openSlot(u))) return [];
   return Object.keys(m.casting?.forms || {}).filter(f => f !== u.imbue);
 }
 export function pcImbue(state, rng, note, type) {
@@ -2147,7 +2189,7 @@ function applyHit(state, rng, note, a, t, atk, def, type, ranged) {
     if (toArmor) { m.armor.durability -= toArmor; bits.push(`${toArmor} to the ${m.armor.name.toLowerCase()}${m.armor.durability <= 0 ? ", which breaks" : ""}`); }
     if (r.healthDamage) bits.push(`${r.healthDamage} to health`);
     note(`${t.name} takes ${bits.join(", ")}.`, r.healthDamage ? "event" : "");
-    if (r.healthDamage) hurtPC(state, rng, note, t, r.healthDamage);
+    if (r.healthDamage) hurtPC(state, rng, note, t, r.healthDamage, { magic: MAGICAL.includes(type) });
     return r;
   }
   const c = CREATURES[t.cname];
@@ -2198,7 +2240,7 @@ function hurtPC(state, rng, note, u, dmg, { magic = false } = {}) {
     m.dead = true; m.down = true; u.dead = true;
     const o = ownerOf(state, u);
     note(`${m.name} dies.`, "event");
-    if (m.boundMagan) { o.mp = Math.max(0, (o.mp || 0) - m.boundMagan); note(`${o.name} loses the ${m.boundMagan} magan bound to ${m.name}.`); }
+    if (m.boundMagan) { o.mp = boundMaganAfterDeath(o.mp, m.boundMagan); note(`${o.name} loses the ${m.boundMagan} magan bound to ${m.name}.`); }
     return;
   }
   const endure = () => trial(rng, [dieOfTier(tierOf(m.attributes.endurance)), dieOfTier(tierOf(m.attributes.endurance))]);
@@ -2831,7 +2873,7 @@ export function conditionsOf(state, u) {
   if (u.theurgy) bits.push(`declared ${u.theurgy.mode === "destroy" ? "Destroy" : "Turn"}`);
   if (u.casting) bits.push(`casting ${u.casting.label}`);
   for (const w of u.wards || []) bits.push(`${w.name} ${w.pool}`);
-  for (const e of u.conc || []) bits.push(`holding ${e.name}${e.slot === "passive" ? " (passive)" : ""}`);
+  for (const e of u.conc || []) bits.push(`holding ${e.name} (${SLOT_LABELS[e.slot]})`);
   if (u.impaired) bits.push(IMPAIRED[u.impaired]);
   if (u.demoralized) bits.push(DEMORALIZED[u.demoralized]);
   for (const k of Object.keys(COND_LABELS)) if (cond(u, k)) bits.push(COND_LABELS[k][cond(u, k)]);

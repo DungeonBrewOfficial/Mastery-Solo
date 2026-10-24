@@ -79,14 +79,15 @@ Rulings Jon has made for this design, newest last within each section. Each line
 - Rules gaps found while building are listed in `RULES-GAPS.md` and raised in chat when found.
 - The White Hart is a narrative pull more than a fight: tracking it can lead to a hidden or lost place. It stays off the encounter tables until sites are built (milestone 4). Its Charmed and Concealed abilities wait for stage 3.
 - Whether the shield takes durability damage before the armor is each character's standing choice, set at each round's declarations (as in Foundry's `shieldAbsorbs`, on by default). A ranged hit doesn't have to go to the shield.
-- Stage 3 calls made while building, each raised with Jon in chat:
-  - A caster who declares a spell acts in the spell's phase (by cost), not the weapon's. A weapon drawn that round can still slow them.
-  - A Defend or Counterattack set to Always still asks while the character holds a spell with gestures, because answering yes loses the spell.
+- Stage 3 [Jon, 2026-10-24]:
+  - A character acts in the slowest phase of what they declare (`combat_revised.md:69`). A caster who declares only a spell acts in its phase and can defend with the weapon but not attack with it on their turn. Declaring the attack too puts them in the weapon's phase, and the spell goes off then.
+  - A Defend or Counterattack set to Always still asks while the character holds a spell with gestures, since yes loses the spell.
   - Healing a character at 0 health brings them to.
-  - Turned minion heads leave the field for good; a group turned whole flees as one while Gerberga holds the Turn.
-  - Imbue holds only in the free concentration slot; anything that takes the slot ends it.
-  - A party down to only a Hard to Kill character at 0 health counts as fallen, pending Jon's ruling.
-  - Spells, Hellfire, Imbue, and creature bolts are the "magical damage" that can kill Gisla at 0 health.
+  - Turned minion heads leave the field for good. The nastier version, where they come back in a later fight or during downtime, is a candidate for later.
+  - Concentration follows Foundry's slots: one free, two paid at 1 AP a round, and passive. A new effect takes the first open active slot. Each round's declarations place every held effect, and Imbue can't go passive.
+  - Damage is magical by its type (`combat_revised.md:114-119`), so any fire, sacred, or other magical-type damage can kill Gisla at 0 health.
+  - The prebuilt companions' details (Tallow's horns as crushing) are placeholders. Foundry's pure companion rules (`puca-rules.mjs`, `agathion-rules.mjs`, `companion-phase.mjs`) are vendored; its companion stat derivation (`companions.mjs`, `companionDerived`) reads Foundry actors, so its formulas get mirrored when companions advance (milestone 3).
+  - A party down to only a Hard to Kill character at 0 health counts as fallen. What should happen instead belongs with the difficulty settings.
 
 **Creature tiers (a guess, 2026-10-24)**
 Jon is still building monsters. His current guess at the party levels each creature Tier serves, used until the tables test it:
@@ -108,5 +109,5 @@ Jon is still building monsters. His current guess at the party levels each creat
 - The hoard multiplier (40 sp per point of the guardian's XP value), waiting on play.
 - The site questions at the top of `design/05-sites.md`: areas instead of grid maps, site sizes, default DCs by band, the clock inside, the guardian's group spread through the site, cleared sites refilling, magic treasure, and lost-place guardians.
 - The settlement questions at the top of `design/06-settlements.md`: recruit level, who's available, hiring a smith, rumors, libraries, and a hamlet's hospitality.
-- **Difficulty settings** (later). Candidates so far: what a wipe means (everyone dies; everyone but the dynasty's main character survives; raiders rob and leave, beasts drag one off), and whether healing means make saving the dying after a fight automatic.
+- **Difficulty settings** (later). Candidates so far: what a wipe means (everyone dies; everyone but the dynasty's main character survives; raiders rob and leave, beasts drag one off), whether healing means make saving the dying after a fight automatic, and how a fight ends when only a Hard to Kill character at 0 health is left against foes who can't kill her (the party falls; she survives alone; the foe leaves her with her Traumas).
 - Metals, deferred: Jon is working on them in the main rules. Plate is the level-10 bar for now; better materials and craftsmanship belong past that. The five-metal ladder (Iron, Steel, Silver, Gold, Mithril) needs a purpose. Candidates so far: Durability grades on armor and shields, or the substrate for permanent enchantment (which waits on Mastery's magic items).

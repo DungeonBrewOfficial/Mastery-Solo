@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { newGame, runWithDice, note } from "../game/journey.js";
-import { startBattle, beginRound, currentPC, pcEndTurn, pcAttack, pcCast, respond, castOptions, castTargets, reapplyOptions, concentrationOf } from "../game/combat.js";
+import { startBattle, beginRound, currentPC, pcEndTurn, pcAttack, pcCast, respond, canAttack, castOptions, castTargets, reapplyOptions, concentrationOf } from "../game/combat.js";
 
 function battle(seed, group) {
   const s = newGame(seed);
@@ -167,4 +167,38 @@ test("the older-wounds Mend Flesh costs 3 and makes a miscast trial", () => {
   assert.equal(o.cost, 3);
   assert.equal(o.miscast, 2);
   assert.equal(o.phase, "fast");
+});
+
+test("a caster acts in the slowest phase of what they declare; a weapon left undeclared can't attack on the turn", () => {
+  const s = battle(6, [{ name: "Bandit Cutthroat", count: 1 }]);
+  const foe = lineUp(s, 2);
+  const c = unit(s, "corra");
+  c.weapon = 0; // the quarterstaff, Slow
+  runWithDice(s, (rng) => beginRound(s, rng, say(s), { corra: { spell: "Stoneskin" } }));
+  assert.equal(c.phase, "fast");
+  foe.x = c.x + 1; foe.y = c.y;
+  assert.match(canAttack(s, c, foe).why, /slower than your phase/);
+  const t = battle(6, [{ name: "Bandit Cutthroat", count: 1 }]);
+  lineUp(t);
+  unit(t, "corra").weapon = 0;
+  runWithDice(t, (rng) => beginRound(t, rng, say(t), { corra: { spell: "Stoneskin", attack: true } }));
+  assert.equal(unit(t, "corra").phase, "slow");
+});
+
+test("concentration: a second held spell takes a paid slot; paid costs 1 AP a round, passive breaks on damage", () => {
+  const s = battle(7, [{ name: "Bandit Cutthroat", count: 1 }]);
+  lineUp(s);
+  const g = unit(s, "gisla");
+  g.conc = [{ id: "a", name: "Demoralize", kind: "condition", cond: "demoralized", target: null, slot: "free", round: 0 }];
+  g.conc.push({ id: "b", name: "Stoneskin", kind: "ward", target: g.id, slot: "paid1", round: 0 });
+  runWithDice(s, (rng) => beginRound(s, rng, say(s), { gisla: { conc: { b: "paid" } } }));
+  assert.equal(g.ap, 1);
+  assert.equal(g.conc.find(e => e.id === "b").slot, "paid1");
+  const u = battle(7, [{ name: "Bandit Cutthroat", count: 1 }]);
+  lineUp(u);
+  const h = unit(u, "gisla");
+  h.conc = [{ id: "a", name: "Demoralize", kind: "condition", cond: "demoralized", target: null, slot: "free", round: 0 }, { id: "b", name: "Stoneskin", kind: "ward", target: h.id, slot: "paid1", round: 0 }];
+  runWithDice(u, (rng) => beginRound(u, rng, say(u), { gisla: { conc: { b: "passive" } } }));
+  assert.equal(h.ap, 2);
+  assert.equal(h.conc.find(e => e.id === "b").slot, "passive");
 });

@@ -75,7 +75,9 @@ The game saves after every action: on the hosted page, to the player's own priva
      - *Gisla:* Hard to Kill, Possessed (sacred Impotence and Superiority, fire resistance by level), Demon Trigger and the Fire Aura.
      - *Gerberga:* Turn and Destroy Daeva (declared, once per encounter, minion heads one by one), Imbue (sacred or sky).
      - *Companions:* Tallow and Clabber fight beside their owners. Clabber has Gore, Trample, and Spell Conduit (Corra's touch spells through the boar); Tallow's Hellfire is declared, spends Gisla's magan, and burns everything in its cone.
-     Not yet: reaction casting, paid concentration slots (1 AP a round), Charm Asura, and the Charmed and Concealed conditions, since no party ability uses them.
+     - *Phases* come from what's declared: the slowest of a spell, an ability, and a weapon attack. A caster can declare the attack too; without it they act in the spell's phase and can't attack with a slower weapon.
+     - *Concentration* has the free slot, two paid slots (1 AP a round), and passive, placed at each round's declarations.
+     Not yet: reaction casting, Charm Asura, and the Charmed and Concealed conditions, since no party ability uses them.
 
 ## Known gaps
 

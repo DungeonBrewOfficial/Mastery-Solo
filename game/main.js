@@ -111,7 +111,7 @@ let picks = {};
 /** Begin the round with the declarations; spells and Hellfire are declared afresh each round. */
 function declareRound(rng) {
   beginRound(state, rng, say, picks);
-  for (const p of Object.values(picks)) { delete p.spell; delete p.hellfire; delete p.free; delete p.turn; }
+  for (const p of Object.values(picks)) { delete p.spell; delete p.hellfire; delete p.conc; delete p.turn; delete p.attack; }
 }
 let planningRun = false, carry = {};
 const say = (t, k) => note(state, t, k);
@@ -262,7 +262,7 @@ function renderBattle(box) {
         ss.add(new Option(`No spell (${m.mp ?? 0} magan)`, ""));
         for (const o of spells) ss.add(new Option(`${o.label}: ${o.cost} magan, ${o.phase}${o.miscast ? `, miscast ${o.miscast}` : ""}${o.cost > (m.mp ?? 0) ? " (overcast: Exhausted)" : ""}`, o.key));
         ss.value = picks[x.id].spell || "";
-        ss.onchange = () => { picks[x.id].spell = ss.value || null; };
+        ss.onchange = () => { picks[x.id].spell = ss.value || null; render(); };
         line.append(ss);
       }
       const turns = turnOptions(state, x);
@@ -272,17 +272,28 @@ function renderBattle(box) {
         ts.add(new Option("No Turn", ""));
         for (const o of turns) ts.add(new Option(o.label, o.key));
         ts.value = picks[x.id].turn || "";
-        ts.onchange = () => { picks[x.id].turn = ts.value || null; };
+        ts.onchange = () => { picks[x.id].turn = ts.value || null; render(); };
         line.append(ts);
       }
-      const held = concentrationOf(x);
-      if (held.length > 1) {
-        const fs = document.createElement("select");
-        fs.title = "One spell rides in your free concentration slot. The rest are passive: any damage to your health or armor breaks them.";
-        for (const e of held) fs.add(new Option(`Free slot: ${e.name}`, e.id));
-        fs.value = picks[x.id].free || held.find(e => e.slot === "free")?.id || held[0].id;
-        fs.onchange = () => { picks[x.id].free = fs.value; };
-        line.append(fs);
+      if (picks[x.id].spell || picks[x.id].turn) {
+        const w = m.weapons[picks[x.id].weapon];
+        const lab = document.createElement("label");
+        lab.className = "small";
+        lab.title = "You act in the slowest phase of what you declare. Declare the attack and your spell goes off in the weapon's phase too; leave it out and you act in the spell's phase, defending with the weapon but not attacking.";
+        const cb = document.createElement("input");
+        cb.type = "checkbox"; cb.checked = !!picks[x.id].attack;
+        cb.onchange = () => { picks[x.id].attack = cb.checked; };
+        lab.append(cb, ` attack too${w ? ` (${w.name.toLowerCase()}, ${w.speed})` : ""}`);
+        line.append(lab);
+      }
+      for (const e of concentrationOf(x)) {
+        const cs = document.createElement("select");
+        cs.title = "Concentration: one free slot, two paid slots at 1 AP a round, and passive, which breaks on any damage to your health or armor.";
+        const cur = e.slot.startsWith("paid") ? "paid" : e.slot;
+        for (const [v, l] of [["free", "free slot"], ["paid", "paid slot, 1 AP"], ...(e.kind === "imbue" ? [] : [["passive", "passive"]]), ["drop", "let it go"]]) cs.add(new Option(`${e.name}: ${l}`, v));
+        cs.value = picks[x.id].conc?.[e.id] || cur;
+        cs.onchange = () => { (picks[x.id].conc ||= {})[e.id] = cs.value; };
+        line.append(cs);
       }
       if (m.shield) {
         const lab = document.createElement("label");

@@ -19,7 +19,10 @@ const FILES = [
   "module/config.mjs",
   "module/helpers/npc-health.mjs",
   "module/data/trauma-table.mjs",
-  "module/helpers/minion-rules.mjs"
+  "module/helpers/minion-rules.mjs",
+  "module/helpers/puca-rules.mjs",
+  "module/helpers/agathion-rules.mjs",
+  "module/helpers/companion-phase.mjs"
 ];
 
 /**
